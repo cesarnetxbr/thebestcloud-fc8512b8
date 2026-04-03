@@ -76,26 +76,48 @@ const CostTables = () => {
   };
 
   const handleSetDefault = async (tableId: string) => {
-    // Remove default from all cost tables first
-    const { error: resetError } = await supabase
+    // Remove default from all cost tables first, then set the new one
+    // Use .select() to verify the update actually happened
+    const { data: resetData, error: resetError } = await supabase
       .from("price_tables")
       .update({ is_default: false })
-      .eq("type", "cost");
+      .eq("type", "cost")
+      .select("id");
+
     if (resetError) {
       toast({ title: "Erro", description: resetError.message, variant: "destructive" });
       return;
     }
+
+    if (!resetData || resetData.length === 0) {
+      toast({
+        title: "Erro de permissão",
+        description: "Você não tem permissão para alterar tabelas. Verifique seu papel de usuário.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Set the selected table as default
-    const { error } = await supabase
+    const { data: setData, error } = await supabase
       .from("price_tables")
       .update({ is_default: true })
-      .eq("id", tableId);
+      .eq("id", tableId)
+      .select("id, is_default");
+
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else if (!setData || setData.length === 0) {
+      toast({
+        title: "Erro de permissão",
+        description: "Não foi possível definir o Tier Padrão. Verifique suas permissões.",
+        variant: "destructive",
+      });
     } else {
       const tableName = tables.find(t => t.id === tableId)?.name || "";
       toast({ title: "Sucesso", description: `"${tableName}" definida como Tier Padrão.` });
-      await fetchTables();
+      // Update local state immediately for responsiveness
+      setTables(prev => prev.map(t => ({ ...t, is_default: t.id === tableId })));
       if (selectedTable) {
         setSelectedTable(prev => prev ? { ...prev, is_default: prev.id === tableId } : null);
       }
