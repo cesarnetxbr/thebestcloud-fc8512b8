@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      connections: {
+        Row: {
+          api_key: string
+          api_secret: string
+          created_at: string
+          datacenter_url: string
+          id: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          api_secret: string
+          created_at?: string
+          datacenter_url: string
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          api_secret?: string
+          created_at?: string
+          datacenter_url?: string
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           bairro: string | null
@@ -344,6 +377,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tenants: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          customer_id: string | null
+          external_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          external_id?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          external_id?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenants_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenants_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
