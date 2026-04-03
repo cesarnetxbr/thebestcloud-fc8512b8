@@ -148,6 +148,51 @@ const AdminLayout = () => {
                     </Link>
                   );
                 })}
+                {section.expandable && (() => {
+                  const exp = section.expandable;
+                  const ExpIcon = exp.icon;
+                  const isAnySubActive = exp.items.some(i => isActive(i.path));
+                  return (
+                    <div>
+                      <button
+                        onClick={() => setExpandedProduct(!expandedProduct)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full",
+                          isAnySubActive
+                            ? "bg-primary-foreground/15 text-primary-foreground"
+                            : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                        )}
+                      >
+                        <ExpIcon className="h-4 w-4" />
+                        {exp.label}
+                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !expandedProduct && "-rotate-90")} />
+                      </button>
+                      {expandedProduct && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          {exp.items.map((item) => {
+                            const SubIcon = item.icon;
+                            const active = isActive(item.path);
+                            return (
+                              <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => setSidebarOpen(false)}
+                                className={cn(
+                                  "flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-colors",
+                                  active
+                                    ? "text-primary-foreground font-medium"
+                                    : "text-primary-foreground/60 hover:text-primary-foreground"
+                                )}
+                              >
+                                {item.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ))}
