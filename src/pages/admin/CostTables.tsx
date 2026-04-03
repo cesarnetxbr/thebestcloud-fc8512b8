@@ -76,16 +76,28 @@ const CostTables = () => {
   };
 
   const handleSetDefault = async (tableId: string) => {
-    // Remove default from all cost tables, then set the selected one
-    await supabase.from("price_tables").update({ is_default: false }).eq("type", "cost");
-    const { error } = await supabase.from("price_tables").update({ is_default: true }).eq("id", tableId);
+    // Remove default from all cost tables first
+    const { error: resetError } = await supabase
+      .from("price_tables")
+      .update({ is_default: false })
+      .eq("type", "cost");
+    if (resetError) {
+      toast({ title: "Erro", description: resetError.message, variant: "destructive" });
+      return;
+    }
+    // Set the selected table as default
+    const { error } = await supabase
+      .from("price_tables")
+      .update({ is_default: true })
+      .eq("id", tableId);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Sucesso", description: "Tabela definida como padrão." });
-      fetchTables();
-      if (selectedTable?.id === tableId) {
-        setSelectedTable({ ...selectedTable, is_default: true });
+      const tableName = tables.find(t => t.id === tableId)?.name || "";
+      toast({ title: "Sucesso", description: `"${tableName}" definida como Tier Padrão.` });
+      await fetchTables();
+      if (selectedTable) {
+        setSelectedTable(prev => prev ? { ...prev, is_default: prev.id === tableId } : null);
       }
     }
   };
@@ -387,25 +399,35 @@ const CostTables = () => {
           {filtered.map((table) => (
             <Card
               key={table.id}
-              className="cursor-pointer hover:bg-muted/50 transition-colors shadow-soft"
+              className={`cursor-pointer hover:bg-muted/50 transition-colors shadow-soft ${table.is_default ? "ring-2 ring-amber-400/50" : ""}`}
               onClick={() => handleSelectTable(table)}
             >
               <CardContent className="py-4 px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{table.name}</span>
-                    {table.is_default && <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300"><Star className="h-3 w-3 mr-1" /> Padrão</Badge>}
+                    {table.is_default && (
+                      <Badge className="bg-amber-100 text-amber-800 border border-amber-300">
+                        <Star className="h-3 w-3 mr-1 fill-amber-500" /> Tier Padrão
+                      </Badge>
+                    )}
                   </div>
                   <Button
-                    variant="ghost"
+                    variant={table.is_default ? "secondary" : "outline"}
                     size="sm"
-                    className={table.is_default ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"}
+                    className={
+                      table.is_default
+                        ? "bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-300"
+                        : "text-muted-foreground hover:text-amber-600 hover:border-amber-400"
+                    }
+                    title={table.is_default ? "Este é o Tier Padrão" : "Definir como Tier Padrão"}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!table.is_default) handleSetDefault(table.id);
+                      handleSetDefault(table.id);
                     }}
                   >
-                    <Star className={`h-4 w-4 ${table.is_default ? "fill-amber-400" : ""}`} />
+                    <Star className={`h-4 w-4 mr-1 ${table.is_default ? "fill-amber-500" : ""}`} />
+                    {table.is_default ? "Padrão" : "Definir Padrão"}
                   </Button>
                 </div>
               </CardContent>
