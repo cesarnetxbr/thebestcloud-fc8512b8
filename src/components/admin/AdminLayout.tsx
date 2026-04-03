@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   Link2,
   Globe,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
