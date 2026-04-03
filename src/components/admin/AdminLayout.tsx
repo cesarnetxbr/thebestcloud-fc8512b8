@@ -13,15 +13,47 @@ import {
   Menu,
   X,
   ChevronRight,
+  Tag,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-  { label: "Clientes", icon: Users, path: "/admin/customers" },
-  { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
-  { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
-  { label: "Configurações", icon: Settings, path: "/admin/settings" },
+interface NavSection {
+  title?: string;
+  items: { label: string; icon: any; path: string }[];
+}
+
+const navSections: NavSection[] = [
+  {
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    ],
+  },
+  {
+    title: "CADASTROS",
+    items: [
+      { label: "Clientes", icon: Users, path: "/admin/customers" },
+    ],
+  },
+  {
+    title: "FINANCEIRO",
+    items: [
+      { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
+      { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
+    ],
+  },
+  {
+    title: "PRODUTOS",
+    items: [
+      { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
+      { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
+    ],
+  },
+  {
+    items: [
+      { label: "Configurações", icon: Settings, path: "/admin/settings" },
+    ],
+  },
 ];
 
 const AdminLayout = () => {
