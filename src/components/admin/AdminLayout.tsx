@@ -220,7 +220,7 @@ const AdminLayout = () => {
             <Menu className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold text-foreground">
-            {navSections.flatMap(s => s.items).find((n) => isActive(n.path))?.label || "Portal"}
+            {allNavItems.find((n) => isActive(n.path))?.label || "Portal"}
           </h1>
         </header>
 
