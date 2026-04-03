@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Tag, ArrowLeft, Trash2, Pencil } from "lucide-react";
+import { Plus, Search, Tag, ArrowLeft, Trash2, Pencil, Star, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PriceTableCreateForm from "@/components/admin/PriceTableCreateForm";
 
@@ -41,6 +41,8 @@ const CostTables = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [newItem, setNewItem] = useState({ item_name: "", sku_code: "", currency: "BRL", unit_value: "" });
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{ item_name: string; sku_code: string; currency: string; unit_value: string }>({ item_name: "", sku_code: "", currency: "", unit_value: "" });
   const { toast } = useToast();
 
   const fetchTables = async () => {
@@ -69,7 +71,23 @@ const CostTables = () => {
   const handleSelectTable = (table: PriceTable) => {
     setSelectedTable(table);
     setItemSearch("");
+    setEditingItemId(null);
     fetchItems(table.id);
+  };
+
+  const handleSetDefault = async (tableId: string) => {
+    // Remove default from all cost tables, then set the selected one
+    await supabase.from("price_tables").update({ is_default: false }).eq("type", "cost");
+    const { error } = await supabase.from("price_tables").update({ is_default: true }).eq("id", tableId);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Sucesso", description: "Tabela definida como padrão." });
+      fetchTables();
+      if (selectedTable?.id === tableId) {
+        setSelectedTable({ ...selectedTable, is_default: true });
+      }
+    }
   };
 
   const handleAddItem = async () => {
@@ -98,6 +116,37 @@ const CostTables = () => {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
       fetchItems(selectedTable.id);
+    }
+  };
+
+  const startEditing = (item: PriceTableItem) => {
+    setEditingItemId(item.id);
+    setEditValues({
+      item_name: item.item_name,
+      sku_code: item.sku_code,
+      currency: item.currency,
+      unit_value: String(item.unit_value),
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingItemId(null);
+  };
+
+  const saveEditing = async () => {
+    if (!editingItemId) return;
+    const { error } = await supabase.from("price_table_items").update({
+      item_name: editValues.item_name,
+      sku_code: editValues.sku_code,
+      currency: editValues.currency,
+      unit_value: parseFloat(editValues.unit_value) || 0,
+    }).eq("id", editingItemId);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Sucesso", description: "Item atualizado." });
+      setEditingItemId(null);
+      if (selectedTable) fetchItems(selectedTable.id);
     }
   };
 
@@ -148,7 +197,10 @@ const CostTables = () => {
             <div className="flex items-center gap-3 mb-2">
               <Tag className="h-10 w-10 text-primary" />
               <div>
-                <h2 className="text-2xl font-bold">{selectedTable.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold">{selectedTable.name}</h2>
+                  {selectedTable.is_default && <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300"><Star className="h-3 w-3 mr-1" /> Padrão</Badge>}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {items.length} itens
                 </p>
@@ -159,9 +211,11 @@ const CostTables = () => {
             <Button variant="outline" onClick={() => setSelectedTable(null)}>
               <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
             </Button>
-            <Button variant="outline" className="text-primary border-primary hover:bg-primary/10">
-              <Pencil className="h-4 w-4 mr-2" /> Editar
-            </Button>
+            {!selectedTable.is_default && (
+              <Button variant="outline" className="text-amber-600 border-amber-400 hover:bg-amber-50" onClick={() => handleSetDefault(selectedTable.id)}>
+                <Star className="h-4 w-4 mr-2" /> Definir como Padrão
+              </Button>
+            )}
           </div>
         </div>
 
@@ -229,21 +283,55 @@ const CostTables = () => {
                     <TableHead className="uppercase text-xs font-semibold">SKU</TableHead>
                     <TableHead className="uppercase text-xs font-semibold">Moeda</TableHead>
                     <TableHead className="text-right uppercase text-xs font-semibold">Valor</TableHead>
-                    <TableHead className="w-12"></TableHead>
+                    <TableHead className="w-24"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredItems.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.item_name}</TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">{item.sku_code}</TableCell>
-                      <TableCell>{item.currency}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.unit_value)}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+                      {editingItemId === item.id ? (
+                        <>
+                          <TableCell>
+                            <Input value={editValues.item_name} onChange={(e) => setEditValues({ ...editValues, item_name: e.target.value })} className="h-8 text-sm" />
+                          </TableCell>
+                          <TableCell>
+                            <Input value={editValues.sku_code} onChange={(e) => setEditValues({ ...editValues, sku_code: e.target.value })} className="h-8 text-sm font-mono" />
+                          </TableCell>
+                          <TableCell>
+                            <Input value={editValues.currency} onChange={(e) => setEditValues({ ...editValues, currency: e.target.value })} className="h-8 text-sm w-20" />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Input type="number" step="0.0001" value={editValues.unit_value} onChange={(e) => setEditValues({ ...editValues, unit_value: e.target.value })} className="h-8 text-sm text-right" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={saveEditing} className="h-8 w-8 text-green-600 hover:text-green-700">
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={cancelEditing} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="font-medium">{item.item_name}</TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">{item.sku_code}</TableCell>
+                          <TableCell>{item.currency}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.unit_value)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => startEditing(item)} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -280,7 +368,6 @@ const CostTables = () => {
           <Input placeholder="Buscar tabela..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="cursor-pointer">Padrão</Badge>
           <Button variant="outline" onClick={() => setShowCreateForm(true)}>
             <Plus className="h-4 w-4 mr-2" /> Criar nova tabela
           </Button>
@@ -305,8 +392,21 @@ const CostTables = () => {
             >
               <CardContent className="py-4 px-6">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">{table.name}</span>
-                  {table.is_default && <Badge variant="secondary">Padrão</Badge>}
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{table.name}</span>
+                    {table.is_default && <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300"><Star className="h-3 w-3 mr-1" /> Padrão</Badge>}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={table.is_default ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!table.is_default) handleSetDefault(table.id);
+                    }}
+                  >
+                    <Star className={`h-4 w-4 ${table.is_default ? "fill-amber-400" : ""}`} />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
