@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,49 @@ const PriceTableCreateForm = ({ type, onCreated, onCancel }: PriceTableCreateFor
     { item_name: "", sku_code: "", currency: "BRL", unit_value: "" },
   ]);
   const [saving, setSaving] = useState(false);
+  const [loadingDefault, setLoadingDefault] = useState(false);
+  const [defaultCostTableName, setDefaultCostTableName] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // For sale tables, auto-load items from default cost table
+  useEffect(() => {
+    if (type === "sale") {
+      loadDefaultCostItems();
+    }
+  }, [type]);
+
+  const loadDefaultCostItems = async () => {
+    setLoadingDefault(true);
+    // Find default cost table
+    const { data: defaultTable } = await supabase
+      .from("price_tables")
+      .select("*")
+      .eq("type", "cost")
+      .eq("is_default", true)
+      .single();
+
+    if (defaultTable) {
+      setDefaultCostTableName(defaultTable.name);
+      // Load its items
+      const { data: items } = await supabase
+        .from("price_table_items")
+        .select("*")
+        .eq("price_table_id", defaultTable.id)
+        .order("item_name");
+
+      if (items && items.length > 0) {
+        setRows(
+          items.map((item: any) => ({
+            item_name: item.item_name,
+            sku_code: item.sku_code,
+            currency: item.currency,
+            unit_value: String(item.unit_value),
+          }))
+        );
+      }
+    }
+    setLoadingDefault(false);
+  };
 
   const addRow = () => {
     setRows([...rows, { item_name: "", sku_code: "", currency: "BRL", unit_value: "" }]);
@@ -102,6 +144,16 @@ const PriceTableCreateForm = ({ type, onCreated, onCancel }: PriceTableCreateFor
         </div>
         <div>
           <h2 className="text-2xl font-bold">Tabela de {label}</h2>
+          {type === "sale" && defaultCostTableName && (
+            <p className="text-sm text-muted-foreground">
+              Itens carregados da tabela de custo padrão: <span className="font-medium text-foreground">{defaultCostTableName}</span>
+            </p>
+          )}
+          {type === "sale" && !defaultCostTableName && !loadingDefault && (
+            <p className="text-sm text-amber-600">
+              Nenhuma tabela de custo padrão definida. Defina uma em Tabela de Custo.
+            </p>
+          )}
         </div>
       </div>
 
@@ -114,85 +166,91 @@ const PriceTableCreateForm = ({ type, onCreated, onCancel }: PriceTableCreateFor
         />
       </div>
 
-      <div className="border rounded-lg overflow-hidden">
-        <div className="grid grid-cols-[40px_1fr_160px_120px_160px_80px] gap-0 bg-muted/50 px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b">
-          <div></div>
-          <div className="px-2">Nome do item</div>
-          <div className="px-2">SKU</div>
-          <div className="px-2">Moeda</div>
-          <div className="px-2">Valor de {label}</div>
-          <div></div>
+      {loadingDefault ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
         </div>
-
-        {rows.map((row, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-[40px_1fr_160px_120px_160px_80px] gap-0 items-center px-2 py-2 border-b last:border-b-0 hover:bg-muted/30"
-          >
-            <div className="flex items-center justify-center text-muted-foreground cursor-grab">
-              <GripVertical className="h-4 w-4" />
-            </div>
-            <div className="px-1">
-              <Input
-                value={row.item_name}
-                onChange={(e) => updateRow(index, "item_name", e.target.value)}
-                placeholder="Nome do item"
-                className="h-9 text-sm border-0 bg-transparent focus-visible:ring-1"
-              />
-            </div>
-            <div className="px-1">
-              <Input
-                value={row.sku_code}
-                onChange={(e) => updateRow(index, "sku_code", e.target.value)}
-                placeholder="SKU"
-                className="h-9 text-sm font-mono border-0 bg-transparent focus-visible:ring-1"
-              />
-            </div>
-            <div className="px-1">
-              <Select value={row.currency} onValueChange={(v) => updateRow(index, "currency", v)}>
-                <SelectTrigger className="h-9 text-sm border-0 bg-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="BRL">BRL</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="px-1 flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">R$</span>
-              <Input
-                type="number"
-                step="0.0001"
-                value={row.unit_value}
-                onChange={(e) => updateRow(index, "unit_value", e.target.value)}
-                placeholder={`Valor de ${label}`}
-                className="h-9 text-sm border-0 bg-transparent focus-visible:ring-1"
-              />
-            </div>
-            <div className="flex items-center justify-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeRow(index)}
-                className="h-7 w-7 text-destructive hover:text-destructive"
-                disabled={rows.length <= 1}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={addRow}
-                className="h-7 w-7 text-primary hover:text-primary"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="grid grid-cols-[40px_1fr_160px_120px_160px_80px] gap-0 bg-muted/50 px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b">
+            <div></div>
+            <div className="px-2">Nome do item</div>
+            <div className="px-2">SKU</div>
+            <div className="px-2">Moeda</div>
+            <div className="px-2">Valor de {label}</div>
+            <div></div>
           </div>
-        ))}
-      </div>
+
+          {rows.map((row, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-[40px_1fr_160px_120px_160px_80px] gap-0 items-center px-2 py-2 border-b last:border-b-0 hover:bg-muted/30"
+            >
+              <div className="flex items-center justify-center text-muted-foreground cursor-grab">
+                <GripVertical className="h-4 w-4" />
+              </div>
+              <div className="px-1">
+                <Input
+                  value={row.item_name}
+                  onChange={(e) => updateRow(index, "item_name", e.target.value)}
+                  placeholder="Nome do item"
+                  className="h-9 text-sm border-0 bg-transparent focus-visible:ring-1"
+                />
+              </div>
+              <div className="px-1">
+                <Input
+                  value={row.sku_code}
+                  onChange={(e) => updateRow(index, "sku_code", e.target.value)}
+                  placeholder="SKU"
+                  className="h-9 text-sm font-mono border-0 bg-transparent focus-visible:ring-1"
+                />
+              </div>
+              <div className="px-1">
+                <Select value={row.currency} onValueChange={(v) => updateRow(index, "currency", v)}>
+                  <SelectTrigger className="h-9 text-sm border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BRL">BRL</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="px-1 flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">R$</span>
+                <Input
+                  type="number"
+                  step="0.0001"
+                  value={row.unit_value}
+                  onChange={(e) => updateRow(index, "unit_value", e.target.value)}
+                  placeholder={`Valor de ${label}`}
+                  className="h-9 text-sm border-0 bg-transparent focus-visible:ring-1"
+                />
+              </div>
+              <div className="flex items-center justify-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeRow(index)}
+                  className="h-7 w-7 text-destructive hover:text-destructive"
+                  disabled={rows.length <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={addRow}
+                  className="h-7 w-7 text-primary hover:text-primary"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="flex justify-end gap-3">
         <Button variant="outline" onClick={onCancel} disabled={saving}>
