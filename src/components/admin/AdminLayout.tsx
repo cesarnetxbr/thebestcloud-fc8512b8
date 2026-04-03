@@ -21,9 +21,20 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface NavItem {
+  label: string;
+  icon: any;
+  path: string;
+}
+
 interface NavSection {
   title?: string;
-  items: { label: string; icon: any; path: string }[];
+  items: NavItem[];
+  expandable?: {
+    label: string;
+    icon: any;
+    items: NavItem[];
+  };
 }
 
 const navSections: NavSection[] = [
@@ -47,9 +58,20 @@ const navSections: NavSection[] = [
   },
   {
     title: "PRODUTOS",
+    items: [],
+    expandable: {
+      label: "Acronis Cloud",
+      icon: Globe,
+      items: [
+        { label: "Conexões", icon: Link2, path: "/admin/connections" },
+        { label: "Tenants", icon: Globe, path: "/admin/tenants" },
+        { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
+      ],
+    },
+  },
+  {
     items: [
       { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
-      { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
     ],
   },
   {
