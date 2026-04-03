@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
 const Header = () => {
@@ -43,6 +44,9 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            <Link to="/admin/login">
+              <Button variant="outline" size="sm">Portal</Button>
+            </Link>
             <Button variant="cta" onClick={() => scrollToSection("trial")}>
               Teste Grátis
             </Button>
