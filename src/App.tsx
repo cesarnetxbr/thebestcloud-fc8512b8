@@ -19,6 +19,8 @@ import Invoices from "./pages/admin/Invoices";
 import CostTables from "./pages/admin/CostTables";
 import SaleTables from "./pages/admin/SaleTables";
 import Settings from "./pages/admin/Settings";
+import Connections from "./pages/admin/Connections";
+import Tenants from "./pages/admin/Tenants";
 
 const queryClient = new QueryClient();
 
