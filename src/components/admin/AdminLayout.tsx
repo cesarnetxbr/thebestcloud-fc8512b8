@@ -13,8 +13,11 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronDown,
   Tag,
   ShoppingCart,
+  Link2,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
