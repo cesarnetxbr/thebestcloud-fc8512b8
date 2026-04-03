@@ -83,6 +83,7 @@ const navSections: NavSection[] = [
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState(true);
   const { user, signOut } = useAuth();
   const location = useLocation();
 
@@ -90,6 +91,11 @@ const AdminLayout = () => {
     if (path === "/admin") return location.pathname === "/admin";
     return location.pathname.startsWith(path);
   };
+
+  const allNavItems = navSections.flatMap(s => [
+    ...s.items,
+    ...(s.expandable?.items || []),
+  ]);
 
   return (
     <div className="min-h-screen bg-secondary flex">
