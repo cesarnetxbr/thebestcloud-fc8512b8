@@ -16,41 +16,77 @@ export type Database = {
     Tables: {
       customers: {
         Row: {
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
           cnpj: string | null
+          complemento: string | null
           created_at: string
           email: string | null
+          endereco: string | null
+          estado: string | null
+          exclude_auto_crm: boolean | null
+          exclude_auto_email: boolean | null
+          exclude_auto_invoice: boolean | null
           id: string
           monthly_revenue: number | null
           name: string
+          nome_fantasia: string | null
           notes: string | null
+          numero: string | null
           phone: string | null
           plan: string | null
+          razao_social: string | null
           status: string | null
           updated_at: string
         }
         Insert: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           cnpj?: string | null
+          complemento?: string | null
           created_at?: string
           email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          exclude_auto_crm?: boolean | null
+          exclude_auto_email?: boolean | null
+          exclude_auto_invoice?: boolean | null
           id?: string
           monthly_revenue?: number | null
           name: string
+          nome_fantasia?: string | null
           notes?: string | null
+          numero?: string | null
           phone?: string | null
           plan?: string | null
+          razao_social?: string | null
           status?: string | null
           updated_at?: string
         }
         Update: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           cnpj?: string | null
+          complemento?: string | null
           created_at?: string
           email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          exclude_auto_crm?: boolean | null
+          exclude_auto_email?: boolean | null
+          exclude_auto_invoice?: boolean | null
           id?: string
           monthly_revenue?: number | null
           name?: string
+          nome_fantasia?: string | null
           notes?: string | null
+          numero?: string | null
           phone?: string | null
           plan?: string | null
+          razao_social?: string | null
           status?: string | null
           updated_at?: string
         }
