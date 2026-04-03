@@ -14,6 +14,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import Customers from "./pages/admin/Customers";
 import Skus from "./pages/admin/Skus";
 import Invoices from "./pages/admin/Invoices";
+import CostTables from "./pages/admin/CostTables";
+import SaleTables from "./pages/admin/SaleTables";
 import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const App = () => (
               <Route path="customers" element={<Customers />} />
               <Route path="skus" element={<Skus />} />
               <Route path="invoices" element={<Invoices />} />
+              <Route path="cost-tables" element={<CostTables />} />
+              <Route path="sale-tables" element={<SaleTables />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

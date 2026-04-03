@@ -13,15 +13,47 @@ import {
   Menu,
   X,
   ChevronRight,
+  Tag,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-  { label: "Clientes", icon: Users, path: "/admin/customers" },
-  { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
-  { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
-  { label: "Configurações", icon: Settings, path: "/admin/settings" },
+interface NavSection {
+  title?: string;
+  items: { label: string; icon: any; path: string }[];
+}
+
+const navSections: NavSection[] = [
+  {
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    ],
+  },
+  {
+    title: "CADASTROS",
+    items: [
+      { label: "Clientes", icon: Users, path: "/admin/customers" },
+    ],
+  },
+  {
+    title: "FINANCEIRO",
+    items: [
+      { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
+      { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
+    ],
+  },
+  {
+    title: "PRODUTOS",
+    items: [
+      { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
+      { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
+    ],
+  },
+  {
+    items: [
+      { label: "Configurações", icon: Settings, path: "/admin/settings" },
+    ],
+  },
 ];
 
 const AdminLayout = () => {
@@ -55,28 +87,39 @@ const AdminLayout = () => {
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary-foreground/15 text-primary-foreground"
-                    : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                {item.label}
-                {active && <ChevronRight className="h-4 w-4 ml-auto" />}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+          {navSections.map((section, si) => (
+            <div key={si}>
+              {section.title && (
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/40 px-4 mb-1">
+                  {section.title}
+                </div>
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                        active
+                          ? "bg-primary-foreground/15 text-primary-foreground"
+                          : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                      {active && <ChevronRight className="h-4 w-4 ml-auto" />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="p-4 border-t border-primary-foreground/10">
@@ -101,7 +144,7 @@ const AdminLayout = () => {
             <Menu className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold text-foreground">
-            {navItems.find((n) => isActive(n.path))?.label || "Portal"}
+            {navSections.flatMap(s => s.items).find((n) => isActive(n.path))?.label || "Portal"}
           </h1>
         </header>
 
