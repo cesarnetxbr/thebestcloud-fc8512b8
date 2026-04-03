@@ -21,6 +21,7 @@ import SaleTables from "./pages/admin/SaleTables";
 import Settings from "./pages/admin/Settings";
 import Connections from "./pages/admin/Connections";
 import Tenants from "./pages/admin/Tenants";
+import AuditLogs from "./pages/admin/AuditLogs";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="connections" element={<Connections />} />
               <Route path="tenants" element={<Tenants />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="audit-logs" element={<AuditLogs />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

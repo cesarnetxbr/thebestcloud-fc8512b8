@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   Link2,
   Globe,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +78,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { label: "Configurações", icon: Settings, path: "/admin/settings" },
+      { label: "Auditoria", icon: ClipboardList, path: "/admin/audit-logs" },
     ],
   },
 ];
