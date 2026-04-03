@@ -36,6 +36,8 @@ const App = () => (
             {/* Auth pages */}
             <Route path="/admin/login" element={<Login />} />
             <Route path="/admin/signup" element={<Signup />} />
+            <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
 
             {/* Portal admin protegido */}
             <Route
