@@ -7,8 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, ShoppingCart, ArrowLeft, Trash2 } from "lucide-react";
+import { Plus, Search, ShoppingCart, ArrowLeft, Trash2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import PriceTableCreateForm from "@/components/admin/PriceTableCreateForm";
 
 interface PriceTable {
   id: string;
@@ -37,9 +38,7 @@ const SaleTables = () => {
   const [items, setItems] = useState<PriceTableItem[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemSearch, setItemSearch] = useState("");
-  const [createOpen, setCreateOpen] = useState(false);
-  const [newTableName, setNewTableName] = useState("");
-  const [newTableVersion, setNewTableVersion] = useState("v1");
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [newItem, setNewItem] = useState({ item_name: "", sku_code: "", currency: "BRL", unit_value: "" });
   const { toast } = useToast();
@@ -71,24 +70,6 @@ const SaleTables = () => {
     setSelectedTable(table);
     setItemSearch("");
     fetchItems(table.id);
-  };
-
-  const handleCreateTable = async () => {
-    if (!newTableName.trim()) return;
-    const { error } = await supabase.from("price_tables").insert({
-      name: newTableName,
-      type: "sale",
-      version: newTableVersion || "v1",
-    });
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Sucesso", description: "Tabela de venda criada." });
-      setCreateOpen(false);
-      setNewTableName("");
-      setNewTableVersion("v1");
-      fetchTables();
-    }
   };
 
   const handleAddItem = async () => {
@@ -130,6 +111,21 @@ const SaleTables = () => {
       i.sku_code.toLowerCase().includes(itemSearch.toLowerCase())
   );
 
+  // Create form view
+  if (showCreateForm) {
+    return (
+      <PriceTableCreateForm
+        type="sale"
+        onCreated={() => {
+          setShowCreateForm(false);
+          fetchTables();
+        }}
+        onCancel={() => setShowCreateForm(false)}
+      />
+    );
+  }
+
+  // Detail view
   if (selectedTable) {
     return (
       <div className="space-y-6">
@@ -137,6 +133,8 @@ const SaleTables = () => {
           <button onClick={() => setSelectedTable(null)} className="hover:text-foreground transition-colors">Financeiro</button>
           <span>›</span>
           <button onClick={() => setSelectedTable(null)} className="hover:text-foreground transition-colors">Tabela de Venda</button>
+          <span>›</span>
+          <span className="text-foreground font-medium">Visualizar</span>
           <span>›</span>
           <span className="text-foreground">{selectedTable.name}</span>
         </div>
@@ -147,17 +145,22 @@ const SaleTables = () => {
               <ShoppingCart className="h-10 w-10 text-primary" />
               <div>
                 <h2 className="text-2xl font-bold">{selectedTable.name}</h2>
-                <p className="text-sm text-muted-foreground">Versão {selectedTable.version} • {items.length} itens</p>
+                <p className="text-sm text-muted-foreground">{items.length} itens</p>
               </div>
             </div>
           </div>
-          <Button variant="outline" onClick={() => setSelectedTable(null)}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setSelectedTable(null)}>
+              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+            </Button>
+            <Button variant="outline" className="text-primary border-primary hover:bg-primary/10">
+              <Pencil className="h-4 w-4 mr-2" /> Editar
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="relative w-full sm:w-80">
+          <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Buscar por nome, SKU, moeda ou valor..." value={itemSearch} onChange={(e) => setItemSearch(e.target.value)} className="pl-10" />
           </div>
@@ -193,10 +196,10 @@ const SaleTables = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>NOME DO ITEM</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>MOEDA</TableHead>
-                    <TableHead className="text-right">VALOR</TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">Nome do Item</TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">SKU</TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">Moeda</TableHead>
+                    <TableHead className="text-right uppercase text-xs font-semibold">Valor</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -223,12 +226,19 @@ const SaleTables = () => {
     );
   }
 
+  // List view
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <span>Financeiro</span>
+        <span>›</span>
+        <span className="text-foreground font-medium">Tabela de Venda</span>
+      </div>
+
       <div className="flex items-center gap-3 mb-2">
         <ShoppingCart className="h-10 w-10 text-primary" />
         <div>
-          <h2 className="text-2xl font-bold">Tabela de Venda</h2>
+          <h2 className="text-2xl font-bold">Tabela de venda</h2>
           <p className="text-muted-foreground text-sm">
             Defina os preços de venda dos seus serviços e configure suas margens de lucro por item.
           </p>
@@ -242,22 +252,9 @@ const SaleTables = () => {
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="cursor-pointer">Padrão</Badge>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline"><Plus className="h-4 w-4 mr-2" /> Criar nova tabela</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Nova Tabela de Venda</DialogTitle></DialogHeader>
-              <div className="space-y-4 py-4">
-                <div><Label>Nome da Tabela</Label><Input value={newTableName} onChange={(e) => setNewTableName(e.target.value)} placeholder="Ex: Tabela Comercial - Tier 3" /></div>
-                <div><Label>Versão</Label><Input value={newTableVersion} onChange={(e) => setNewTableVersion(e.target.value)} placeholder="v1" /></div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-                <Button onClick={handleCreateTable}>Criar</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button variant="outline" onClick={() => setShowCreateForm(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Criar nova tabela
+          </Button>
         </div>
       </div>
 
