@@ -160,6 +160,77 @@ export type Database = {
           },
         ]
       }
+      price_table_items: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          item_name: string
+          price_table_id: string
+          sku_code: string
+          unit_value: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          item_name: string
+          price_table_id: string
+          sku_code?: string
+          unit_value?: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          item_name?: string
+          price_table_id?: string
+          sku_code?: string
+          unit_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_table_items_price_table_id_fkey"
+            columns: ["price_table_id"]
+            isOneToOne: false
+            referencedRelation: "price_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_tables: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean | null
+          name: string
+          total_value: number | null
+          type: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          name: string
+          total_value?: number | null
+          type?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          total_value?: number | null
+          type?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
