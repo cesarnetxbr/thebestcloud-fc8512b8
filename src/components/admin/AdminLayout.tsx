@@ -78,6 +78,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { label: "Configurações", icon: Settings, path: "/admin/settings" },
+      { label: "Auditoria", icon: ClipboardList, path: "/admin/audit-logs" },
     ],
   },
 ];

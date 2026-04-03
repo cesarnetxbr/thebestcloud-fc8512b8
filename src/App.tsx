@@ -60,6 +60,7 @@ const App = () => (
               <Route path="connections" element={<Connections />} />
               <Route path="tenants" element={<Tenants />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="audit-logs" element={<AuditLogs />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
