@@ -76,16 +76,28 @@ const CostTables = () => {
   };
 
   const handleSetDefault = async (tableId: string) => {
-    // Remove default from all cost tables, then set the selected one
-    await supabase.from("price_tables").update({ is_default: false }).eq("type", "cost");
-    const { error } = await supabase.from("price_tables").update({ is_default: true }).eq("id", tableId);
+    // Remove default from all cost tables first
+    const { error: resetError } = await supabase
+      .from("price_tables")
+      .update({ is_default: false })
+      .eq("type", "cost");
+    if (resetError) {
+      toast({ title: "Erro", description: resetError.message, variant: "destructive" });
+      return;
+    }
+    // Set the selected table as default
+    const { error } = await supabase
+      .from("price_tables")
+      .update({ is_default: true })
+      .eq("id", tableId);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Sucesso", description: "Tabela definida como padrão." });
-      fetchTables();
-      if (selectedTable?.id === tableId) {
-        setSelectedTable({ ...selectedTable, is_default: true });
+      const tableName = tables.find(t => t.id === tableId)?.name || "";
+      toast({ title: "Sucesso", description: `"${tableName}" definida como Tier Padrão.` });
+      await fetchTables();
+      if (selectedTable) {
+        setSelectedTable(prev => prev ? { ...prev, is_default: prev.id === tableId } : null);
       }
     }
   };
