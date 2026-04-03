@@ -13,14 +13,28 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronDown,
   Tag,
   ShoppingCart,
+  Link2,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface NavItem {
+  label: string;
+  icon: any;
+  path: string;
+}
+
 interface NavSection {
   title?: string;
-  items: { label: string; icon: any; path: string }[];
+  items: NavItem[];
+  expandable?: {
+    label: string;
+    icon: any;
+    items: NavItem[];
+  };
 }
 
 const navSections: NavSection[] = [
@@ -44,9 +58,20 @@ const navSections: NavSection[] = [
   },
   {
     title: "PRODUTOS",
+    items: [],
+    expandable: {
+      label: "Acronis Cloud",
+      icon: Globe,
+      items: [
+        { label: "Conexões", icon: Link2, path: "/admin/connections" },
+        { label: "Tenants", icon: Globe, path: "/admin/tenants" },
+        { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
+      ],
+    },
+  },
+  {
     items: [
       { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
-      { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
     ],
   },
   {
@@ -58,6 +83,7 @@ const navSections: NavSection[] = [
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState(true);
   const { user, signOut } = useAuth();
   const location = useLocation();
 
@@ -65,6 +91,11 @@ const AdminLayout = () => {
     if (path === "/admin") return location.pathname === "/admin";
     return location.pathname.startsWith(path);
   };
+
+  const allNavItems = navSections.flatMap(s => [
+    ...s.items,
+    ...(s.expandable?.items || []),
+  ]);
 
   return (
     <div className="min-h-screen bg-secondary flex">
@@ -117,6 +148,51 @@ const AdminLayout = () => {
                     </Link>
                   );
                 })}
+                {section.expandable && (() => {
+                  const exp = section.expandable;
+                  const ExpIcon = exp.icon;
+                  const isAnySubActive = exp.items.some(i => isActive(i.path));
+                  return (
+                    <div>
+                      <button
+                        onClick={() => setExpandedProduct(!expandedProduct)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full",
+                          isAnySubActive
+                            ? "bg-primary-foreground/15 text-primary-foreground"
+                            : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                        )}
+                      >
+                        <ExpIcon className="h-4 w-4" />
+                        {exp.label}
+                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !expandedProduct && "-rotate-90")} />
+                      </button>
+                      {expandedProduct && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          {exp.items.map((item) => {
+                            const SubIcon = item.icon;
+                            const active = isActive(item.path);
+                            return (
+                              <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => setSidebarOpen(false)}
+                                className={cn(
+                                  "flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-colors",
+                                  active
+                                    ? "text-primary-foreground font-medium"
+                                    : "text-primary-foreground/60 hover:text-primary-foreground"
+                                )}
+                              >
+                                {item.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ))}
@@ -144,7 +220,7 @@ const AdminLayout = () => {
             <Menu className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold text-foreground">
-            {navSections.flatMap(s => s.items).find((n) => isActive(n.path))?.label || "Portal"}
+            {allNavItems.find((n) => isActive(n.path))?.label || "Portal"}
           </h1>
         </header>
 
