@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/admin/Login";
 import Signup from "./pages/admin/Signup";
+import ForgotPassword from "./pages/admin/ForgotPassword";
+import ResetPassword from "./pages/admin/ResetPassword";
 import Dashboard from "./pages/admin/Dashboard";
 import Customers from "./pages/admin/Customers";
 import Skus from "./pages/admin/Skus";
@@ -34,6 +36,8 @@ const App = () => (
             {/* Auth pages */}
             <Route path="/admin/login" element={<Login />} />
             <Route path="/admin/signup" element={<Signup />} />
+            <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
 
             {/* Portal admin protegido */}
             <Route
