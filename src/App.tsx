@@ -25,6 +25,14 @@ import Settings from "./pages/admin/Settings";
 import Connections from "./pages/admin/Connections";
 import Tenants from "./pages/admin/Tenants";
 import AuditLogs from "./pages/admin/AuditLogs";
+import FinancialSummary from "./pages/admin/financial/FinancialSummary";
+import CFOPanel from "./pages/admin/financial/CFOPanel";
+import DRECaixa from "./pages/admin/financial/DRECaixa";
+import Revenues from "./pages/admin/financial/Revenues";
+import Expenses from "./pages/admin/financial/Expenses";
+import Commissions from "./pages/admin/financial/Commissions";
+import Automations from "./pages/admin/financial/Automations";
+import FinancialCategories from "./pages/admin/financial/Categories";
 
 const queryClient = new QueryClient();
 
