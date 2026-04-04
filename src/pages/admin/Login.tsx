@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 import { Eye, EyeOff } from "lucide-react";
+import { lovable } from "@/integrations/lovable/index";
+import { Separator } from "@/components/ui/separator";
 
 const Login = () => {
   const [email, setEmail] = useState("");
