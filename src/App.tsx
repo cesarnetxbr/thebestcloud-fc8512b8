@@ -58,6 +58,7 @@ const App = () => (
           <Routes>
             {/* Landing page pública */}
             <Route path="/" element={<Index />} />
+            <Route path="/solucao/:slug" element={<SolutionPage />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
