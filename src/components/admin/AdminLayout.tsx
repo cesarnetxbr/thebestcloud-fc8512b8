@@ -191,7 +191,7 @@ const AdminLayout = () => {
                   return (
                     <div>
                       <button
-                        onClick={() => setExpandedProduct(!expandedProduct)}
+                        onClick={() => toggleSection(exp.label)}
                         className={cn(
                           "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full",
                           isAnySubActive
@@ -201,9 +201,9 @@ const AdminLayout = () => {
                       >
                         <ExpIcon className="h-4 w-4" />
                         {exp.label}
-                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !expandedProduct && "-rotate-90")} />
+                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !isSectionExpanded(exp.label) && "-rotate-90")} />
                       </button>
-                      {expandedProduct && (
+                      {isSectionExpanded(exp.label) && (
                         <div className="ml-4 mt-1 space-y-1">
                           {exp.items.map((item) => {
                             const active = isActive(item.path);
