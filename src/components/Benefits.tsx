@@ -1,4 +1,4 @@
-import { Briefcase, TrendingUp, Headphones, GraduationCap, BarChart3, Palette } from "lucide-react";
+import { Shield, TrendingUp, Headphones, Clock, BarChart3, Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import reduzaComplexidade from "@/assets/landing/reduza-complexidade.webp";
@@ -13,22 +13,22 @@ const advantages = [
   {
     id: "complexidade",
     label: "Sem complexidade",
-    title: "Reduza a complexidade",
-    description: "Se você é como outras empresas, provavelmente usa um conjunto complexo de soluções para se defender contra a perda de dados e outras ameaças cibernéticas. As soluções de proteção cibernética integradas protegem cargas de trabalho inteiras com maior eficiência e uma fração da complexidade, liberando recursos e permitindo que você se concentre na proteção.",
+    title: "Chega de múltiplas ferramentas",
+    description: "Sua empresa provavelmente usa diversas soluções separadas para se proteger contra ameaças cibernéticas. Com a The Best Cloud, você unifica tudo em uma plataforma integrada — backup, antivírus, anti-ransomware e mais — reduzindo custos e eliminando a complexidade.",
     image: reduzaComplexidade,
   },
   {
     id: "gestao",
     label: "Gestão simples",
-    title: "Simplifique a gestão",
-    description: "Proteja cargas de trabalho inteiras sem atrito. Começar com as soluções de proteção cibernética é muito simples. Provisione vários sistemas com apenas um clique e gerencie tudo, desde políticas de backup à avaliações de vulnerabilidade e correção, por meio de um único painel.",
+    title: "Tudo sob controle, sem complicação",
+    description: "Gerencie a proteção de toda a sua infraestrutura de TI a partir de um único painel. Políticas de backup, avaliações de vulnerabilidade e atualizações de segurança em um só lugar, com poucos cliques.",
     image: simplifique,
   },
   {
     id: "protecao",
-    label: "Proteção completa",
-    title: "Proteção completa",
-    description: "Detecte e bloqueie ciberameaças sem nenhum esforço, mesmo aquelas nunca vistas antes. A ferramenta comportamental baseada em IA identifica os processos maliciosos nos quais o malware depende, oferecendo a melhor proteção com menos falsos positivos e uma taxa de detecção comprovada.",
+    label: "Proteção inteligente",
+    title: "Proteção com inteligência artificial",
+    description: "Detecte e bloqueie ciberameaças automaticamente, inclusive as desconhecidas. Nossa tecnologia baseada em IA identifica comportamentos maliciosos em tempo real, oferecendo proteção máxima com mínima intervenção da sua equipe.",
     image: protecaoCompleta,
   },
 ];
@@ -39,36 +39,36 @@ const awards = [
   { image: comptia, label: "CompTIA", year: "2021" },
 ];
 
-const partnerBenefits = [
+const clientBenefits = [
   {
-    icon: Briefcase,
-    title: "Modelo Comercial Simplificado",
-    description: "Comece de forma rápida e fácil, sem fidelidade e sem faturamento mínimo.",
+    icon: Shield,
+    title: "Proteção Completa",
+    description: "Backup, antivírus, anti-ransomware e recuperação de desastres em uma única plataforma.",
   },
   {
-    icon: Palette,
-    title: "Política Comercial Própria",
-    description: "Liberdade para implantar sua política comercial na plataforma Whitelabel.",
+    icon: Lock,
+    title: "Conformidade e LGPD",
+    description: "Mantenha seus dados em conformidade com a LGPD e outras regulamentações de proteção de dados.",
   },
   {
     icon: Headphones,
-    title: "Suporte em PT-BR",
-    description: "Suporte técnico e comercial total para sua empresa, em português.",
+    title: "Suporte Especializado",
+    description: "Equipe de suporte técnico em português, disponível para ajudar sua empresa.",
   },
   {
     icon: TrendingUp,
-    title: "Treinamento Comercial",
-    description: "Técnicas e materiais de venda prontos para você performar rapidamente.",
+    title: "Escalável para seu Crescimento",
+    description: "Soluções que crescem com a sua empresa, sem necessidade de trocar de plataforma.",
   },
   {
-    icon: GraduationCap,
-    title: "Treinamento Técnico",
-    description: "Vídeo aulas, material de apoio e suporte do nosso time de especialistas.",
+    icon: Clock,
+    title: "Disponibilidade 24/7",
+    description: "Monitoramento contínuo para manter seus dados e sistemas sempre protegidos.",
   },
   {
     icon: BarChart3,
-    title: "Painel de Controle Exclusivo",
-    description: "Acompanhe em tempo real os indicadores de uso e evolução de seus clientes.",
+    title: "Relatórios e Visibilidade",
+    description: "Acompanhe o status de proteção da sua empresa com dashboards e relatórios detalhados.",
   },
 ];
 
@@ -91,23 +91,23 @@ const Benefits = () => {
           </div>
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-              Plataforma completa de Segurança Digital
+              Segurança digital sob medida para sua empresa
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              Por meio de uma única plataforma integrada, você poderá fornecer aos seus clientes Backup em Nuvem, Antivírus, Antiransomware, Antimalware e muito mais!
+              Proteja os dados, servidores e estações de trabalho da sua empresa com uma plataforma integrada de Backup em Nuvem, Antivírus, Anti-ransomware, Anti-malware e muito mais.
             </p>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">500+</div>
-                <div className="text-xs text-muted-foreground">Clientes corporativos</div>
+                <div className="text-xs text-muted-foreground">Empresas protegidas</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">100+</div>
-                <div className="text-xs text-muted-foreground">Prêmios internacionais</div>
+                <div className="text-2xl font-bold text-primary">99,9%</div>
+                <div className="text-xs text-muted-foreground">Disponibilidade</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">300+</div>
-                <div className="text-xs text-muted-foreground">Publicações na mídia</div>
+                <div className="text-2xl font-bold text-primary">24/7</div>
+                <div className="text-xs text-muted-foreground">Monitoramento</div>
               </div>
             </div>
           </div>
@@ -127,7 +127,7 @@ const Benefits = () => {
         {/* Vantagens tabs */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            Vantagens de ser um cliente The Best Cloud
+            Por que escolher a The Best Cloud?
           </h2>
         </div>
 
@@ -163,18 +163,18 @@ const Benefits = () => {
           </div>
         </div>
 
-        {/* Partner program */}
+        {/* Client benefits */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            The Best Cloud Partner Program
+            O que oferecemos para sua empresa
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Somos o maior revendedor da América Latina, com mais de 350 parceiros de sucesso. Entenda o que faz nosso modelo perfeito para sua empresa.
+            Soluções completas de ciberproteção para empresas de todos os portes, com suporte em português e tecnologia de ponta.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {partnerBenefits.map((benefit, index) => {
+          {clientBenefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
               <Card key={index} className="border border-border shadow-soft hover:shadow-medium transition-all duration-300 bg-background">

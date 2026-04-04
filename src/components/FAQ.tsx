@@ -7,28 +7,36 @@ import {
 
 const faqs = [
   {
-    question: "Como é o modelo comercial da Revenda?",
-    answer: "Oferecemos um modelo comercial simplificado, sem contrato de fidelidade. O revendedor tem total liberdade para decidir o preço cobrado aos seus clientes pelos serviços.",
+    question: "Como funciona a contratação dos serviços?",
+    answer: "A contratação é simples e sem burocracia. Você escolhe os serviços que sua empresa precisa, e nosso time configura tudo para você. Não há fidelidade contratual — você pode ajustar ou cancelar quando precisar.",
   },
   {
     question: "Receberei nota fiscal?",
     answer: "Sim. Todos os meses é gerada uma nota fiscal com o valor da mensalidade assim que seu pagamento for recebido. Este processo é automático.",
   },
   {
-    question: "Os preços variam com o dólar?",
-    answer: "Sim. Os valores cobrados variam de acordo com o dólar, dentro de faixas de preço pré-definidas com antecedência, dando previsibilidade ao seu negócio.",
+    question: "Minha empresa precisa de equipe de TI para usar a plataforma?",
+    answer: "Não necessariamente. Nosso time cuida da implantação e do monitoramento. Caso sua empresa tenha uma equipe de TI, ela terá acesso a todas as ferramentas de gerenciamento pela plataforma.",
   },
   {
     question: "Qual é a forma de pagamento?",
     answer: "O pagamento pode ser feito por meio de cartão de crédito, boleto bancário e PIX para facilitar sua rotina.",
   },
   {
-    question: "Como é o suporte para revendedores?",
-    answer: "Além de suporte e atendimento 100% em português, os revendedores contam com materiais exclusivos e treinamentos técnicos e comerciais para aprimorar sua estratégia de vendas.",
+    question: "Como funciona o suporte?",
+    answer: "Contamos com suporte técnico 100% em português, disponível por chat, e-mail e telefone. Nossa equipe é especializada em cibersegurança e proteção de dados.",
   },
   {
-    question: "Tenho direito a ferramentas gratuitas?",
-    answer: "Sim! Os revendedores contam com ferramentas gratuitas como Remote Desktop, Inventário de Hardware e Controle de Dispositivos integradas à plataforma.",
+    question: "Quais tipos de empresa podem usar os serviços?",
+    answer: "Nossos serviços atendem empresas de todos os portes — desde pequenas empresas até grandes corporações. As soluções são escaláveis e adaptáveis às necessidades de cada negócio.",
+  },
+  {
+    question: "Meus dados ficam seguros na nuvem?",
+    answer: "Sim. Utilizamos criptografia de ponta a ponta, datacenters com certificação internacional e armazenamento geo-redundante para garantir a máxima segurança dos seus dados.",
+  },
+  {
+    question: "Posso testar antes de contratar?",
+    answer: "Sim! Oferecemos um período de avaliação para que você conheça a plataforma e veja na prática como ela protege sua empresa. Entre em contato para saber mais.",
   },
 ];
 

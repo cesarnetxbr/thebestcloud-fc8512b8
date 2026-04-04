@@ -53,7 +53,7 @@ const SolutionPage = () => {
                 className="text-base px-8"
                 onClick={() => window.open("https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre " + solution.title, "_blank")}
               >
-                Seja um Cliente
+                Fale com um Consultor
               </Button>
             </div>
 

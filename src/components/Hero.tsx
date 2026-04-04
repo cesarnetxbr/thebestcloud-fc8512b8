@@ -16,21 +16,21 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-in">
             <span className="inline-block bg-primary-foreground/10 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full border border-primary-foreground/20 mb-6">
-              Cyber Protect Cloud
+              Proteção Digital Completa
             </span>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight mb-6">
-              Segurança para seus clientes.{" "}
-              <span className="text-accent">Lucro para o seu negócio.</span>
+              Proteja sua empresa.{" "}
+              <span className="text-accent">Foque no seu negócio.</span>
             </h1>
 
             <p className="text-lg text-primary-foreground/80 leading-relaxed mb-8 max-w-lg">
-              Ciberproteção impulsionada por inteligência artificial, projetada para MSPs que buscam produtividade e escala, unificando operações, cibersegurança e proteção de dados em uma plataforma única.
+              Ciberproteção impulsionada por inteligência artificial para empresas que buscam segurança, continuidade e tranquilidade. Backup, antivírus, anti-ransomware e muito mais em uma plataforma única.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button variant="cta" size="lg" onClick={handleContact} className="text-base px-8">
-                Seja um Cliente
+                Fale com um Consultor
               </Button>
               <Button
                 variant="outline"
@@ -38,7 +38,7 @@ const Hero = () => {
                 onClick={scrollToSolutions}
                 className="text-base px-8 bg-primary-foreground/5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
               >
-                Nossas soluções
+                Conheça as Soluções
               </Button>
             </div>
           </div>
@@ -48,7 +48,7 @@ const Hero = () => {
               <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl" />
               <img
                 src={cyberProtectCloud}
-                alt="Cyber Protect Cloud"
+                alt="Plataforma de Proteção Digital"
                 className="relative rounded-xl shadow-strong border border-primary-foreground/10 w-full"
               />
             </div>
