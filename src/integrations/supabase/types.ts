@@ -423,6 +423,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          sale_table_id: string | null
           status: string
           updated_at: string
         }
@@ -434,6 +435,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          sale_table_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -445,6 +447,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          sale_table_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -461,6 +464,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenants_sale_table_id_fkey"
+            columns: ["sale_table_id"]
+            isOneToOne: false
+            referencedRelation: "price_tables"
             referencedColumns: ["id"]
           },
         ]
