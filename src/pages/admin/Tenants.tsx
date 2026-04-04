@@ -37,7 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw } from "lucide-react";
 
 interface TenantForm {
   name: string;
@@ -68,6 +68,23 @@ const Tenants = () => {
   const [search, setSearch] = useState("");
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const syncAllTenants = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-all-tenants");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const totalSynced = data.results?.reduce((sum: number, r: any) => sum + (r.synced || 0), 0) || 0;
+      toast.success(`Sincronização concluída: ${totalSynced} clientes atualizados`);
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+    } catch (e: any) {
+      toast.error(`Erro na sincronização: ${e.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
@@ -262,10 +279,16 @@ const Tenants = () => {
             visualiza o impacto financeiro com precisão.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo tenant
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={syncAllTenants} disabled={syncing}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Sincronizando..." : "Sincronizar agora"}
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo tenant
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
