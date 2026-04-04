@@ -29,6 +29,7 @@ import Tenants from "./pages/admin/Tenants";
 import AuditLogs from "./pages/admin/AuditLogs";
 import Tickets from "./pages/admin/Tickets";
 import CommercialRequests from "./pages/admin/CommercialRequests";
+import UsersPage from "./pages/admin/Users";
 import FinancialSummary from "./pages/admin/financial/FinancialSummary";
 import CFOPanel from "./pages/admin/financial/CFOPanel";
 import DRECaixa from "./pages/admin/financial/DRECaixa";
