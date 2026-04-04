@@ -4,12 +4,29 @@ export interface SolutionData {
   subtitle: string;
   category: "seguranca" | "protecao" | "operacoes";
   heroDescription: string;
+  image: string;
   sections: Array<{
     title: string;
     description: string;
     bullets?: string[];
   }>;
 }
+
+// Image imports
+import xdrImg from "@/assets/solutions/xdr-dashboard.jpg";
+import edrImg from "@/assets/solutions/edr-dashboard.jpg";
+import mdrImg from "@/assets/solutions/mdr-dashboard.jpg";
+import dlpImg from "@/assets/solutions/dlp-dashboard.jpg";
+import securityPostureImg from "@/assets/solutions/security-posture-dashboard.jpg";
+import emailSecurityImg from "@/assets/solutions/email-security-dashboard.jpg";
+import emailArchivingImg from "@/assets/solutions/email-archiving-dashboard.jpg";
+import satImg from "@/assets/solutions/sat-dashboard.jpg";
+import backupImg from "@/assets/solutions/backup-dashboard.jpg";
+import backupM365Img from "@/assets/solutions/backup-m365-dashboard.jpg";
+import drImg from "@/assets/solutions/dr-dashboard.jpg";
+import backupCloudImg from "@/assets/solutions/backup-cloud-dashboard.jpg";
+import rmmImg from "@/assets/solutions/rmm-dashboard.jpg";
+import psaImg from "@/assets/solutions/psa-dashboard.jpg";
 
 export const solutions: SolutionData[] = [
   {
@@ -18,6 +35,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Detecção e resposta estendidas",
     category: "seguranca",
     heroDescription: "Modernize sua pilha de serviços de segurança com um XDR projetado para provedores de serviços.",
+    image: xdrImg,
     sections: [
       {
         title: "Integração nativa",
@@ -49,6 +67,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Endpoint Detection and Response",
     category: "seguranca",
     heroDescription: "Detecção e Resposta de Endpoint guiada por inteligência artificial para MSPs.",
+    image: edrImg,
     sections: [
       {
         title: "Detecção avançada de ameaças",
@@ -71,6 +90,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Managed Detection and Response",
     category: "seguranca",
     heroDescription: "Um MDR projetado para MSPs oferecerem uma resiliência empresarial incomparável.",
+    image: mdrImg,
     sections: [
       {
         title: "Resiliência empresarial",
@@ -89,6 +109,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Data Loss Prevention",
     category: "seguranca",
     heroDescription: "Uma solução de DLP desenvolvida para reduzir a complexidade do gerenciamento.",
+    image: dlpImg,
     sections: [
       {
         title: "Proteção de dados sensíveis",
@@ -107,6 +128,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Gerenciamento de Postura de Segurança",
     category: "seguranca",
     heroDescription: "Entrega eficiente de serviços de gerenciamento de postura de segurança do Microsoft 365.",
+    image: securityPostureImg,
     sections: [
       {
         title: "Postura de segurança do Microsoft 365",
@@ -125,6 +147,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Segurança de E-mail",
     category: "seguranca",
     heroDescription: "Intercepte ataques de e-mail modernos em questão de segundos.",
+    image: emailSecurityImg,
     sections: [
       {
         title: "Proteção contra ameaças por e-mail",
@@ -143,6 +166,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Arquivamento de E-mail",
     category: "seguranca",
     heroDescription: "Auxiliar os clientes no cumprimento de normas com arquivamento de e-mail.",
+    image: emailArchivingImg,
     sections: [
       {
         title: "Arquivamento e conformidade",
@@ -161,6 +185,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Treinamento de Conscientização em Segurança",
     category: "seguranca",
     heroDescription: "Treinamento de conscientização sobre segurança gerenciado, desenvolvido para MSPs.",
+    image: satImg,
     sections: [
       {
         title: "Conscientize seus clientes",
@@ -179,6 +204,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Uma plataforma para cada carga de trabalho",
     category: "protecao",
     heroDescription: "Backup para MSP: Uma plataforma para cada carga de trabalho com máxima eficiência.",
+    image: backupImg,
     sections: [
       {
         title: "Proteção para cada carga de trabalho",
@@ -215,6 +241,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Proteção completa para Microsoft 365",
     category: "protecao",
     heroDescription: "Proteção cibernética abrangente para os dados e aplicativos do Microsoft 365.",
+    image: backupM365Img,
     sections: [
       {
         title: "Proteção completa do Microsoft 365",
@@ -233,6 +260,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Recuperação de Desastres",
     category: "protecao",
     heroDescription: "Recupere-se rapidamente de ataques cibernéticos e outras paralisações não planejadas.",
+    image: drImg,
     sections: [
       {
         title: "Continuidade do negócio",
@@ -251,6 +279,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Backup em Nuvem Pública",
     category: "protecao",
     heroDescription: "Backup em Nuvem Flexível: Seu Armazenamento, Sua Escolha.",
+    image: backupCloudImg,
     sections: [
       {
         title: "Flexibilidade de armazenamento",
@@ -269,6 +298,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Remote Monitoring and Management",
     category: "operacoes",
     heroDescription: "Alcance o máximo desempenho de MSP com uma plataforma RMM nativamente integrada.",
+    image: rmmImg,
     sections: [
       {
         title: "Gerenciamento de TI com IA",
@@ -297,6 +327,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Professional Services Automation",
     category: "operacoes",
     heroDescription: "Simplifique o sucesso: um PSA fácil de usar para MSPs modernos.",
+    image: psaImg,
     sections: [
       {
         title: "Automação para MSPs",
