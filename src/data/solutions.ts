@@ -1,3 +1,10 @@
+export interface SolutionSection {
+  title: string;
+  description: string;
+  bullets?: string[];
+  image?: string;
+}
+
 export interface SolutionData {
   slug: string;
   title: string;
@@ -5,28 +12,51 @@ export interface SolutionData {
   category: "seguranca" | "protecao" | "operacoes";
   heroDescription: string;
   image: string;
-  sections: Array<{
-    title: string;
-    description: string;
-    bullets?: string[];
-  }>;
+  sections: SolutionSection[];
 }
 
-// Image imports
-import xdrImg from "@/assets/solutions/xdr-dashboard.jpg";
-import edrImg from "@/assets/solutions/edr-dashboard.jpg";
-import mdrImg from "@/assets/solutions/mdr-dashboard.jpg";
-import dlpImg from "@/assets/solutions/dlp-dashboard.jpg";
-import securityPostureImg from "@/assets/solutions/security-posture-dashboard.jpg";
-import emailSecurityImg from "@/assets/solutions/email-security-dashboard.jpg";
-import emailArchivingImg from "@/assets/solutions/email-archiving-dashboard.jpg";
-import satImg from "@/assets/solutions/sat-dashboard.jpg";
-import backupImg from "@/assets/solutions/backup-dashboard.jpg";
-import backupM365Img from "@/assets/solutions/backup-m365-dashboard.jpg";
-import drImg from "@/assets/solutions/dr-dashboard.jpg";
-import backupCloudImg from "@/assets/solutions/backup-cloud-dashboard.jpg";
-import rmmImg from "@/assets/solutions/rmm-dashboard.jpg";
-import psaImg from "@/assets/solutions/psa-dashboard.jpg";
+// Hero images
+import xdrHero from "@/assets/solutions/xdr-hero.webp";
+import edrHero from "@/assets/solutions/edr-hero.webp";
+import mdrHero from "@/assets/solutions/mdr-hero.webp";
+import dlpHero from "@/assets/solutions/dlp-hero.webp";
+import securityPostureHero from "@/assets/solutions/security-posture-hero.webp";
+import emailSecurityHero from "@/assets/solutions/email-security-hero.webp";
+import emailArchivingHero from "@/assets/solutions/email-archiving-hero.webp";
+import satHero from "@/assets/solutions/sat-hero.webp";
+import backupHero from "@/assets/solutions/backup-hero.webp";
+import backupM365Hero from "@/assets/solutions/backup-m365-hero.webp";
+import drHero from "@/assets/solutions/dr-hero.webp";
+import backupCloudHero from "@/assets/solutions/backup-cloud-hero.webp";
+import rmmHero from "@/assets/solutions/rmm-hero.webp";
+import psaHero from "@/assets/solutions/psa-hero.webp";
+
+// Section images
+import xdrModernize from "@/assets/solutions/xdr-modernize.webp";
+import xdrNist from "@/assets/solutions/xdr-nist.webp";
+import edrMargens from "@/assets/solutions/edr-margens.webp";
+import edrRapidez from "@/assets/solutions/edr-rapidez.webp";
+import mdrTerceirizar from "@/assets/solutions/mdr-terceirizar.webp";
+import dlpSolucao from "@/assets/solutions/dlp-solucao.webp";
+import dlpSobrecarga from "@/assets/solutions/dlp-sobrecarga.webp";
+import securityPostureDashboards from "@/assets/solutions/security-posture-dashboards.webp";
+import emailSecurityProteja from "@/assets/solutions/email-security-proteja.webp";
+import emailArchivingAuxiliar from "@/assets/solutions/email-archiving-auxiliar.webp";
+import emailArchivingMicrosoft from "@/assets/solutions/email-archiving-microsoft.webp";
+import satEconomize from "@/assets/solutions/sat-economize.webp";
+import satConformidade from "@/assets/solutions/sat-conformidade.webp";
+import backupPlataforma from "@/assets/solutions/backup-plataforma.webp";
+import backupRecuperacao from "@/assets/solutions/backup-recuperacao.webp";
+import backupSeguranca from "@/assets/solutions/backup-seguranca.webp";
+import backupM365Protecao from "@/assets/solutions/backup-m365-protecao.webp";
+import drCoordenacao from "@/assets/solutions/dr-coordenacao.webp";
+import drRecuperacao from "@/assets/solutions/dr-recuperacao.webp";
+import backupCloudIntegracao from "@/assets/solutions/backup-cloud-integracao.webp";
+import backupCloudProtecao from "@/assets/solutions/backup-cloud-protecao.webp";
+import rmmPermitir from "@/assets/solutions/rmm-permitir.webp";
+import rmmIntegracao from "@/assets/solutions/rmm-integracao.webp";
+import psaCotacoes from "@/assets/solutions/psa-cotacoes.webp";
+import psaLucratividade from "@/assets/solutions/psa-lucratividade.webp";
 
 export const solutions: SolutionData[] = [
   {
@@ -35,7 +65,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Detecção e resposta estendidas",
     category: "seguranca",
     heroDescription: "Modernize sua pilha de serviços de segurança com um XDR projetado para provedores de serviços.",
-    image: xdrImg,
+    image: xdrHero,
     sections: [
       {
         title: "Integração nativa",
@@ -45,6 +75,7 @@ export const solutions: SolutionData[] = [
           "Gerencie e dimensione com uma única plataforma e agente",
           "Atenda requisitos de conformidade com DLP integrado",
         ],
+        image: xdrModernize,
       },
       {
         title: "Cibersegurança orientada por IA",
@@ -54,10 +85,12 @@ export const solutions: SolutionData[] = [
           "Análise e resposta em minutos com IA",
           "Automação de ações de remediação",
         ],
+        image: xdrNist,
       },
       {
         title: "Proteção completa com NIST",
         description: "Governança, Identificação, Proteção, Detecção, Resposta e Recuperação em uma plataforma integrada.",
+        image: xdrHero,
       },
     ],
   },
@@ -67,7 +100,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Endpoint Detection and Response",
     category: "seguranca",
     heroDescription: "Detecção e Resposta de Endpoint guiada por inteligência artificial para MSPs.",
-    image: edrImg,
+    image: edrHero,
     sections: [
       {
         title: "Detecção avançada de ameaças",
@@ -77,10 +110,12 @@ export const solutions: SolutionData[] = [
           "Resposta a incidentes com um clique",
           "Precificação modular e flexível",
         ],
+        image: edrMargens,
       },
       {
         title: "Visibilidade completa",
         description: "Monitore continuamente os endpoints para identificar comportamentos suspeitos e prevenir ataques antes que causem danos.",
+        image: edrRapidez,
       },
     ],
   },
@@ -90,7 +125,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Managed Detection and Response",
     category: "seguranca",
     heroDescription: "Um MDR projetado para MSPs oferecerem uma resiliência empresarial incomparável.",
-    image: mdrImg,
+    image: mdrHero,
     sections: [
       {
         title: "Resiliência empresarial",
@@ -100,6 +135,7 @@ export const solutions: SolutionData[] = [
           "Resposta rápida a incidentes",
           "Relatórios detalhados de segurança",
         ],
+        image: mdrTerceirizar,
       },
     ],
   },
@@ -109,7 +145,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Data Loss Prevention",
     category: "seguranca",
     heroDescription: "Uma solução de DLP desenvolvida para reduzir a complexidade do gerenciamento.",
-    image: dlpImg,
+    image: dlpHero,
     sections: [
       {
         title: "Proteção de dados sensíveis",
@@ -119,6 +155,12 @@ export const solutions: SolutionData[] = [
           "Políticas granulares de controle de dados",
           "Conformidade com LGPD e GDPR",
         ],
+        image: dlpSolucao,
+      },
+      {
+        title: "Reduza a sobrecarga de gerenciamento",
+        description: "Provisione serviços de DLP facilmente com modo de observação e políticas centralizadas.",
+        image: dlpSobrecarga,
       },
     ],
   },
@@ -128,7 +170,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Gerenciamento de Postura de Segurança",
     category: "seguranca",
     heroDescription: "Entrega eficiente de serviços de gerenciamento de postura de segurança do Microsoft 365.",
-    image: securityPostureImg,
+    image: securityPostureHero,
     sections: [
       {
         title: "Postura de segurança do Microsoft 365",
@@ -138,6 +180,7 @@ export const solutions: SolutionData[] = [
           "Recomendações baseadas em boas práticas",
           "Monitoramento contínuo de conformidade",
         ],
+        image: securityPostureDashboards,
       },
     ],
   },
@@ -147,7 +190,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Segurança de E-mail",
     category: "seguranca",
     heroDescription: "Intercepte ataques de e-mail modernos em questão de segundos.",
-    image: emailSecurityImg,
+    image: emailSecurityHero,
     sections: [
       {
         title: "Proteção contra ameaças por e-mail",
@@ -157,6 +200,7 @@ export const solutions: SolutionData[] = [
           "Filtragem de spam e malware",
           "Proteção para Microsoft 365 e Google Workspace",
         ],
+        image: emailSecurityProteja,
       },
     ],
   },
@@ -166,7 +210,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Arquivamento de E-mail",
     category: "seguranca",
     heroDescription: "Auxiliar os clientes no cumprimento de normas com arquivamento de e-mail.",
-    image: emailArchivingImg,
+    image: emailArchivingHero,
     sections: [
       {
         title: "Arquivamento e conformidade",
@@ -176,6 +220,12 @@ export const solutions: SolutionData[] = [
           "Conformidade com normas regulatórias",
           "Integração nativa com Microsoft 365",
         ],
+        image: emailArchivingAuxiliar,
+      },
+      {
+        title: "Microsoft 365 Email Archiving para MSPs",
+        description: "Solução desenvolvida especificamente para provedores de serviços gerenciados.",
+        image: emailArchivingMicrosoft,
       },
     ],
   },
@@ -185,7 +235,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Treinamento de Conscientização em Segurança",
     category: "seguranca",
     heroDescription: "Treinamento de conscientização sobre segurança gerenciado, desenvolvido para MSPs.",
-    image: satImg,
+    image: satHero,
     sections: [
       {
         title: "Conscientize seus clientes",
@@ -195,6 +245,12 @@ export const solutions: SolutionData[] = [
           "Conteúdo de treinamento personalizado",
           "Relatórios de progresso e risco",
         ],
+        image: satEconomize,
+      },
+      {
+        title: "Facilitar a conformidade",
+        description: "Gerencie facilmente uma solução de segurança completa para o Microsoft 365.",
+        image: satConformidade,
       },
     ],
   },
@@ -204,7 +260,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Uma plataforma para cada carga de trabalho",
     category: "protecao",
     heroDescription: "Backup para MSP: Uma plataforma para cada carga de trabalho com máxima eficiência.",
-    image: backupImg,
+    image: backupHero,
     sections: [
       {
         title: "Proteção para cada carga de trabalho",
@@ -214,6 +270,7 @@ export const solutions: SolutionData[] = [
           "Virtual: proteção sem agente para VMware, Hyper-V e Nutanix AHV",
           "SaaS: Microsoft 365 e Google Workspace com armazenamento ilimitado",
         ],
+        image: backupPlataforma,
       },
       {
         title: "Recuperação rápida",
@@ -223,6 +280,7 @@ export const solutions: SolutionData[] = [
           "Conversões P2V, V2V e V2C",
           "Recuperação com um clique para milhares de máquinas",
         ],
+        image: backupRecuperacao,
       },
       {
         title: "Segurança e compliance integrados",
@@ -232,6 +290,7 @@ export const solutions: SolutionData[] = [
           "Armazenamento geo-redundante e imutável",
           "Retenção arquivística e backups forenses",
         ],
+        image: backupSeguranca,
       },
     ],
   },
@@ -241,7 +300,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Proteção completa para Microsoft 365",
     category: "protecao",
     heroDescription: "Proteção cibernética abrangente para os dados e aplicativos do Microsoft 365.",
-    image: backupM365Img,
+    image: backupM365Hero,
     sections: [
       {
         title: "Proteção completa do Microsoft 365",
@@ -251,6 +310,7 @@ export const solutions: SolutionData[] = [
           "Recuperação granular de itens individuais",
           "Armazenamento ilimitado em nuvem",
         ],
+        image: backupM365Protecao,
       },
     ],
   },
@@ -260,7 +320,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Recuperação de Desastres",
     category: "protecao",
     heroDescription: "Recupere-se rapidamente de ataques cibernéticos e outras paralisações não planejadas.",
-    image: drImg,
+    image: drHero,
     sections: [
       {
         title: "Continuidade do negócio",
@@ -270,6 +330,12 @@ export const solutions: SolutionData[] = [
           "RPO e RTO minimizados",
           "Testes de DR sem impacto na produção",
         ],
+        image: drCoordenacao,
+      },
+      {
+        title: "Recuperação rápida",
+        description: "Restaure sistemas críticos em minutos com orquestração automatizada.",
+        image: drRecuperacao,
       },
     ],
   },
@@ -279,7 +345,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Backup em Nuvem Pública",
     category: "protecao",
     heroDescription: "Backup em Nuvem Flexível: Seu Armazenamento, Sua Escolha.",
-    image: backupCloudImg,
+    image: backupCloudHero,
     sections: [
       {
         title: "Flexibilidade de armazenamento",
@@ -289,6 +355,12 @@ export const solutions: SolutionData[] = [
           "Controle total sobre custos de armazenamento",
           "Integração nativa com a plataforma",
         ],
+        image: backupCloudIntegracao,
+      },
+      {
+        title: "Proteção de dados segura e em conformidade",
+        description: "Ofereça proteção de dados segura com criptografia e conformidade regulatória.",
+        image: backupCloudProtecao,
       },
     ],
   },
@@ -298,7 +370,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Remote Monitoring and Management",
     category: "operacoes",
     heroDescription: "Alcance o máximo desempenho de MSP com uma plataforma RMM nativamente integrada.",
-    image: rmmImg,
+    image: rmmHero,
     sections: [
       {
         title: "Gerenciamento de TI com IA",
@@ -309,6 +381,7 @@ export const solutions: SolutionData[] = [
           "Acesso remoto seguro integrado",
           "Automação baseada em IA",
         ],
+        image: rmmPermitir,
       },
       {
         title: "Integração nativa",
@@ -318,6 +391,7 @@ export const solutions: SolutionData[] = [
           "Relatórios unificados de desempenho",
           "Escalabilidade para múltiplos clientes",
         ],
+        image: rmmIntegracao,
       },
     ],
   },
@@ -327,7 +401,7 @@ export const solutions: SolutionData[] = [
     subtitle: "Professional Services Automation",
     category: "operacoes",
     heroDescription: "Simplifique o sucesso: um PSA fácil de usar para MSPs modernos.",
-    image: psaImg,
+    image: psaHero,
     sections: [
       {
         title: "Automação para MSPs",
@@ -338,6 +412,12 @@ export const solutions: SolutionData[] = [
           "Relatórios de SLA e desempenho",
           "Integração nativa com RMM",
         ],
+        image: psaCotacoes,
+      },
+      {
+        title: "Aumente a lucratividade",
+        description: "Permita decisões baseadas em dados para maximizar a rentabilidade do seu negócio.",
+        image: psaLucratividade,
       },
     ],
   },
