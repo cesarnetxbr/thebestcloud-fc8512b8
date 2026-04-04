@@ -5,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const formatCurrency = (v: number) =>
@@ -23,13 +23,20 @@ const statusColors: Record<string, string> = {
   cancelado: "bg-gray-100 text-gray-500",
 };
 
+const recurrenceLabels: Record<string, string> = {
+  none: "—", monthly: "Mensal", quarterly: "Trimestral", yearly: "Anual",
+};
+
+const emptyForm = { description: "", amount: "", date: "", due_date: "", category_id: "", status: "pendente", recurrence: "none", notes: "" };
+
 const Expenses = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ description: "", amount: "", date: "", due_date: "", category_id: "", status: "pendente", recurrence: "none", notes: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const fetchData = async () => {
     const [{ data: txns }, { data: cats }] = await Promise.all([
@@ -43,10 +50,31 @@ const Expenses = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (r: any) => {
+    setEditingId(r.id);
+    setForm({
+      description: r.description,
+      amount: String(r.amount),
+      date: r.date || "",
+      due_date: r.due_date || "",
+      category_id: r.category_id || "",
+      status: r.status,
+      recurrence: r.recurrence || "none",
+      notes: r.notes || "",
+    });
+    setDialogOpen(true);
+  };
+
   const handleSubmit = async () => {
     if (!form.description || !form.amount) { toast.error("Preencha descrição e valor"); return; }
-    const { error } = await supabase.from("financial_transactions").insert({
-      type: "despesa",
+    const payload = {
+      type: "despesa" as const,
       description: form.description,
       amount: parseFloat(form.amount),
       date: form.date || new Date().toISOString().split("T")[0],
@@ -55,11 +83,17 @@ const Expenses = () => {
       status: form.status,
       recurrence: form.recurrence,
       notes: form.notes || null,
-    });
+    };
+
+    const { error } = editingId
+      ? await supabase.from("financial_transactions").update(payload).eq("id", editingId)
+      : await supabase.from("financial_transactions").insert(payload);
+
     if (error) { toast.error("Erro ao salvar"); return; }
-    toast.success("Despesa adicionada!");
+    toast.success(editingId ? "Despesa atualizada!" : "Despesa adicionada!");
     setDialogOpen(false);
-    setForm({ description: "", amount: "", date: "", due_date: "", category_id: "", status: "pendente", recurrence: "none", notes: "" });
+    setEditingId(null);
+    setForm(emptyForm);
     fetchData();
   };
 
@@ -81,62 +115,62 @@ const Expenses = () => {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-red-600">Total: {formatCurrency(total)}</span>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> Nova Despesa</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Nova Despesa</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div><Label>Descrição *</Label><Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Valor (R$) *</Label><Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} /></div>
-                  <div><Label>Data</Label><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Vencimento</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
-                  <div>
-                    <Label>Status</Label>
-                    <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pendente">Pendente</SelectItem>
-                        <SelectItem value="pago">Pago</SelectItem>
-                        <SelectItem value="atrasado">Atrasado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Categoria</Label>
-                    <Select value={form.category_id} onValueChange={v => setForm({ ...form, category_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Recorrência</Label>
-                    <Select value={form.recurrence} onValueChange={v => setForm({ ...form, recurrence: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Nenhuma</SelectItem>
-                        <SelectItem value="monthly">Mensal</SelectItem>
-                        <SelectItem value="quarterly">Trimestral</SelectItem>
-                        <SelectItem value="yearly">Anual</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-                <Button className="w-full" onClick={handleSubmit}>Salvar</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> Nova Despesa</Button>
         </div>
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingId(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editingId ? "Editar Despesa" : "Nova Despesa"}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div><Label>Descrição *</Label><Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Valor (R$) *</Label><Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} /></div>
+              <div><Label>Data</Label><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Vencimento</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="pago">Pago</SelectItem>
+                    <SelectItem value="atrasado">Atrasado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Categoria</Label>
+                <Select value={form.category_id} onValueChange={v => setForm({ ...form, category_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Recorrência</Label>
+                <Select value={form.recurrence} onValueChange={v => setForm({ ...form, recurrence: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhuma</SelectItem>
+                    <SelectItem value="monthly">Mensal</SelectItem>
+                    <SelectItem value="quarterly">Trimestral</SelectItem>
+                    <SelectItem value="yearly">Anual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+            <Button className="w-full" onClick={handleSubmit}>{editingId ? "Atualizar" : "Salvar"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card className="shadow-soft">
         <CardContent className="p-0">
@@ -150,7 +184,7 @@ const Expenses = () => {
                 <TableHead>Recorrência</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-[80px]"></TableHead>
+                <TableHead className="w-[100px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -164,11 +198,14 @@ const Expenses = () => {
                   <TableCell>{(r.financial_categories as any)?.name || "—"}</TableCell>
                   <TableCell>{formatDate(r.date)}</TableCell>
                   <TableCell>{formatDate(r.due_date)}</TableCell>
-                  <TableCell>{r.recurrence === "none" ? "—" : r.recurrence === "monthly" ? "Mensal" : r.recurrence === "quarterly" ? "Trimestral" : "Anual"}</TableCell>
+                  <TableCell>{recurrenceLabels[r.recurrence] || "—"}</TableCell>
                   <TableCell className="text-right font-medium text-red-600">{formatCurrency(Number(r.amount))}</TableCell>
                   <TableCell><Badge className={statusColors[r.status]} variant="secondary">{r.status}</Badge></TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

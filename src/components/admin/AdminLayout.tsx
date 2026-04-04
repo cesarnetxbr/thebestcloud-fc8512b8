@@ -60,10 +60,7 @@ const navSections: NavSection[] = [
   },
   {
     title: "FINANCEIRO",
-    items: [
-      { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
-      { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
-    ],
+    items: [],
     expandable: {
       label: "Gestão Financeira",
       icon: Briefcase,
@@ -74,6 +71,9 @@ const navSections: NavSection[] = [
         { label: "Receitas", icon: TrendingUp, path: "/admin/financial/receitas" },
         { label: "Despesas", icon: TrendingDown, path: "/admin/financial/despesas" },
         { label: "Comissões", icon: DollarSign, path: "/admin/financial/comissoes" },
+        { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
+        { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
+        { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard" },
         { label: "Automações", icon: Zap, path: "/admin/financial/automacoes" },
         { label: "Categorias", icon: FolderOpen, path: "/admin/financial/categorias" },
       ],
@@ -88,9 +88,6 @@ const navSections: NavSection[] = [
       items: [
         { label: "Conexões", icon: Link2, path: "/admin/connections" },
         { label: "Tenants", icon: Globe, path: "/admin/tenants" },
-        { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard" },
-        { label: "Custo", icon: Tag, path: "/admin/invoices/custo" },
-        { label: "Venda", icon: ShoppingCart, path: "/admin/invoices/venda" },
       ],
     },
   },
