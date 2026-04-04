@@ -304,7 +304,7 @@ const Users_Page = () => {
                     <TableCell>
                       <div>
                         <p className="font-medium">{u.full_name || "Sem nome"}</p>
-                        <p className="text-xs text-muted-foreground">{u.user_id.slice(0, 8)}...</p>
+                        <p className="text-xs text-muted-foreground">{u.email || `${u.user_id.slice(0, 8)}...`}</p>
                       </div>
                     </TableCell>
                     <TableCell>
