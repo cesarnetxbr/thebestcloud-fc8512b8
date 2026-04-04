@@ -9,6 +9,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import ClientLayout from "@/components/client/ClientLayout";
 import ClientProtectedRoute from "@/components/client/ClientProtectedRoute";
 import Index from "./pages/Index";
+import SolutionPage from "./pages/SolutionPage";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/admin/Login";
 import Signup from "./pages/admin/Signup";
@@ -57,6 +58,7 @@ const App = () => (
           <Routes>
             {/* Landing page pública */}
             <Route path="/" element={<Index />} />
+            <Route path="/solucao/:slug" element={<SolutionPage />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />

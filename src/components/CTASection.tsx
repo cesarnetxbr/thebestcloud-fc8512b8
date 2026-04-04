@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 const CTASection = () => {
   const handleContact = () => {
-    window.open("https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre ser um revendedor The Best Cloud", "_blank");
+    window.open("https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre ser um cliente The Best Cloud", "_blank");
   };
 
   const scrollToSolutions = () => {
@@ -13,14 +13,14 @@ const CTASection = () => {
     <section id="contato" className="py-24 bg-primary">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-          Seja um revendedor de Ciberproteção
+          Seja um cliente The Best Cloud
         </h2>
         <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto mb-8">
-          Junte-se aos nossos parceiros de sucesso. Oferecemos o melhor modelo comercial do mercado com suporte completo em português.
+          Somos o maior revendedor da América Latina, com mais de 350 parceiros de sucesso. Entenda o que faz nosso modelo perfeito para sua empresa.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button variant="cta" size="lg" onClick={handleContact} className="text-base px-8">
-            Fale Conosco
+            Seja um Cliente
           </Button>
           <Button
             variant="outline"

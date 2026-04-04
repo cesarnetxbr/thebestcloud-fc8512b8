@@ -1,6 +1,8 @@
-import { Shield, Database, Zap, Monitor, Mail, Lock, Server, Cloud, HardDrive, RefreshCw, Settings, Headphones } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { solutions } from "@/data/solutions";
 
 const tabs = [
   { id: "seguranca", label: "Segurança" },
@@ -8,29 +10,10 @@ const tabs = [
   { id: "operacoes", label: "Operações" },
 ];
 
-const solutions: Record<string, Array<{ icon: React.ElementType; title: string; description: string }>> = {
-  seguranca: [
-    { icon: Shield, title: "XDR – Detecção e Resposta Estendidas", description: "Modernize sua pilha de serviços de segurança com um XDR projetado para provedores de serviço." },
-    { icon: Monitor, title: "EDR – Detecção e Resposta para Endpoints", description: "Detecção e Resposta de Endpoint guiada por inteligência artificial para MSPs." },
-    { icon: Lock, title: "Prevenção de Perda de Dados (DLP)", description: "Uma solução de DLP desenvolvida para reduzir a complexidade do gerenciamento." },
-    { icon: Mail, title: "Email Security", description: "Intercepte ataques de e-mail modernos em questão de segundos." },
-  ],
-  protecao: [
-    { icon: Database, title: "Backup em Nuvem", description: "Backup para MSP: Uma plataforma para cada carga de trabalho com máxima eficiência." },
-    { icon: Cloud, title: "Backup para Microsoft 365", description: "Proteção cibernética abrangente para os dados e aplicativos do Microsoft 365." },
-    { icon: Zap, title: "Disaster Recovery", description: "Recupere-se rapidamente de ataques cibernéticos e outras paralisações não planejadas." },
-    { icon: HardDrive, title: "Backup em Nuvem Pública", description: "Backup em Nuvem Flexível: Seu Armazenamento, Sua Escolha." },
-  ],
-  operacoes: [
-    { icon: Settings, title: "RMM – Monitoramento Remoto", description: "Alcance o máximo desempenho com uma plataforma RMM nativamente integrada." },
-    { icon: RefreshCw, title: "PSA – Automação de Serviços", description: "Simplifique o sucesso com um PSA fácil de usar para MSPs modernos." },
-    { icon: Server, title: "Security Posture Management", description: "Entrega eficiente de serviços de gerenciamento de postura de segurança." },
-    { icon: Headphones, title: "Suporte 24/7 em PT-BR", description: "Atendimento técnico e comercial em português, sem enrolação." },
-  ],
-};
-
 const Features = () => {
   const [activeTab, setActiveTab] = useState("seguranca");
+
+  const filtered = solutions.filter((s) => s.category === activeTab);
 
   return (
     <section id="solucoes" className="py-24 bg-secondary">
@@ -62,21 +45,20 @@ const Features = () => {
         </div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {solutions[activeTab].map((solution, index) => {
-            const Icon = solution.icon;
-            return (
-              <Card key={index} className="border border-border shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-background">
-                <CardContent className="p-6">
-                  <div className="mb-4 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-base font-bold mb-2 text-foreground">{solution.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{solution.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {filtered.map((solution) => (
+            <Card key={solution.slug} className="border border-border shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-background">
+              <CardContent className="p-6 flex flex-col h-full">
+                <h3 className="text-base font-bold mb-2 text-foreground">{solution.subtitle || solution.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{solution.heroDescription}</p>
+                <Link to={`/solucao/${solution.slug}`}>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Conhecer
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>
