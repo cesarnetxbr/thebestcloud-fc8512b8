@@ -456,10 +456,18 @@ const Customers = () => {
                     <TableCell className="max-w-[200px] truncate">{buildAddress(c)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleToggleStatus(c.id, c.status || "active")}
+                          title={c.status === "active" ? "Desativar" : "Ativar"}
+                        >
+                          <Power className={`h-4 w-4 ${c.status === "active" ? "text-orange-500" : "text-green-500"}`} />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)} title="Excluir">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
