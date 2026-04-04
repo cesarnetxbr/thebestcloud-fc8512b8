@@ -64,22 +64,22 @@ export const solutions: SolutionData[] = [
     title: "Extended Detection and Response (XDR)",
     subtitle: "Detecção e resposta estendidas",
     category: "seguranca",
-    heroDescription: "Modernize sua pilha de serviços de segurança com um XDR projetado para provedores de serviços.",
+    heroDescription: "Proteção completa contra ameaças avançadas com detecção e resposta integradas em toda a sua infraestrutura.",
     image: xdrHero,
     sections: [
       {
-        title: "Integração nativa",
-        description: "Com XDR, os MSPs obtêm proteção completa e integrada de forma nativa, desenvolvida para prevenir, detectar, analisar, responder e recuperar incidentes nas superfícies de ataque mais vulneráveis.",
+        title: "Proteção integrada e abrangente",
+        description: "Com XDR, sua empresa obtém proteção completa e integrada, desenvolvida para prevenir, detectar, analisar, responder e recuperar incidentes nas superfícies de ataque mais vulneráveis.",
         bullets: [
-          "Previna riscos de forma proativa com conformidade NIST",
-          "Gerencie e dimensione com uma única plataforma e agente",
-          "Atenda requisitos de conformidade com DLP integrado",
+          "Prevenção proativa de riscos com conformidade NIST",
+          "Gerenciamento centralizado em uma única plataforma",
+          "Conformidade com LGPD através de DLP integrado",
         ],
         image: xdrModernize,
       },
       {
         title: "Cibersegurança orientada por IA",
-        description: "Proteja endpoints com visibilidade nas superfícies de ataque mais vulneráveis.",
+        description: "Proteja endpoints com visibilidade total nas superfícies de ataque mais vulneráveis da sua empresa.",
         bullets: [
           "Visibilidade em e-mail, identidade e apps Microsoft 365",
           "Análise e resposta em minutos com IA",
@@ -99,16 +99,16 @@ export const solutions: SolutionData[] = [
     title: "Detecção e Resposta para Endpoints (EDR)",
     subtitle: "Endpoint Detection and Response",
     category: "seguranca",
-    heroDescription: "Detecção e Resposta de Endpoint guiada por inteligência artificial para MSPs.",
+    heroDescription: "Detecte e responda a ameaças avançadas nos endpoints da sua empresa com inteligência artificial.",
     image: edrHero,
     sections: [
       {
         title: "Detecção avançada de ameaças",
-        description: "Use tecnologias de proteção cibernética para detectar e responder a ameaças avançadas em endpoints, com análise orientada por IA e resposta com um clique.",
+        description: "Tecnologia de proteção cibernética para detectar e responder a ameaças avançadas em endpoints, com análise orientada por IA e resposta com um clique.",
         bullets: [
           "Análise orientada por inteligência artificial",
           "Resposta a incidentes com um clique",
-          "Precificação modular e flexível",
+          "Flexível e adaptável ao tamanho da sua empresa",
         ],
         image: edrMargens,
       },
@@ -121,15 +121,15 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "mdr",
-    title: "Serviços de Detecção e Resposta Gerenciadas (MDR)",
+    title: "Detecção e Resposta Gerenciadas (MDR)",
     subtitle: "Managed Detection and Response",
     category: "seguranca",
-    heroDescription: "Um MDR projetado para MSPs oferecerem uma resiliência empresarial incomparável.",
+    heroDescription: "Segurança de nível empresarial com monitoramento 24/7 por especialistas, sem precisar de uma equipe interna.",
     image: mdrHero,
     sections: [
       {
-        title: "Resiliência empresarial",
-        description: "Serviço gerenciado de detecção e resposta que permite aos MSPs oferecer segurança de nível empresarial sem a complexidade de manter um SOC interno.",
+        title: "Segurança gerenciada por especialistas",
+        description: "Serviço gerenciado de detecção e resposta que oferece segurança de nível empresarial sem a complexidade de manter uma equipe de segurança interna.",
         bullets: [
           "Monitoramento 24/7 por especialistas em segurança",
           "Resposta rápida a incidentes",
@@ -144,7 +144,7 @@ export const solutions: SolutionData[] = [
     title: "Prevenção de Perda de Dados (DLP)",
     subtitle: "Data Loss Prevention",
     category: "seguranca",
-    heroDescription: "Uma solução de DLP desenvolvida para reduzir a complexidade do gerenciamento.",
+    heroDescription: "Proteja dados sensíveis da sua empresa contra vazamentos e garanta conformidade com a LGPD.",
     image: dlpHero,
     sections: [
       {
@@ -158,8 +158,8 @@ export const solutions: SolutionData[] = [
         image: dlpSolucao,
       },
       {
-        title: "Reduza a sobrecarga de gerenciamento",
-        description: "Provisione serviços de DLP facilmente com modo de observação e políticas centralizadas.",
+        title: "Gestão simplificada",
+        description: "Configure políticas de proteção de dados de forma simples e centralizada, com modo de observação para implantação gradual.",
         image: dlpSobrecarga,
       },
     ],
@@ -169,12 +169,12 @@ export const solutions: SolutionData[] = [
     title: "Security Posture Management",
     subtitle: "Gerenciamento de Postura de Segurança",
     category: "seguranca",
-    heroDescription: "Entrega eficiente de serviços de gerenciamento de postura de segurança do Microsoft 365.",
+    heroDescription: "Avalie e melhore continuamente a postura de segurança do seu ambiente Microsoft 365.",
     image: securityPostureHero,
     sections: [
       {
         title: "Postura de segurança do Microsoft 365",
-        description: "Avalie e melhore continuamente a postura de segurança dos ambientes Microsoft 365 de seus clientes.",
+        description: "Avalie e melhore continuamente a postura de segurança do seu ambiente Microsoft 365 com avaliações automatizadas.",
         bullets: [
           "Avaliações automatizadas de segurança",
           "Recomendações baseadas em boas práticas",
@@ -189,12 +189,12 @@ export const solutions: SolutionData[] = [
     title: "Email Security",
     subtitle: "Segurança de E-mail",
     category: "seguranca",
-    heroDescription: "Intercepte ataques de e-mail modernos em questão de segundos.",
+    heroDescription: "Bloqueie ataques por e-mail em segundos — phishing, malware e ameaças avançadas.",
     image: emailSecurityHero,
     sections: [
       {
         title: "Proteção contra ameaças por e-mail",
-        description: "Bloqueie phishing, malware, BEC e outras ameaças baseadas em e-mail antes que cheguem à caixa de entrada.",
+        description: "Bloqueie phishing, malware, BEC e outras ameaças baseadas em e-mail antes que cheguem à caixa de entrada dos seus colaboradores.",
         bullets: [
           "Detecção de phishing e BEC com IA",
           "Filtragem de spam e malware",
@@ -209,12 +209,12 @@ export const solutions: SolutionData[] = [
     title: "Email Archiving para Microsoft 365",
     subtitle: "Arquivamento de E-mail",
     category: "seguranca",
-    heroDescription: "Auxiliar os clientes no cumprimento de normas com arquivamento de e-mail.",
+    heroDescription: "Arquive e-mails do Microsoft 365 para atender normas regulatórias e manter conformidade.",
     image: emailArchivingHero,
     sections: [
       {
         title: "Arquivamento e conformidade",
-        description: "Arquive e-mails do Microsoft 365 para atender requisitos regulatórios e de retenção de dados.",
+        description: "Arquive e-mails do Microsoft 365 para atender requisitos regulatórios e de retenção de dados da sua empresa.",
         bullets: [
           "Retenção e busca rápida de e-mails",
           "Conformidade com normas regulatórias",
@@ -223,8 +223,8 @@ export const solutions: SolutionData[] = [
         image: emailArchivingAuxiliar,
       },
       {
-        title: "Microsoft 365 Email Archiving para MSPs",
-        description: "Solução desenvolvida especificamente para provedores de serviços gerenciados.",
+        title: "Arquivamento profissional para Microsoft 365",
+        description: "Solução desenvolvida para empresas que utilizam o ecossistema Microsoft e precisam de conformidade documental.",
         image: emailArchivingMicrosoft,
       },
     ],
@@ -234,12 +234,12 @@ export const solutions: SolutionData[] = [
     title: "Security Awareness Training (SAT)",
     subtitle: "Treinamento de Conscientização em Segurança",
     category: "seguranca",
-    heroDescription: "Treinamento de conscientização sobre segurança gerenciado, desenvolvido para MSPs.",
+    heroDescription: "Capacite seus colaboradores para reconhecer e evitar ameaças cibernéticas.",
     image: satHero,
     sections: [
       {
-        title: "Conscientize seus clientes",
-        description: "Reduza o risco humano com treinamentos interativos e simulações de phishing gerenciadas.",
+        title: "Conscientize sua equipe",
+        description: "Reduza o risco humano com treinamentos interativos e simulações de phishing para os colaboradores da sua empresa.",
         bullets: [
           "Simulações de phishing automatizadas",
           "Conteúdo de treinamento personalizado",
@@ -248,43 +248,43 @@ export const solutions: SolutionData[] = [
         image: satEconomize,
       },
       {
-        title: "Facilitar a conformidade",
-        description: "Gerencie facilmente uma solução de segurança completa para o Microsoft 365.",
+        title: "Conformidade e cultura de segurança",
+        description: "Crie uma cultura de segurança na sua empresa e mantenha-se em conformidade com regulamentações.",
         image: satConformidade,
       },
     ],
   },
   {
     slug: "backup",
-    title: "Backup para MSP",
-    subtitle: "Uma plataforma para cada carga de trabalho",
+    title: "Backup em Nuvem",
+    subtitle: "Backup para todas as cargas de trabalho",
     category: "protecao",
-    heroDescription: "Backup para MSP: Uma plataforma para cada carga de trabalho com máxima eficiência.",
+    heroDescription: "Proteja servidores, estações, nuvem e aplicações SaaS com backup seguro e recuperação rápida.",
     image: backupHero,
     sections: [
       {
         title: "Proteção para cada carga de trabalho",
-        description: "Proteja cargas de trabalho físicas, virtuais, na nuvem e SaaS a partir de um console e um agente.",
+        description: "Proteja servidores físicos, máquinas virtuais, ambientes em nuvem e aplicações SaaS a partir de um único console.",
         bullets: [
-          "Físico: backup em arquivo, disco e imagem para Windows e Linux",
-          "Virtual: proteção sem agente para VMware, Hyper-V e Nutanix AHV",
+          "Servidores físicos: backup em arquivo, disco e imagem para Windows e Linux",
+          "Máquinas virtuais: proteção sem agente para VMware, Hyper-V e Nutanix",
           "SaaS: Microsoft 365 e Google Workspace com armazenamento ilimitado",
         ],
         image: backupPlataforma,
       },
       {
         title: "Recuperação rápida",
-        description: "Reduza o tempo para restaurar ambientes e mantenha os usuários trabalhando durante falhas ou ataques.",
+        description: "Reduza o tempo de inatividade e restaure ambientes rapidamente em caso de falha ou ataque.",
         bullets: [
           "Restauração instantânea para VMs",
           "Conversões P2V, V2V e V2C",
-          "Recuperação com um clique para milhares de máquinas",
+          "Recuperação com um clique para múltiplas máquinas",
         ],
         image: backupRecuperacao,
       },
       {
         title: "Segurança e compliance integrados",
-        description: "Backup combinado com controles de segurança e ferramentas de conformidade.",
+        description: "Backup combinado com controles de segurança e ferramentas de conformidade para proteger seus dados.",
         bullets: [
           "Anti-malware e varredura por IA dos backups",
           "Armazenamento geo-redundante e imutável",
@@ -299,12 +299,12 @@ export const solutions: SolutionData[] = [
     title: "Backup para Microsoft 365",
     subtitle: "Proteção completa para Microsoft 365",
     category: "protecao",
-    heroDescription: "Proteção cibernética abrangente para os dados e aplicativos do Microsoft 365.",
+    heroDescription: "Proteção abrangente para os dados e aplicativos do Microsoft 365 da sua empresa.",
     image: backupM365Hero,
     sections: [
       {
         title: "Proteção completa do Microsoft 365",
-        description: "Backup, recuperação e proteção cibernética para proteger dados e aplicativos do Microsoft 365 dos seus clientes.",
+        description: "Backup, recuperação e proteção cibernética para proteger dados e aplicativos do Microsoft 365 da sua empresa.",
         bullets: [
           "Backup de Exchange, OneDrive, SharePoint e Teams",
           "Recuperação granular de itens individuais",
@@ -319,12 +319,12 @@ export const solutions: SolutionData[] = [
     title: "Disaster Recovery",
     subtitle: "Recuperação de Desastres",
     category: "protecao",
-    heroDescription: "Recupere-se rapidamente de ataques cibernéticos e outras paralisações não planejadas.",
+    heroDescription: "Recupere-se rapidamente de ataques cibernéticos e outras paralisações inesperadas.",
     image: drHero,
     sections: [
       {
         title: "Continuidade do negócio",
-        description: "Minimize o tempo de inatividade com failover automatizado para a nuvem e recuperação rápida.",
+        description: "Minimize o tempo de inatividade com failover automatizado para a nuvem e recuperação rápida dos seus sistemas críticos.",
         bullets: [
           "Failover automatizado para a nuvem",
           "RPO e RTO minimizados",
@@ -341,10 +341,10 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "backup-public-cloud",
-    title: "Direct Backup to Public Cloud",
-    subtitle: "Backup em Nuvem Pública",
+    title: "Backup em Nuvem Pública",
+    subtitle: "Backup direto para nuvem pública",
     category: "protecao",
-    heroDescription: "Backup em Nuvem Flexível: Seu Armazenamento, Sua Escolha.",
+    heroDescription: "Faça backup diretamente para AWS, Azure ou Google Cloud com total flexibilidade.",
     image: backupCloudHero,
     sections: [
       {
@@ -359,7 +359,7 @@ export const solutions: SolutionData[] = [
       },
       {
         title: "Proteção de dados segura e em conformidade",
-        description: "Ofereça proteção de dados segura com criptografia e conformidade regulatória.",
+        description: "Proteção de dados com criptografia de ponta e conformidade regulatória.",
         image: backupCloudProtecao,
       },
     ],
@@ -369,12 +369,12 @@ export const solutions: SolutionData[] = [
     title: "RMM – Monitoramento e Gerenciamento Remoto",
     subtitle: "Remote Monitoring and Management",
     category: "operacoes",
-    heroDescription: "Alcance o máximo desempenho de MSP com uma plataforma RMM nativamente integrada.",
+    heroDescription: "Monitore e gerencie toda a infraestrutura de TI da sua empresa de forma remota e proativa.",
     image: rmmHero,
     sections: [
       {
         title: "Gerenciamento de TI com IA",
-        description: "Aumente a satisfação do cliente fornecendo serviços superiores de administração e monitoramento de TI.",
+        description: "Aumente a eficiência da sua equipe de TI com monitoramento proativo e automação inteligente.",
         bullets: [
           "Monitoramento proativo de endpoints",
           "Gerenciamento de patches automatizado",
@@ -384,12 +384,12 @@ export const solutions: SolutionData[] = [
         image: rmmPermitir,
       },
       {
-        title: "Integração nativa",
-        description: "Uma plataforma unificada que combina RMM, segurança e backup para operações mais eficientes.",
+        title: "Plataforma unificada",
+        description: "Uma plataforma que combina monitoramento, segurança e backup para operações de TI mais eficientes.",
         bullets: [
           "Console único para todas as operações",
           "Relatórios unificados de desempenho",
-          "Escalabilidade para múltiplos clientes",
+          "Escalável para empresas de qualquer porte",
         ],
         image: rmmIntegracao,
       },
@@ -400,23 +400,23 @@ export const solutions: SolutionData[] = [
     title: "PSA – Automação de Serviços Profissionais",
     subtitle: "Professional Services Automation",
     category: "operacoes",
-    heroDescription: "Simplifique o sucesso: um PSA fácil de usar para MSPs modernos.",
+    heroDescription: "Automatize a gestão de serviços de TI da sua empresa com tickets, SLA e relatórios integrados.",
     image: psaHero,
     sections: [
       {
-        title: "Automação para MSPs",
-        description: "Automatize fluxos de trabalho de serviços, faturamento e gerenciamento de tickets para aumentar a eficiência.",
+        title: "Automação de serviços de TI",
+        description: "Automatize fluxos de trabalho, gestão de tickets e controle de SLA para uma operação de TI mais eficiente.",
         bullets: [
           "Gerenciamento de tickets inteligente",
-          "Faturamento automatizado",
-          "Relatórios de SLA e desempenho",
+          "Controle de SLA automatizado",
+          "Relatórios de desempenho",
           "Integração nativa com RMM",
         ],
         image: psaCotacoes,
       },
       {
-        title: "Aumente a lucratividade",
-        description: "Permita decisões baseadas em dados para maximizar a rentabilidade do seu negócio.",
+        title: "Mais eficiência operacional",
+        description: "Tome decisões baseadas em dados para otimizar a operação de TI da sua empresa.",
         image: psaLucratividade,
       },
     ],
