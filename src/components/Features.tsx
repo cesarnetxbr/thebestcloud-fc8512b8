@@ -20,10 +20,10 @@ const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            Plataforma completa de Segurança Digital
+            Soluções de proteção para sua empresa
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Por meio de uma única plataforma integrada, forneça aos seus clientes Backup em Nuvem, Antivírus, Anti-ransomware, Anti-malware e muito mais.
+            Backup em nuvem, antivírus, anti-ransomware, proteção de e-mail e muito mais — tudo integrado em uma única plataforma para proteger os dados e a operação do seu negócio.
           </p>
         </div>
 
@@ -53,7 +53,7 @@ const Features = () => {
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{solution.heroDescription}</p>
                 <Link to={`/solucao/${solution.slug}`}>
                   <Button variant="outline" size="sm" className="w-full">
-                    Conhecer
+                    Saiba mais
                   </Button>
                 </Link>
               </CardContent>

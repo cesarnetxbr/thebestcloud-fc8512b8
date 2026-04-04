@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <img src={logo} alt="The Best Cloud" className="h-10 w-auto mb-4 brightness-0 invert" />
             <p className="text-background/70 text-sm leading-relaxed max-w-sm">
-              Plataforma de ciberproteção integrada para provedores de serviços. Segurança, backup e operações em um só lugar.
+              Soluções completas de ciberproteção para empresas. Segurança, backup e continuidade de negócios em uma única plataforma.
             </p>
           </div>
 
