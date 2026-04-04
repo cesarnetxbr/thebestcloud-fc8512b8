@@ -2,8 +2,8 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Benefits from "@/components/Benefits";
-import Pricing from "@/components/Pricing";
-import TrialForm from "@/components/TrialForm";
+import FAQ from "@/components/FAQ";
+import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -13,8 +13,8 @@ const Index = () => {
       <Hero />
       <Features />
       <Benefits />
-      <Pricing />
-      <TrialForm />
+      <FAQ />
+      <CTASection />
       <Footer />
     </div>
   );
