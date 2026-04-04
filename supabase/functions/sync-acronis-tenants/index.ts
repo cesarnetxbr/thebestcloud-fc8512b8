@@ -183,7 +183,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        total_found: acronisTenants.length,
+        total_found: allTenants.length,
+        customers_only: acronisTenants.length,
+        skipped_non_customers: skipped,
         synced,
         errors,
       }),
