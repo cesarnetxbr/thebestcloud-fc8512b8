@@ -363,6 +363,7 @@ const Users_Page = () => {
                 </div>
                 <div>
                   <p className="font-semibold">{detailUser.full_name || "Sem nome"}</p>
+                  <p className="text-sm text-muted-foreground">{detailUser.email || `${detailUser.user_id.slice(0, 8)}...`}</p>
                   <Badge className={ROLE_COLORS[detailUser.role]}>{ROLE_LABELS[detailUser.role]}</Badge>
                 </div>
               </div>
