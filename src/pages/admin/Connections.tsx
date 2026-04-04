@@ -203,6 +203,15 @@ const Connections = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          title="Sincronizar tenants"
+                          disabled={syncingId === conn.id}
+                          onClick={() => syncTenants(conn.id)}
+                        >
+                          <RefreshCw className={`h-4 w-4 ${syncingId === conn.id ? "animate-spin" : ""}`} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => openEdit(conn)}
                         >
                           <Pencil className="h-4 w-4" />
