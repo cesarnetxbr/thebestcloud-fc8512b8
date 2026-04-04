@@ -19,6 +19,14 @@ import {
   Link2,
   Globe,
   ClipboardList,
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Zap,
+  FolderOpen,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +64,20 @@ const navSections: NavSection[] = [
       { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
       { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
     ],
+    expandable: {
+      label: "Gestão Financeira",
+      icon: Briefcase,
+      items: [
+        { label: "Resumo", icon: BarChart3, path: "/admin/financial" },
+        { label: "Painel CFO", icon: PieChart, path: "/admin/financial/cfo" },
+        { label: "DRE & Caixa", icon: FileText, path: "/admin/financial/dre" },
+        { label: "Receitas", icon: TrendingUp, path: "/admin/financial/receitas" },
+        { label: "Despesas", icon: TrendingDown, path: "/admin/financial/despesas" },
+        { label: "Comissões", icon: DollarSign, path: "/admin/financial/comissoes" },
+        { label: "Automações", icon: Zap, path: "/admin/financial/automacoes" },
+        { label: "Categorias", icon: FolderOpen, path: "/admin/financial/categorias" },
+      ],
+    },
   },
   {
     title: "PRODUTOS",
@@ -87,7 +109,17 @@ const navSections: NavSection[] = [
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedProduct, setExpandedProduct] = useState(true);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (label: string) => {
+    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const isSectionExpanded = (label: string) => {
+    if (expandedSections[label] !== undefined) return expandedSections[label];
+    // Auto-expand if any sub-item is active
+    return true;
+  };
   const { user, signOut } = useAuth();
   const location = useLocation();
 
@@ -159,7 +191,7 @@ const AdminLayout = () => {
                   return (
                     <div>
                       <button
-                        onClick={() => setExpandedProduct(!expandedProduct)}
+                        onClick={() => toggleSection(exp.label)}
                         className={cn(
                           "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full",
                           isAnySubActive
@@ -169,9 +201,9 @@ const AdminLayout = () => {
                       >
                         <ExpIcon className="h-4 w-4" />
                         {exp.label}
-                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !expandedProduct && "-rotate-90")} />
+                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !isSectionExpanded(exp.label) && "-rotate-90")} />
                       </button>
-                      {expandedProduct && (
+                      {isSectionExpanded(exp.label) && (
                         <div className="ml-4 mt-1 space-y-1">
                           {exp.items.map((item) => {
                             const active = isActive(item.path);
