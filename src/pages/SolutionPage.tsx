@@ -112,7 +112,7 @@ const SolutionPage = () => {
                   <div className="relative">
                     <div className="absolute -inset-2 bg-primary/5 rounded-2xl blur-xl" />
                     <img
-                      src={solution.image}
+                      src={section.image || solution.image}
                       alt={section.title}
                       className="relative rounded-xl shadow-medium border border-border w-full"
                       loading="lazy"
