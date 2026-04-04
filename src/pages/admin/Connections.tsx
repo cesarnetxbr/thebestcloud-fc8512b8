@@ -160,7 +160,12 @@ const Connections = () => {
               <TableBody>
                 {connections.map((conn) => (
                   <TableRow key={conn.id}>
-                    <TableCell className="font-medium">{conn.name}</TableCell>
+                    <TableCell
+                      className="font-medium cursor-pointer hover:underline text-primary"
+                      onClick={() => navigate(`/admin/tenants?connection=${conn.id}`)}
+                    >
+                      {conn.name}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {conn.datacenter_url}
                     </TableCell>
