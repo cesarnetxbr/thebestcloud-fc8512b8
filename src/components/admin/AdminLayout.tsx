@@ -61,6 +61,18 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "COMERCIAL",
+    items: [
+      { label: "Solicitações", icon: Kanban, path: "/admin/commercial-requests" },
+    ],
+  },
+  {
+    title: "SUPORTE",
+    items: [
+      { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
+    ],
+  },
+  {
     title: "FINANCEIRO",
     items: [],
     expandable: {
