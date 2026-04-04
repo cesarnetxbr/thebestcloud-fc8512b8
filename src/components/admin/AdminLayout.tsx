@@ -52,6 +52,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+      { label: "Usuários", icon: Users, path: "/admin/users" },
     ],
   },
   {

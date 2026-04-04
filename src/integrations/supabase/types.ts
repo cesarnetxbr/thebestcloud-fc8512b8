@@ -714,6 +714,39 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permission_presets: {
+        Row: {
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_edit: boolean | null
+          can_view: boolean | null
+          created_at: string
+          id: string
+          module: string
+          role_name: string
+        }
+        Insert: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module: string
+          role_name: string
+        }
+        Update: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module?: string
+          role_name?: string
+        }
+        Relationships: []
+      }
       skus: {
         Row: {
           category: string | null
@@ -954,6 +987,42 @@ export type Database = {
           },
         ]
       }
+      user_permissions: {
+        Row: {
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_edit: boolean | null
+          can_view: boolean | null
+          created_at: string
+          id: string
+          module: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -986,7 +1055,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "viewer" | "client"
+      app_role:
+        | "admin"
+        | "manager"
+        | "viewer"
+        | "client"
+        | "operador"
+        | "supervisor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1114,7 +1189,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "viewer", "client"],
+      app_role: [
+        "admin",
+        "manager",
+        "viewer",
+        "client",
+        "operador",
+        "supervisor",
+      ],
     },
   },
 } as const

@@ -29,6 +29,7 @@ import Tenants from "./pages/admin/Tenants";
 import AuditLogs from "./pages/admin/AuditLogs";
 import Tickets from "./pages/admin/Tickets";
 import CommercialRequests from "./pages/admin/CommercialRequests";
+import UsersPage from "./pages/admin/Users";
 import FinancialSummary from "./pages/admin/financial/FinancialSummary";
 import CFOPanel from "./pages/admin/financial/CFOPanel";
 import DRECaixa from "./pages/admin/financial/DRECaixa";
@@ -42,6 +43,7 @@ import ClientSignup from "./pages/client/ClientSignup";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientTickets from "./pages/client/ClientTickets";
 import ClientInvoices from "./pages/client/ClientInvoices";
+import ClientServices from "./pages/client/ClientServices";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,7 @@ const App = () => (
               <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="tickets" element={<Tickets />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
+              <Route path="users" element={<UsersPage />} />
               <Route path="financial" element={<FinancialSummary />} />
               <Route path="financial/cfo" element={<CFOPanel />} />
               <Route path="financial/dre" element={<DRECaixa />} />
@@ -110,6 +113,7 @@ const App = () => (
               <Route index element={<ClientDashboard />} />
               <Route path="chamados" element={<ClientTickets />} />
               <Route path="faturas" element={<ClientInvoices />} />
+              <Route path="servicos" element={<ClientServices />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
