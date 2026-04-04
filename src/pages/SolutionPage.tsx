@@ -51,7 +51,7 @@ const SolutionPage = () => {
                 variant="cta"
                 size="lg"
                 className="text-base px-8"
-                onClick={() => window.open("https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre " + solution.title, "_blank")}
+                onClick={() => window.open("https://api.whatsapp.com/send/?phone=5591989696415&text=Ol%C3%A1%21+Gostaria+de+saber+mais+sobre+os+servi%C3%A7os+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank")}
               >
                 Fale com um Consultor
               </Button>

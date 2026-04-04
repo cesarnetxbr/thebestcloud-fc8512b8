@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 const CTASection = () => {
   const handleContact = () => {
-    window.open("https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre os serviços da The Best Cloud para minha empresa", "_blank");
+    window.open("https://api.whatsapp.com/send/?phone=5591989696415&text=Ol%C3%A1%21+Gostaria+de+saber+mais+sobre+os+servi%C3%A7os+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank");
   };
 
   const scrollToSolutions = () => {
