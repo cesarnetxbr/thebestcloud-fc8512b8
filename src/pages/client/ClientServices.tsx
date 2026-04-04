@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Plus, ShoppingCart, Package } from "lucide-react";
 import { format } from "date-fns";
@@ -17,6 +18,31 @@ const ClientServices = () => {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ product: "", quantity: "1", notes: "" });
+
+  // Buscar itens da tabela de venda padrão (is_default ou "tabela 100%")
+  const { data: saleItems = [] } = useQuery({
+    queryKey: ["default_sale_items"],
+    queryFn: async () => {
+      // Buscar tabela de venda padrão
+      const { data: tables } = await supabase
+        .from("price_tables")
+        .select("id")
+        .eq("type", "sale")
+        .eq("is_default", true)
+        .limit(1);
+      
+      const tableId = tables?.[0]?.id;
+      if (!tableId) return [];
+
+      const { data, error } = await supabase
+        .from("price_table_items")
+        .select("id, item_name, sku_code, unit_value")
+        .eq("price_table_id", tableId)
+        .order("item_name");
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["client_commercial_requests", user?.id],
@@ -89,11 +115,21 @@ const ClientServices = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Produto / Serviço</label>
-                <Input
-                  placeholder="Ex: Backup Cloud 500GB"
+                <Select
                   value={form.product}
-                  onChange={(e) => setForm({ ...form, product: e.target.value })}
-                />
+                  onValueChange={(value) => setForm({ ...form, product: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um produto ou serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {saleItems.map((item: any) => (
+                      <SelectItem key={item.id} value={item.item_name}>
+                        {item.item_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Quantidade</label>
