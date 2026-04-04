@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
     const [{ data: roles, error: rolesError }, { data: profiles, error: profilesError }, authUsersResult] = await Promise.all([
       adminClient.from("user_roles").select("id, user_id, role"),
-      adminClient.from("profiles").select("user_id, full_name, created_at, updated_at, last_login_at, created_by_name"),
+      adminClient.from("profiles").select("user_id, full_name, created_at, updated_at, last_login_at, created_by_name, is_active"),
       adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     ]);
 
