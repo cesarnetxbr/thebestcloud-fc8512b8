@@ -279,10 +279,16 @@ const Tenants = () => {
             visualiza o impacto financeiro com precisão.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo tenant
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={syncAllTenants} disabled={syncing}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Sincronizando..." : "Sincronizar agora"}
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo tenant
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
