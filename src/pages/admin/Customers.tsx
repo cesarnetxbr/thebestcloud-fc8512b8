@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Search, ArrowLeft, Pencil, Trash2, Users } from "lucide-react";
+import { Plus, Search, ArrowLeft, Pencil, Trash2, Users, Ban, Power } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Customer {
@@ -127,12 +127,23 @@ const Customers = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este cliente?")) return;
+    if (!confirm("Tem certeza que deseja excluir este cliente? Esta ação é irreversível.")) return;
     const { error } = await supabase.from("customers").delete().eq("id", id);
     if (error) {
       toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Cliente excluído" });
+      fetchCustomers();
+    }
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    const { error } = await supabase.from("customers").update({ status: newStatus }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao alterar status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: newStatus === "active" ? "Cliente ativado" : "Cliente desativado" });
       fetchCustomers();
     }
   };
@@ -445,10 +456,18 @@ const Customers = () => {
                     <TableCell className="max-w-[200px] truncate">{buildAddress(c)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleToggleStatus(c.id, c.status || "active")}
+                          title={c.status === "active" ? "Desativar" : "Ativar"}
+                        >
+                          <Power className={`h-4 w-4 ${c.status === "active" ? "text-orange-500" : "text-green-500"}`} />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)} title="Excluir">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
