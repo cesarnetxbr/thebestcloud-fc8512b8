@@ -50,6 +50,177 @@ export type Database = {
         }
         Relationships: []
       }
+      commercial_request_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_name: string
+          notes: string | null
+          quantity: number
+          request_id: string
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_name: string
+          notes?: string | null
+          quantity?: number
+          request_id: string
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_name?: string
+          notes?: string | null
+          quantity?: number
+          request_id?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_request_items_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "commercial_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commercial_request_notes: {
+        Row: {
+          author_id: string
+          author_name: string | null
+          content: string
+          created_at: string
+          id: string
+          request_id: string
+        }
+        Insert: {
+          author_id: string
+          author_name?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          request_id: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_request_notes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "commercial_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commercial_request_tags: {
+        Row: {
+          created_at: string
+          id: string
+          request_id: string
+          tag_color: string | null
+          tag_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_id: string
+          tag_color?: string | null
+          tag_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_id?: string
+          tag_color?: string | null
+          tag_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_request_tags_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "commercial_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commercial_requests: {
+        Row: {
+          assigned_name: string | null
+          assigned_to: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          customer_id: string | null
+          customer_name: string
+          id: string
+          notes: string | null
+          priority: string | null
+          request_number: string
+          stage_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_name?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by: string
+          customer_id?: string | null
+          customer_name: string
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          request_number: string
+          stage_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_name?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          customer_id?: string | null
+          customer_name?: string
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          request_number?: string
+          stage_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_requests_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           api_key: string
@@ -412,6 +583,33 @@ export type Database = {
           },
         ]
       }
+      kanban_stages: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          position: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          position?: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          position?: number
+        }
+        Relationships: []
+      }
       price_table_items: {
         Row: {
           created_at: string
@@ -622,6 +820,140 @@ export type Database = {
           },
         ]
       }
+      ticket_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_internal: boolean | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          message?: string
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assigned_to: string | null
+          category_id: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          customer_id: string | null
+          description: string | null
+          id: string
+          priority: string
+          status: string
+          subject: string
+          ticket_number: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          subject: string
+          ticket_number: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          subject?: string
+          ticket_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -654,7 +986,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "viewer"
+      app_role: "admin" | "manager" | "viewer" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -782,7 +1114,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "viewer"],
+      app_role: ["admin", "manager", "viewer", "client"],
     },
   },
 } as const
