@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
+import ClientLayout from "@/components/client/ClientLayout";
+import ClientProtectedRoute from "@/components/client/ClientProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/admin/Login";
@@ -25,6 +27,8 @@ import Settings from "./pages/admin/Settings";
 import Connections from "./pages/admin/Connections";
 import Tenants from "./pages/admin/Tenants";
 import AuditLogs from "./pages/admin/AuditLogs";
+import Tickets from "./pages/admin/Tickets";
+import CommercialRequests from "./pages/admin/CommercialRequests";
 import FinancialSummary from "./pages/admin/financial/FinancialSummary";
 import CFOPanel from "./pages/admin/financial/CFOPanel";
 import DRECaixa from "./pages/admin/financial/DRECaixa";
@@ -33,6 +37,11 @@ import Expenses from "./pages/admin/financial/Expenses";
 import Commissions from "./pages/admin/financial/Commissions";
 import Automations from "./pages/admin/financial/Automations";
 import FinancialCategories from "./pages/admin/financial/Categories";
+import ClientLogin from "./pages/client/ClientLogin";
+import ClientSignup from "./pages/client/ClientSignup";
+import ClientDashboard from "./pages/client/ClientDashboard";
+import ClientTickets from "./pages/client/ClientTickets";
+import ClientInvoices from "./pages/client/ClientInvoices";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +56,7 @@ const App = () => (
             {/* Landing page pública */}
             <Route path="/" element={<Index />} />
 
-            {/* Auth pages */}
+            {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
             <Route path="/admin/signup" element={<Signup />} />
             <Route path="/admin/forgot-password" element={<ForgotPassword />} />
@@ -75,6 +84,8 @@ const App = () => (
               <Route path="tenants" element={<Tenants />} />
               <Route path="settings" element={<Settings />} />
               <Route path="audit-logs" element={<AuditLogs />} />
+              <Route path="tickets" element={<Tickets />} />
+              <Route path="commercial-requests" element={<CommercialRequests />} />
               <Route path="financial" element={<FinancialSummary />} />
               <Route path="financial/cfo" element={<CFOPanel />} />
               <Route path="financial/dre" element={<DRECaixa />} />
@@ -83,6 +94,22 @@ const App = () => (
               <Route path="financial/comissoes" element={<Commissions />} />
               <Route path="financial/automacoes" element={<Automations />} />
               <Route path="financial/categorias" element={<FinancialCategories />} />
+            </Route>
+
+            {/* Portal do Cliente */}
+            <Route path="/portal/login" element={<ClientLogin />} />
+            <Route path="/portal/signup" element={<ClientSignup />} />
+            <Route
+              path="/portal"
+              element={
+                <ClientProtectedRoute>
+                  <ClientLayout />
+                </ClientProtectedRoute>
+              }
+            >
+              <Route index element={<ClientDashboard />} />
+              <Route path="chamados" element={<ClientTickets />} />
+              <Route path="faturas" element={<ClientInvoices />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

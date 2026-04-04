@@ -27,6 +27,8 @@ import {
   Zap,
   FolderOpen,
   Briefcase,
+  Headphones,
+  Kanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +58,18 @@ const navSections: NavSection[] = [
     title: "CADASTROS",
     items: [
       { label: "Clientes", icon: Users, path: "/admin/customers" },
+    ],
+  },
+  {
+    title: "COMERCIAL",
+    items: [
+      { label: "Solicitações", icon: Kanban, path: "/admin/commercial-requests" },
+    ],
+  },
+  {
+    title: "SUPORTE",
+    items: [
+      { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
     ],
   },
   {
