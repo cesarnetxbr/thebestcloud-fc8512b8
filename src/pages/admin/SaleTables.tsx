@@ -114,8 +114,7 @@ const SaleTables = () => {
   // Create form view
   if (showCreateForm) {
     return (
-      <PriceTableCreateForm
-        type="sale"
+      <SaleTableCreateForm
         onCreated={() => {
           setShowCreateForm(false);
           fetchTables();
