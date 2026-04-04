@@ -109,7 +109,17 @@ const navSections: NavSection[] = [
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedProduct, setExpandedProduct] = useState(true);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (label: string) => {
+    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const isSectionExpanded = (label: string) => {
+    if (expandedSections[label] !== undefined) return expandedSections[label];
+    // Auto-expand if any sub-item is active
+    return true;
+  };
   const { user, signOut } = useAuth();
   const location = useLocation();
 
