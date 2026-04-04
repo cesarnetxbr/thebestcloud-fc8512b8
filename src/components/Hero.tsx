@@ -74,6 +74,17 @@ const Hero = () => {
             </Button>
           </div>
 
+          {/* Portal do Cliente */}
+          <div className="mt-8">
+            <a
+              href="/portal/login"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium border border-white/20 rounded-full px-6 py-2.5 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
+            >
+              <Shield className="h-4 w-4" />
+              Portal do Cliente — Acesse sua área
+            </a>
+          </div>
+
           <p className="mt-6 text-white/70 text-sm">
             ✓ Sem necessidade de cartão de crédito • ✓ Cancele quando quiser • ✓ Suporte 24/7
           </p>
