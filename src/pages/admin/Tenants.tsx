@@ -37,13 +37,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Globe, Search, Home, Link2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink } from "lucide-react";
 
 interface TenantForm {
   name: string;
   external_id: string;
   connection_id: string;
   customer_id: string;
+  sale_table_id: string;
   notes: string;
 }
 
@@ -52,6 +53,7 @@ const emptyForm: TenantForm = {
   external_id: "",
   connection_id: "",
   customer_id: "",
+  sale_table_id: "",
   notes: "",
 };
 
@@ -92,11 +94,11 @@ const Tenants = () => {
   });
 
   const { data: customers } = useQuery({
-    queryKey: ["customers"],
+    queryKey: ["customers-full"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("customers")
-        .select("id, name")
+        .select("id, name, cnpj, email, phone, razao_social, nome_fantasia")
         .order("name");
       if (error) throw error;
       return data;
@@ -126,6 +128,7 @@ const Tenants = () => {
         external_id: form.external_id || null,
         connection_id: form.connection_id || null,
         customer_id: form.customer_id || null,
+        sale_table_id: form.sale_table_id || null,
         notes: form.notes || null,
       };
       if (editingId) {
@@ -147,17 +150,17 @@ const Tenants = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const linkCustomerMutation = useMutation({
-    mutationFn: async ({ tenantId, customerId }: { tenantId: string; customerId: string | null }) => {
+  const linkMutation = useMutation({
+    mutationFn: async ({ tenantId, updates }: { tenantId: string; updates: Record<string, any> }) => {
       const { error } = await supabase
         .from("tenants")
-        .update({ customer_id: customerId })
+        .update(updates)
         .eq("id", tenantId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success("Cliente vinculado com sucesso");
+      toast.success("Tenant atualizado com sucesso");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -189,6 +192,7 @@ const Tenants = () => {
       external_id: tenant.external_id || "",
       connection_id: tenant.connection_id || "",
       customer_id: tenant.customer_id || "",
+      sale_table_id: tenant.sale_table_id || "",
       notes: tenant.notes || "",
     });
     setDialogOpen(true);
@@ -209,7 +213,7 @@ const Tenants = () => {
     setDetailOpen(true);
   };
 
-  // Filter by connection (from URL param) and search
+  // Filter
   let filtered = tenants;
   if (connectionFilter) {
     filtered = filtered?.filter((t) => t.connection_id === connectionFilter);
@@ -220,15 +224,24 @@ const Tenants = () => {
     );
   }
 
+  const getCustomer = (customerId: string | null) =>
+    customers?.find((c) => c.id === customerId);
+
   const getCustomerName = (customerId: string | null) =>
-    customers?.find((c) => c.id === customerId)?.name || "-";
+    getCustomer(customerId)?.name || "-";
 
   const getConnectionName = (connectionId: string | null) =>
     connections?.find((c) => c.id === connectionId)?.name || "-";
 
+  const getSaleTableName = (saleTableId: string | null) =>
+    saleTables?.find((s) => s.id === saleTableId)?.name || "-";
+
   const connectionName = connectionFilter
     ? getConnectionName(connectionFilter)
     : null;
+
+  const selectedCustomer = selectedTenant ? getCustomer(selectedTenant.customer_id) : null;
+  const isConnected = selectedTenant?.customer_id != null;
 
   return (
     <div className="space-y-6">
@@ -330,13 +343,14 @@ const Tenants = () => {
                     <TableCell>
                       {getCustomerName(tenant.customer_id)}
                     </TableCell>
-                    <TableCell>-</TableCell>
+                    <TableCell>
+                      {getSaleTableName(tenant.sale_table_id)}
+                    </TableCell>
                     <TableCell>
                       {tenant.customer_id ? (
-                        <Badge
-                          variant={tenant.status === "active" ? "default" : "secondary"}
-                        >
-                          {tenant.status === "active" ? "Ativo" : "Inativo"}
+                        <Badge className="gap-1 bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30">
+                          <LinkIcon className="h-3 w-3" />
+                          Conectado
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="gap-1">
@@ -377,7 +391,7 @@ const Tenants = () => {
 
               <Separator />
 
-              {/* Info fields */}
+              {/* Tenant Info */}
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">ID do Tenant</p>
@@ -408,18 +422,77 @@ const Tenants = () => {
 
               <Separator />
 
+              {/* Connection Status Banner */}
+              {isConnected ? (
+                <div className="flex items-center justify-between rounded-lg bg-green-600/10 border border-green-600/30 p-3">
+                  <div className="flex items-center gap-2 text-green-400">
+                    <LinkIcon className="h-4 w-4" />
+                    <span className="text-sm font-semibold">Cliente Conectado</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    onClick={() => {
+                      linkMutation.mutate({
+                        tenantId: selectedTenant.id,
+                        updates: { customer_id: null },
+                      });
+                      setSelectedTenant({ ...selectedTenant, customer_id: null });
+                    }}
+                    title="Desvincular cliente"
+                  >
+                    <Unlink className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded-lg bg-muted/50 border border-border p-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Link2 className="h-4 w-4" />
+                    <span className="text-sm font-semibold">Sem Cliente Conectado</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Customer Info (when connected) */}
+              {isConnected && selectedCustomer && (
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Nome do Cliente</p>
+                      <p className="text-sm font-semibold">{selectedCustomer.razao_social || selectedCustomer.name}</p>
+                    </div>
+                    {selectedCustomer.cnpj && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">CNPJ</p>
+                        <p className="text-sm">{selectedCustomer.cnpj}</p>
+                      </div>
+                    )}
+                    {selectedCustomer.email && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">E-mail</p>
+                        <p className="text-sm">{selectedCustomer.email}</p>
+                      </div>
+                    )}
+                    {selectedCustomer.phone && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Telefone</p>
+                        <p className="text-sm">{selectedCustomer.phone}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Connect Customer */}
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold">Conectar Cliente</h4>
-                <p className="text-xs text-muted-foreground">
-                  Selecione um cliente para vincular a este tenant Acronis:
-                </p>
                 <Select
                   value={selectedTenant.customer_id || ""}
                   onValueChange={(v) => {
-                    linkCustomerMutation.mutate({
+                    linkMutation.mutate({
                       tenantId: selectedTenant.id,
-                      customerId: v || null,
+                      updates: { customer_id: v || null },
                     });
                     setSelectedTenant({ ...selectedTenant, customer_id: v });
                   }}
@@ -435,6 +508,45 @@ const Tenants = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <Separator />
+
+              {/* Sale Table Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold">Conexões Ativas</h4>
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Tabela de Preço</p>
+                      <Select
+                        value={selectedTenant.sale_table_id || ""}
+                        onValueChange={(v) => {
+                          linkMutation.mutate({
+                            tenantId: selectedTenant.id,
+                            updates: { sale_table_id: v || null },
+                          });
+                          setSelectedTenant({ ...selectedTenant, sale_table_id: v });
+                        }}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Selecione uma tabela de venda..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {saleTables?.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Produto</p>
+                      <p className="text-sm">Acronis</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               <Separator />
@@ -523,6 +635,24 @@ const Tenants = () => {
                   {customers?.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Tabela de venda</Label>
+              <Select
+                value={form.sale_table_id}
+                onValueChange={(v) => setForm({ ...form, sale_table_id: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Vincular tabela de venda (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {saleTables?.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
