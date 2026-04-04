@@ -66,7 +66,9 @@ const navSections: NavSection[] = [
       items: [
         { label: "Conexões", icon: Link2, path: "/admin/connections" },
         { label: "Tenants", icon: Globe, path: "/admin/tenants" },
-        { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
+        { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard" },
+        { label: "Custo", icon: Tag, path: "/admin/invoices/custo" },
+        { label: "Venda", icon: ShoppingCart, path: "/admin/invoices/venda" },
       ],
     },
   },
@@ -172,15 +174,16 @@ const AdminLayout = () => {
                       {expandedProduct && (
                         <div className="ml-4 mt-1 space-y-1">
                           {exp.items.map((item) => {
-                            const SubIcon = item.icon;
                             const active = isActive(item.path);
+                            const isSubItem = item.label === "Custo" || item.label === "Venda";
                             return (
                               <Link
                                 key={item.path}
                                 to={item.path}
                                 onClick={() => setSidebarOpen(false)}
                                 className={cn(
-                                  "flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-colors",
+                                  "flex items-center gap-3 rounded-lg text-sm transition-colors",
+                                  isSubItem ? "px-8 py-1.5" : "px-4 py-2",
                                   active
                                     ? "text-primary-foreground font-medium"
                                     : "text-primary-foreground/60 hover:text-primary-foreground"

@@ -16,6 +16,9 @@ import Dashboard from "./pages/admin/Dashboard";
 import Customers from "./pages/admin/Customers";
 import Skus from "./pages/admin/Skus";
 import Invoices from "./pages/admin/Invoices";
+import InvoiceDashboard from "./pages/admin/InvoiceDashboard";
+import InvoiceCost from "./pages/admin/InvoiceCost";
+import InvoiceSale from "./pages/admin/InvoiceSale";
 import CostTables from "./pages/admin/CostTables";
 import SaleTables from "./pages/admin/SaleTables";
 import Settings from "./pages/admin/Settings";
@@ -55,6 +58,9 @@ const App = () => (
               <Route path="customers" element={<Customers />} />
               <Route path="skus" element={<Skus />} />
               <Route path="invoices" element={<Invoices />} />
+              <Route path="invoices/dashboard" element={<InvoiceDashboard />} />
+              <Route path="invoices/custo" element={<InvoiceCost />} />
+              <Route path="invoices/venda" element={<InvoiceSale />} />
               <Route path="cost-tables" element={<CostTables />} />
               <Route path="sale-tables" element={<SaleTables />} />
               <Route path="connections" element={<Connections />} />
