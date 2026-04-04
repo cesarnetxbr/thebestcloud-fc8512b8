@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil } from "lucide-react";
+import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil, Ban, Trash2, Power } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
