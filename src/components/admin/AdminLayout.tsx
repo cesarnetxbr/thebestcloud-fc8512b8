@@ -19,6 +19,14 @@ import {
   Link2,
   Globe,
   ClipboardList,
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Zap,
+  FolderOpen,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
