@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Plus, Search, ShoppingCart, ArrowLeft, Trash2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import PriceTableCreateForm from "@/components/admin/PriceTableCreateForm";
+import SaleTableCreateForm from "@/components/admin/SaleTableCreateForm";
 
 interface PriceTable {
   id: string;
@@ -114,8 +114,7 @@ const SaleTables = () => {
   // Create form view
   if (showCreateForm) {
     return (
-      <PriceTableCreateForm
-        type="sale"
+      <SaleTableCreateForm
         onCreated={() => {
           setShowCreateForm(false);
           fetchTables();
