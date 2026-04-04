@@ -113,6 +113,7 @@ const App = () => (
               <Route index element={<ClientDashboard />} />
               <Route path="chamados" element={<ClientTickets />} />
               <Route path="faturas" element={<ClientInvoices />} />
+              <Route path="servicos" element={<ClientServices />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
