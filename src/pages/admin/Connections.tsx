@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Link2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ConnectionForm {
   name: string;
