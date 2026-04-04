@@ -100,7 +100,7 @@ const Connections = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Sincronização concluída: ${data.synced} tenants sincronizados`);
+      toast.success(`Sincronização concluída: ${data.synced} clientes sincronizados (${data.skipped_non_customers || 0} usuários ignorados)`);
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
     } catch (e: any) {
       toast.error(`Erro na sincronização: ${e.message}`);

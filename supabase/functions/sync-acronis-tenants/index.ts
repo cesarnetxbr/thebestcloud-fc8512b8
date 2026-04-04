@@ -135,11 +135,15 @@ Deno.serve(async (req) => {
     }
 
     const tenantsData = await tenantsResponse.json();
-    const acronisTenants: AcronisTenant[] = tenantsData.items || [];
+    const allTenants: AcronisTenant[] = tenantsData.items || [];
+
+    // Filter only "customer" kind tenants — skip users, units, partners, etc.
+    const acronisTenants = allTenants.filter((t) => t.kind === "customer");
 
     // Step 3: Upsert tenants into our database
     let synced = 0;
     let errors = 0;
+    let skipped = allTenants.length - acronisTenants.length;
 
     for (const at of acronisTenants) {
       // Check if tenant already exists by external_id
@@ -179,7 +183,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        total_found: acronisTenants.length,
+        total_found: allTenants.length,
+        customers_only: acronisTenants.length,
+        skipped_non_customers: skipped,
         synced,
         errors,
       }),
