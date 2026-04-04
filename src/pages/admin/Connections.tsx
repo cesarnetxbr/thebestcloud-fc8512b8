@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Link2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ConnectionForm {
   name: string;
@@ -38,6 +39,7 @@ const emptyForm: ConnectionForm = {
 };
 
 const Connections = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -158,7 +160,12 @@ const Connections = () => {
               <TableBody>
                 {connections.map((conn) => (
                   <TableRow key={conn.id}>
-                    <TableCell className="font-medium">{conn.name}</TableCell>
+                    <TableCell
+                      className="font-medium cursor-pointer hover:underline text-primary"
+                      onClick={() => navigate(`/admin/tenants?connection=${conn.id}`)}
+                    >
+                      {conn.name}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {conn.datacenter_url}
                     </TableCell>

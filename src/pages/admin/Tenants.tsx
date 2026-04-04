@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,10 +27,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Globe, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Search, Home, Link2 } from "lucide-react";
 
 interface TenantForm {
   name: string;
@@ -49,10 +57,15 @@ const emptyForm: TenantForm = {
 
 const Tenants = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const connectionFilter = searchParams.get("connection") || "";
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<TenantForm>(emptyForm);
   const [search, setSearch] = useState("");
+  const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
@@ -90,6 +103,19 @@ const Tenants = () => {
     },
   });
 
+  const { data: saleTables } = useQuery({
+    queryKey: ["sale-tables"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("price_tables")
+        .select("id, name")
+        .eq("type", "sale")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const linkedCount = tenants?.filter((t) => t.customer_id).length || 0;
   const totalCount = tenants?.length || 0;
 
@@ -121,6 +147,21 @@ const Tenants = () => {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const linkCustomerMutation = useMutation({
+    mutationFn: async ({ tenantId, customerId }: { tenantId: string; customerId: string | null }) => {
+      const { error } = await supabase
+        .from("tenants")
+        .update({ customer_id: customerId })
+        .eq("id", tenantId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      toast.success("Cliente vinculado com sucesso");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("tenants").delete().eq("id", id);
@@ -129,6 +170,8 @@ const Tenants = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
       toast.success("Tenant excluído");
+      setDetailOpen(false);
+      setSelectedTenant(null);
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -149,6 +192,7 @@ const Tenants = () => {
       notes: tenant.notes || "",
     });
     setDialogOpen(true);
+    setDetailOpen(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -160,15 +204,31 @@ const Tenants = () => {
     saveMutation.mutate();
   };
 
-  const filtered = tenants?.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const openDetail = (tenant: any) => {
+    setSelectedTenant(tenant);
+    setDetailOpen(true);
+  };
+
+  // Filter by connection (from URL param) and search
+  let filtered = tenants;
+  if (connectionFilter) {
+    filtered = filtered?.filter((t) => t.connection_id === connectionFilter);
+  }
+  if (search) {
+    filtered = filtered?.filter((t) =>
+      t.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }
 
   const getCustomerName = (customerId: string | null) =>
-    customers?.find((c) => c.id === customerId)?.name || "—";
+    customers?.find((c) => c.id === customerId)?.name || "-";
 
   const getConnectionName = (connectionId: string | null) =>
-    connections?.find((c) => c.id === connectionId)?.name || "—";
+    connections?.find((c) => c.id === connectionId)?.name || "-";
+
+  const connectionName = connectionFilter
+    ? getConnectionName(connectionFilter)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -229,6 +289,14 @@ const Tenants = () => {
         </CardContent>
       </Card>
 
+      {/* Connection section header */}
+      {connectionName && (
+        <div>
+          <h3 className="text-lg font-bold">{connectionName}</h3>
+          <Separator className="mt-2 bg-primary h-0.5" />
+        </div>
+      )}
+
       {/* List */}
       {isLoading ? (
         <p className="text-muted-foreground">Carregando...</p>
@@ -238,59 +306,44 @@ const Tenants = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>ID Externo</TableHead>
-                  <TableHead>Conexão</TableHead>
-                  <TableHead>Cliente vinculado</TableHead>
+                  <TableHead>Nome do tenant</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Nome do cliente</TableHead>
+                  <TableHead>Tabela de venda</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-24">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((tenant) => (
-                  <TableRow key={tenant.id}>
+                  <TableRow
+                    key={tenant.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => openDetail(tenant)}
+                  >
                     <TableCell className="font-medium">{tenant.name}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {tenant.external_id || "—"}
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Home className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Cliente</span>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      {getConnectionName(tenant.connection_id)}
+                      {getCustomerName(tenant.customer_id)}
                     </TableCell>
+                    <TableCell>-</TableCell>
                     <TableCell>
                       {tenant.customer_id ? (
-                        <Badge variant="default">
-                          {getCustomerName(tenant.customer_id)}
+                        <Badge
+                          variant={tenant.status === "active" ? "default" : "secondary"}
+                        >
+                          {tenant.status === "active" ? "Ativo" : "Inativo"}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">Não vinculado</span>
+                        <Badge variant="outline" className="gap-1">
+                          <Link2 className="h-3 w-3" />
+                          Sem Conexão
+                        </Badge>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          tenant.status === "active" ? "default" : "secondary"
-                        }
-                      >
-                        {tenant.status === "active" ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEdit(tenant)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteMutation.mutate(tenant.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -306,7 +359,113 @@ const Tenants = () => {
         </Card>
       )}
 
-      {/* Dialog */}
+      {/* Detail sidebar */}
+      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+        <SheetContent className="sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Detalhes do Tenant</SheetTitle>
+          </SheetHeader>
+          {selectedTenant && (
+            <div className="mt-6 space-y-6">
+              {/* Avatar + Name */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary">
+                  {selectedTenant.name.charAt(0).toUpperCase()}
+                </div>
+                <h3 className="text-xl font-bold">{selectedTenant.name}</h3>
+              </div>
+
+              <Separator />
+
+              {/* Info fields */}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">ID do Tenant</p>
+                  <p className="text-sm font-mono break-all">{selectedTenant.external_id || selectedTenant.id}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Tipo</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Home className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Cliente</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Conexão</p>
+                  <p className="text-sm">{getConnectionName(selectedTenant.connection_id)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <p className="text-sm">{selectedTenant.status === "active" ? "Ativo" : "Inativo"}</p>
+                </div>
+                {selectedTenant.notes && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Observações</p>
+                    <p className="text-sm">{selectedTenant.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Connect Customer */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold">Conectar Cliente</h4>
+                <p className="text-xs text-muted-foreground">
+                  Selecione um cliente para vincular a este tenant Acronis:
+                </p>
+                <Select
+                  value={selectedTenant.customer_id || ""}
+                  onValueChange={(v) => {
+                    linkCustomerMutation.mutate({
+                      tenantId: selectedTenant.id,
+                      customerId: v || null,
+                    });
+                    setSelectedTenant({ ...selectedTenant, customer_id: v });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pesquise por um cliente..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers?.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openEdit(selectedTenant)}
+                  className="flex-1"
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => deleteMutation.mutate(selectedTenant.id)}
+                  className="flex-1"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir
+                </Button>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(o) => !o && closeDialog()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
