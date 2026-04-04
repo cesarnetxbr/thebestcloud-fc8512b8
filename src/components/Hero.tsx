@@ -47,8 +47,8 @@ const Hero = () => {
             <div className="relative">
               <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl" />
               <img
-                src={dashboardPreview}
-                alt="Plataforma de Cyber Proteção"
+                src={cyberProtectCloud}
+                alt="Cyber Protect Cloud"
                 className="relative rounded-xl shadow-strong border border-primary-foreground/10 w-full"
               />
             </div>
