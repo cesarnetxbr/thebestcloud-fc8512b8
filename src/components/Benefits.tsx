@@ -1,7 +1,29 @@
 import { Briefcase, TrendingUp, Headphones, GraduationCap, BarChart3, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
 
-const benefits = [
+const advantages = [
+  {
+    id: "complexidade",
+    label: "Sem complexidade",
+    title: "Reduza a complexidade",
+    description: "Se você é como outras empresas, provavelmente usa um conjunto complexo de soluções para se defender contra a perda de dados e outras ameaças cibernéticas. As soluções de proteção cibernética integradas protegem cargas de trabalho inteiras com maior eficiência e uma fração da complexidade, liberando recursos e permitindo que você se concentre na proteção.",
+  },
+  {
+    id: "gestao",
+    label: "Gestão simples",
+    title: "Simplifique a gestão",
+    description: "Proteja cargas de trabalho inteiras sem atrito. Começar com as soluções de proteção cibernética é muito simples. Provisione vários sistemas com apenas um clique e gerencie tudo, desde políticas de backup à avaliações de vulnerabilidade e correção, por meio de um único painel.",
+  },
+  {
+    id: "protecao",
+    label: "Proteção completa",
+    title: "Proteção completa",
+    description: "Detecte e bloqueie ciberameaças sem nenhum esforço, mesmo aquelas nunca vistas antes. A ferramenta comportamental baseada em IA identifica os processos maliciosos nos quais o malware depende, oferecendo a melhor proteção com menos falsos positivos e uma taxa de detecção comprovada.",
+  },
+];
+
+const partnerBenefits = [
   {
     icon: Briefcase,
     title: "Modelo Comercial Simplificado",
@@ -15,7 +37,7 @@ const benefits = [
   {
     icon: Headphones,
     title: "Suporte em PT-BR",
-    description: "Suporte técnico e comercial total para sua revenda, em português.",
+    description: "Suporte técnico e comercial total para sua empresa, em português.",
   },
   {
     icon: TrendingUp,
@@ -34,38 +56,56 @@ const benefits = [
   },
 ];
 
-const stats = [
-  { value: "350+", label: "Revendedores parceiros" },
-  { value: "#1", label: "Maior revendedor LATAM" },
-  { value: "24/7", label: "Suporte especializado" },
-  { value: "100%", label: "Em português" },
-];
-
 const Benefits = () => {
+  const [activeAdvantage, setActiveAdvantage] = useState("complexidade");
+  const current = advantages.find((a) => a.id === activeAdvantage)!;
+
   return (
     <section id="vantagens" className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20 max-w-4xl mx-auto">
-          {stats.map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-
+        {/* Vantagens tabs */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            Vantagens de ser um revendedor
+            Vantagens de ser um cliente The Best Cloud
+          </h2>
+        </div>
+
+        <div className="max-w-4xl mx-auto mb-20">
+          <div className="flex justify-center gap-2 mb-8">
+            {advantages.map((adv) => (
+              <button
+                key={adv.id}
+                onClick={() => setActiveAdvantage(adv.id)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                  activeAdvantage === adv.id
+                    ? "bg-primary text-primary-foreground shadow-medium"
+                    : "bg-secondary text-muted-foreground hover:bg-primary/5 border border-border"
+                }`}
+              >
+                {adv.label}
+              </button>
+            ))}
+          </div>
+          <Card className="border border-border shadow-soft bg-background">
+            <CardContent className="p-8">
+              <h3 className="text-xl font-bold mb-4 text-foreground">{current.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{current.description}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Partner program */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+            The Best Cloud Partner Program
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Entenda o que faz nosso modelo perfeito para sua empresa.
+            Somos o maior revendedor da América Latina, com mais de 350 parceiros de sucesso. Entenda o que faz nosso modelo perfeito para sua empresa.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {benefits.map((benefit, index) => {
+          {partnerBenefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
               <Card key={index} className="border border-border shadow-soft hover:shadow-medium transition-all duration-300 bg-background">
