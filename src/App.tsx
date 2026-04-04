@@ -43,6 +43,7 @@ import ClientSignup from "./pages/client/ClientSignup";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientTickets from "./pages/client/ClientTickets";
 import ClientInvoices from "./pages/client/ClientInvoices";
+import ClientServices from "./pages/client/ClientServices";
 
 const queryClient = new QueryClient();
 
