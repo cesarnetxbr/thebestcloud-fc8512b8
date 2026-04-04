@@ -1,79 +1,84 @@
-import { CheckCircle2 } from "lucide-react";
+import { Briefcase, TrendingUp, Headphones, GraduationCap, BarChart3, Palette } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 const benefits = [
   {
-    title: "Escritórios Contábeis e Advocatícios",
-    description: "Proteja documentos sensíveis e cumpra obrigações legais com backups automáticos e imutáveis.",
+    icon: Briefcase,
+    title: "Modelo Comercial Simplificado",
+    description: "Comece de forma rápida e fácil, sem fidelidade e sem faturamento mínimo.",
   },
   {
-    title: "Clínicas e Consultórios Médicos",
-    description: "Mantenha prontuários e dados de pacientes seguros conforme exigências da LGPD e regulamentações de saúde.",
+    icon: Palette,
+    title: "Política Comercial Própria",
+    description: "Liberdade para implantar sua política comercial na plataforma Whitelabel.",
   },
   {
-    title: "Construtoras e Engenharias",
-    description: "Preserve projetos, plantas e documentação técnica com versões múltiplas e recuperação rápida.",
+    icon: Headphones,
+    title: "Suporte em PT-BR",
+    description: "Suporte técnico e comercial total para sua revenda, em português.",
   },
   {
-    title: "Comércios e PMEs",
-    description: "Evite prejuízos por perda de dados financeiros, cadastros de clientes e histórico de vendas.",
+    icon: TrendingUp,
+    title: "Treinamento Comercial",
+    description: "Técnicas e materiais de venda prontos para você performar rapidamente.",
   },
+  {
+    icon: GraduationCap,
+    title: "Treinamento Técnico",
+    description: "Vídeo aulas, material de apoio e suporte do nosso time de especialistas.",
+  },
+  {
+    icon: BarChart3,
+    title: "Painel de Controle Exclusivo",
+    description: "Acompanhe em tempo real os indicadores de uso e evolução de seus clientes.",
+  },
+];
+
+const stats = [
+  { value: "350+", label: "Revendedores parceiros" },
+  { value: "#1", label: "Maior revendedor LATAM" },
+  { value: "24/7", label: "Suporte especializado" },
+  { value: "100%", label: "Em português" },
 ];
 
 const Benefits = () => {
   return (
-    <section id="benefits" className="py-24 bg-background">
+    <section id="vantagens" className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left side - Text content */}
-            <div className="animate-slide-in">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                Por Que Empresas Confiam no BestBackup Cloud?
-              </h2>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                A maioria das PMEs só descobre o valor do backup depois da primeira perda de dados. 
-                Não deixe isso acontecer com você.
-              </p>
+        {/* Stats bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20 max-w-4xl mx-auto">
+          {stats.map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </div>
 
-              <div className="space-y-6">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="flex-shrink-0 mt-1">
-                      <CheckCircle2 className="h-6 w-6 text-accent" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold mb-2 text-foreground">
-                        {benefit.title}
-                      </h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {benefit.description}
-                      </p>
-                    </div>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+            Vantagens de ser um revendedor
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Entenda o que faz nosso modelo perfeito para sua empresa.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {benefits.map((benefit, index) => {
+            const Icon = benefit.icon;
+            return (
+              <Card key={index} className="border border-border shadow-soft hover:shadow-medium transition-all duration-300 bg-background">
+                <CardContent className="p-6">
+                  <div className="mb-4 w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <Icon className="h-6 w-6 text-accent" />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right side - Stats */}
-            <div className="grid grid-cols-2 gap-6 animate-fade-in">
-              <div className="bg-gradient-card border border-border rounded-2xl p-8 shadow-medium">
-                <div className="text-5xl font-bold text-primary mb-2">99.9%</div>
-                <div className="text-muted-foreground">Disponibilidade Garantida</div>
-              </div>
-              <div className="bg-gradient-card border border-border rounded-2xl p-8 shadow-medium">
-                <div className="text-5xl font-bold text-primary mb-2">&lt;15min</div>
-                <div className="text-muted-foreground">Tempo de Recuperação</div>
-              </div>
-              <div className="bg-gradient-card border border-border rounded-2xl p-8 shadow-medium">
-                <div className="text-5xl font-bold text-primary mb-2">24/7</div>
-                <div className="text-muted-foreground">Suporte Especializado</div>
-              </div>
-              <div className="bg-gradient-card border border-border rounded-2xl p-8 shadow-medium">
-                <div className="text-5xl font-bold text-primary mb-2">100%</div>
-                <div className="text-muted-foreground">LGPD Compliance</div>
-              </div>
-            </div>
-          </div>
+                  <h3 className="text-base font-bold mb-2 text-foreground">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>
