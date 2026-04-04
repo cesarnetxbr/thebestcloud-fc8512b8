@@ -87,6 +87,7 @@ const App = () => (
               <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="tickets" element={<Tickets />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
+              <Route path="users" element={<UsersPage />} />
               <Route path="financial" element={<FinancialSummary />} />
               <Route path="financial/cfo" element={<CFOPanel />} />
               <Route path="financial/dre" element={<DRECaixa />} />
