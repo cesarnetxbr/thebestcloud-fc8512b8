@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil, Ban, Trash2, Power } from "lucide-react";
+import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil, Trash2, Power } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -92,7 +92,6 @@ const Users_Page = () => {
     }
     setCreating(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke("create-user", {
         body: { email: newUser.email, password: newUser.password, full_name: newUser.full_name, role: newUser.role },
       });
@@ -112,6 +111,22 @@ const Users_Page = () => {
       toast({ title: "Erro ao criar usuário", description: err.message, variant: "destructive" });
     }
     setCreating(false);
+  };
+
+  const handleManageUser = async (userId: string, action: "deactivate" | "activate" | "delete") => {
+    const actionLabels = { deactivate: "desativar", activate: "ativar", delete: "excluir permanentemente" };
+    if (!confirm(`Tem certeza que deseja ${actionLabels[action]} este usuário?`)) return;
+
+    const { data, error } = await supabase.functions.invoke("admin-manage-user", {
+      body: { action, user_id: userId },
+    });
+    const errorMsg = data?.error || error?.message;
+    if (errorMsg) {
+      toast({ title: "Erro", description: errorMsg, variant: "destructive" });
+    } else {
+      toast({ title: data?.message || "Ação realizada com sucesso" });
+      fetchUsers();
+    }
   };
 
   const fetchUsers = async () => {
@@ -294,6 +309,7 @@ const Users_Page = () => {
                 <TableRow>
                   <TableHead>Usuário</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Último Login</TableHead>
                   <TableHead>Cadastrado em</TableHead>
                   <TableHead>Ações</TableHead>
@@ -301,7 +317,7 @@ const Users_Page = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map((u) => (
-                  <TableRow key={u.user_id}>
+                  <TableRow key={u.user_id} className={!u.is_active ? "opacity-60" : ""}>
                     <TableCell>
                       <div>
                         <p className="font-medium">{u.full_name || "Sem nome"}</p>
@@ -321,6 +337,11 @@ const Users_Page = () => {
                       </Select>
                     </TableCell>
                     <TableCell>
+                      <Badge variant="secondary" className={u.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                        {u.is_active ? "Ativo" : "Inativo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
                         {formatDate(u.last_login_at)}
@@ -337,8 +358,20 @@ const Users_Page = () => {
                         <Button variant="outline" size="sm" onClick={() => setDetailUser(u)} title="Detalhes">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => openPermissions(u)}>
-                          <Settings2 className="h-4 w-4 mr-1" /> Permissões
+                        <Button variant="outline" size="sm" onClick={() => openPermissions(u)} title="Permissões">
+                          <Settings2 className="h-4 w-4" />
+                        </Button>
+                        {u.is_active ? (
+                          <Button variant="outline" size="sm" onClick={() => handleManageUser(u.user_id, "deactivate")} title="Desativar">
+                            <Power className="h-4 w-4 text-orange-500" />
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" onClick={() => handleManageUser(u.user_id, "activate")} title="Ativar">
+                            <Power className="h-4 w-4 text-green-500" />
+                          </Button>
+                        )}
+                        <Button variant="outline" size="sm" onClick={() => handleManageUser(u.user_id, "delete")} title="Excluir">
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
@@ -365,7 +398,12 @@ const Users_Page = () => {
                 <div>
                   <p className="font-semibold">{detailUser.full_name || "Sem nome"}</p>
                   <p className="text-sm text-muted-foreground">{detailUser.email || `${detailUser.user_id.slice(0, 8)}...`}</p>
-                  <Badge className={ROLE_COLORS[detailUser.role]}>{ROLE_LABELS[detailUser.role]}</Badge>
+                  <div className="flex gap-2 mt-1">
+                    <Badge className={ROLE_COLORS[detailUser.role]}>{ROLE_LABELS[detailUser.role]}</Badge>
+                    <Badge variant="secondary" className={detailUser.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                      {detailUser.is_active ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </div>
                 </div>
               </div>
 
