@@ -76,6 +76,38 @@ const Users_Page = () => {
   const [presets, setPresets] = useState<any[]>([]);
   const [permDialogOpen, setPermDialogOpen] = useState(false);
   const [detailUser, setDetailUser] = useState<UserWithRole | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" });
+
+  const handleCreateUser = async () => {
+    if (!newUser.email || !newUser.password) {
+      toast({ title: "Email e senha são obrigatórios", variant: "destructive" });
+      return;
+    }
+    if (newUser.password.length < 6) {
+      toast({ title: "A senha deve ter pelo menos 6 caracteres", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("create-user", {
+        body: { email: newUser.email, password: newUser.password, full_name: newUser.full_name, role: newUser.role },
+      });
+      if (res.error || res.data?.error) {
+        toast({ title: "Erro ao criar usuário", description: res.data?.error || res.error?.message, variant: "destructive" });
+      } else {
+        toast({ title: "Usuário criado com sucesso" });
+        setCreateDialogOpen(false);
+        setNewUser({ email: "", password: "", full_name: "", role: "viewer" });
+        fetchUsers();
+      }
+    } catch (err: any) {
+      toast({ title: "Erro ao criar usuário", description: err.message, variant: "destructive" });
+    }
+    setCreating(false);
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
