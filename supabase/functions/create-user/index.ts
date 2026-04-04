@@ -61,7 +61,10 @@ Deno.serve(async (req) => {
 
     if (createError) {
       console.error("Create user error:", createError);
-      return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const msg = createError.message?.includes("already been registered")
+        ? "Este email já está cadastrado no sistema"
+        : createError.message;
+      return new Response(JSON.stringify({ error: msg }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Assign role

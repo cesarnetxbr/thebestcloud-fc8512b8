@@ -92,11 +92,15 @@ const Users_Page = () => {
     setCreating(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const res = await supabase.functions.invoke("create-user", {
+      const { data, error } = await supabase.functions.invoke("create-user", {
         body: { email: newUser.email, password: newUser.password, full_name: newUser.full_name, role: newUser.role },
       });
-      if (res.error || res.data?.error) {
-        toast({ title: "Erro ao criar usuário", description: res.data?.error || res.error?.message, variant: "destructive" });
+      const errorMsg = data?.error || error?.message;
+      if (errorMsg) {
+        const friendlyMsg = errorMsg.includes("already been registered") || errorMsg.includes("email_exists")
+          ? "Este email já está cadastrado no sistema"
+          : errorMsg;
+        toast({ title: "Erro ao criar usuário", description: friendlyMsg, variant: "destructive" });
       } else {
         toast({ title: "Usuário criado com sucesso" });
         setCreateDialogOpen(false);
