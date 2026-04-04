@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -13,19 +13,36 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const authHeader = req.headers.get("Authorization")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authHeader = req.headers.get("Authorization");
 
-    // Verify caller is admin
-    const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user: caller } } = await callerClient.auth.getUser();
-    if (!caller) {
+    if (!authHeader) {
       return new Response(JSON.stringify({ error: "Não autenticado" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { data: isAdmin } = await callerClient.rpc("has_role", { _user_id: caller.id, _role: "admin" });
-    if (!isAdmin) {
+    // Verify caller is admin using service role to bypass RLS
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    
+    // Get the caller's user from the JWT
+    const callerClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user: caller }, error: authError } = await callerClient.auth.getUser();
+    
+    if (authError || !caller) {
+      console.error("Auth error:", authError);
+      return new Response(JSON.stringify({ error: "Não autenticado" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Check admin role using service role client (bypasses RLS)
+    const { data: roleData } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", caller.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!roleData) {
       return new Response(JSON.stringify({ error: "Apenas administradores podem criar usuários" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -33,8 +50,6 @@ Deno.serve(async (req) => {
     if (!email || !password || !role) {
       return new Response(JSON.stringify({ error: "Email, senha e role são obrigatórios" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     // Create user via admin API
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
@@ -45,11 +60,12 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
+      console.error("Create user error:", createError);
       return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Assign role
-    const { error: roleError } = await adminClient.from("user_roles").insert({
+    await adminClient.from("user_roles").insert({
       user_id: newUser.user.id,
       role,
     });
@@ -64,6 +80,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("Unexpected error:", err);
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
