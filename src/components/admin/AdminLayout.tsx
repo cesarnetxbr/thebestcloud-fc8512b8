@@ -66,7 +66,9 @@ const navSections: NavSection[] = [
       items: [
         { label: "Conexões", icon: Link2, path: "/admin/connections" },
         { label: "Tenants", icon: Globe, path: "/admin/tenants" },
-        { label: "Faturamento", icon: FileText, path: "/admin/invoices" },
+        { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard" },
+        { label: "Custo", icon: Tag, path: "/admin/invoices/custo" },
+        { label: "Venda", icon: ShoppingCart, path: "/admin/invoices/venda" },
       ],
     },
   },
