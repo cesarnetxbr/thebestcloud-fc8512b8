@@ -23,6 +23,8 @@ const statusColors: Record<string, string> = {
   cancelado: "bg-gray-100 text-gray-500",
 };
 
+const emptyForm = { description: "", amount: "", date: "", due_date: "", category_id: "", customer_id: "", status: "pendente", notes: "" };
+
 const Revenues = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -30,7 +32,8 @@ const Revenues = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ description: "", amount: "", date: "", due_date: "", category_id: "", customer_id: "", status: "pendente", notes: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const fetchData = async () => {
     const [{ data: txns }, { data: cats }, { data: custs }] = await Promise.all([
@@ -46,10 +49,31 @@ const Revenues = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (r: any) => {
+    setEditingId(r.id);
+    setForm({
+      description: r.description,
+      amount: String(r.amount),
+      date: r.date || "",
+      due_date: r.due_date || "",
+      category_id: r.category_id || "",
+      customer_id: r.customer_id || "",
+      status: r.status,
+      notes: r.notes || "",
+    });
+    setDialogOpen(true);
+  };
+
   const handleSubmit = async () => {
     if (!form.description || !form.amount) { toast.error("Preencha descrição e valor"); return; }
-    const { error } = await supabase.from("financial_transactions").insert({
-      type: "receita",
+    const payload = {
+      type: "receita" as const,
       description: form.description,
       amount: parseFloat(form.amount),
       date: form.date || new Date().toISOString().split("T")[0],
@@ -58,11 +82,17 @@ const Revenues = () => {
       customer_id: form.customer_id || null,
       status: form.status,
       notes: form.notes || null,
-    });
+    };
+
+    const { error } = editingId
+      ? await supabase.from("financial_transactions").update(payload).eq("id", editingId)
+      : await supabase.from("financial_transactions").insert(payload);
+
     if (error) { toast.error("Erro ao salvar"); return; }
-    toast.success("Receita adicionada!");
+    toast.success(editingId ? "Receita atualizada!" : "Receita adicionada!");
     setDialogOpen(false);
-    setForm({ description: "", amount: "", date: "", due_date: "", category_id: "", customer_id: "", status: "pendente", notes: "" });
+    setEditingId(null);
+    setForm(emptyForm);
     fetchData();
   };
 
@@ -88,58 +118,59 @@ const Revenues = () => {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-green-600">Total: {formatCurrency(total)}</span>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> Nova Receita</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Nova Receita</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div><Label>Descrição *</Label><Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Valor (R$) *</Label><Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} /></div>
-                  <div><Label>Data</Label><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Vencimento</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
-                  <div>
-                    <Label>Status</Label>
-                    <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pendente">Pendente</SelectItem>
-                        <SelectItem value="pago">Pago</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Categoria</Label>
-                    <Select value={form.category_id} onValueChange={v => setForm({ ...form, category_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Cliente</Label>
-                    <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-                <Button className="w-full" onClick={handleSubmit}>Salvar</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> Nova Receita</Button>
         </div>
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingId(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editingId ? "Editar Receita" : "Nova Receita"}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div><Label>Descrição *</Label><Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Valor (R$) *</Label><Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} /></div>
+              <div><Label>Data</Label><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Vencimento</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="pago">Pago</SelectItem>
+                    <SelectItem value="atrasado">Atrasado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Categoria</Label>
+                <Select value={form.category_id} onValueChange={v => setForm({ ...form, category_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Cliente</Label>
+                <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>Observações</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+            <Button className="w-full" onClick={handleSubmit}>{editingId ? "Atualizar" : "Salvar"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card className="shadow-soft">
         <CardContent className="p-0">
@@ -153,7 +184,7 @@ const Revenues = () => {
                 <TableHead>Vencimento</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-[80px]"></TableHead>
+                <TableHead className="w-[100px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -171,7 +202,10 @@ const Revenues = () => {
                   <TableCell className="text-right font-medium text-green-600">{formatCurrency(Number(r.amount))}</TableCell>
                   <TableCell><Badge className={statusColors[r.status]} variant="secondary">{r.status}</Badge></TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
