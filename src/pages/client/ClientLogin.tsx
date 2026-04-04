@@ -91,6 +91,11 @@ const ClientLogin = () => {
             <span className="text-muted-foreground">Não tem conta? </span>
             <Link to="/portal/signup" className="text-primary hover:underline">Cadastre-se</Link>
           </div>
+          <div className="mt-3 text-center">
+            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
+              ← Voltar ao site
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
