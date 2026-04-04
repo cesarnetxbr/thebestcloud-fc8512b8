@@ -115,26 +115,21 @@ const Users_Page = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data: roles } = await supabase.from("user_roles").select("*");
-    const { data: profiles } = await supabase.from("profiles").select("*");
+    const { data, error } = await supabase.functions.invoke("admin-list-users");
 
-    if (roles && profiles) {
-      const merged = roles.map((r) => {
-        const profile = profiles.find((p) => p.user_id === r.user_id);
-        return {
-          user_id: r.user_id,
-          email: profile?.full_name || r.user_id,
-          full_name: profile?.full_name || null,
-          role: r.role,
-          role_id: r.id,
-          last_login_at: (profile as any)?.last_login_at || null,
-          created_at: profile?.created_at || null,
-          updated_at: profile?.updated_at || null,
-          created_by_name: (profile as any)?.created_by_name || null,
-        };
+    if (error || data?.error) {
+      toast({
+        title: "Erro ao carregar usuários",
+        description: data?.error || error?.message,
+        variant: "destructive",
       });
-      setUsers(merged);
+      setUsers([]);
+      setLoading(false);
+      return;
     }
+
+    const loadedUsers = Array.isArray(data?.users) ? (data.users as UserWithRole[]) : [];
+    setUsers(loadedUsers);
     setLoading(false);
   };
 
