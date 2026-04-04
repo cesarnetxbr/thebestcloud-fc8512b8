@@ -115,11 +115,21 @@ const ClientServices = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Produto / Serviço</label>
-                <Input
-                  placeholder="Ex: Backup Cloud 500GB"
+                <Select
                   value={form.product}
-                  onChange={(e) => setForm({ ...form, product: e.target.value })}
-                />
+                  onValueChange={(value) => setForm({ ...form, product: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um produto ou serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {saleItems.map((item: any) => (
+                      <SelectItem key={item.id} value={item.item_name}>
+                        {item.item_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Quantidade</label>
