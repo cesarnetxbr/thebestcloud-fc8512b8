@@ -127,12 +127,23 @@ const Customers = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este cliente?")) return;
+    if (!confirm("Tem certeza que deseja excluir este cliente? Esta ação é irreversível.")) return;
     const { error } = await supabase.from("customers").delete().eq("id", id);
     if (error) {
       toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Cliente excluído" });
+      fetchCustomers();
+    }
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    const { error } = await supabase.from("customers").update({ status: newStatus }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao alterar status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: newStatus === "active" ? "Cliente ativado" : "Cliente desativado" });
       fetchCustomers();
     }
   };
