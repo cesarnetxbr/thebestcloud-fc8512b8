@@ -76,6 +76,38 @@ const Users_Page = () => {
   const [presets, setPresets] = useState<any[]>([]);
   const [permDialogOpen, setPermDialogOpen] = useState(false);
   const [detailUser, setDetailUser] = useState<UserWithRole | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" });
+
+  const handleCreateUser = async () => {
+    if (!newUser.email || !newUser.password) {
+      toast({ title: "Email e senha são obrigatórios", variant: "destructive" });
+      return;
+    }
+    if (newUser.password.length < 6) {
+      toast({ title: "A senha deve ter pelo menos 6 caracteres", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("create-user", {
+        body: { email: newUser.email, password: newUser.password, full_name: newUser.full_name, role: newUser.role },
+      });
+      if (res.error || res.data?.error) {
+        toast({ title: "Erro ao criar usuário", description: res.data?.error || res.error?.message, variant: "destructive" });
+      } else {
+        toast({ title: "Usuário criado com sucesso" });
+        setCreateDialogOpen(false);
+        setNewUser({ email: "", password: "", full_name: "", role: "viewer" });
+        fetchUsers();
+      }
+    } catch (err: any) {
+      toast({ title: "Erro ao criar usuário", description: err.message, variant: "destructive" });
+    }
+    setCreating(false);
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -193,7 +225,54 @@ const Users_Page = () => {
           </h2>
           <p className="text-muted-foreground">Gerencie usuários, roles e permissões específicas</p>
         </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" /> Novo Usuário
+        </Button>
       </div>
+
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" /> Cadastrar Novo Usuário
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nome Completo</label>
+              <Input placeholder="Nome do usuário" value={newUser.full_name} onChange={(e) => setNewUser((p) => ({ ...p, full_name: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email *</label>
+              <Input type="email" placeholder="email@exemplo.com" value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Senha *</label>
+              <Input type="password" placeholder="Mínimo 6 caracteres" value={newUser.password} onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Perfil (Role)</label>
+              <Select value={newUser.role} onValueChange={(val) => setNewUser((p) => ({ ...p, role: val }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={handleCreateUser} disabled={creating}>
+                {creating ? "Criando..." : "Criar Usuário"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
