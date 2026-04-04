@@ -39,6 +39,7 @@ const emptyForm: ConnectionForm = {
 };
 
 const Connections = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
