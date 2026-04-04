@@ -279,6 +279,7 @@ export type Database = {
           razao_social: string | null
           status: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           bairro?: string | null
@@ -304,6 +305,7 @@ export type Database = {
           razao_social?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           bairro?: string | null
@@ -329,6 +331,7 @@ export type Database = {
           razao_social?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -689,6 +692,7 @@ export type Database = {
           created_by_user_id: string | null
           full_name: string | null
           id: string
+          is_active: boolean
           job_title: string | null
           last_login_at: string | null
           phone: string | null
@@ -702,6 +706,7 @@ export type Database = {
           created_by_user_id?: string | null
           full_name?: string | null
           id?: string
+          is_active?: boolean
           job_title?: string | null
           last_login_at?: string | null
           phone?: string | null
@@ -715,6 +720,7 @@ export type Database = {
           created_by_user_id?: string | null
           full_name?: string | null
           id?: string
+          is_active?: boolean
           job_title?: string | null
           last_login_at?: string | null
           phone?: string | null
