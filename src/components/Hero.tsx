@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import dashboardPreview from "@/assets/dashboard-preview.jpg";
+import cyberProtectCloud from "@/assets/landing/cyber-protect-cloud.webp";
 
 const Hero = () => {
   const handleContact = () => {
