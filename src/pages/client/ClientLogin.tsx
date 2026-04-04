@@ -19,8 +19,16 @@ const ClientLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
+      // Auto-register client role if user has document metadata
+      const doc = signInData.user?.user_metadata?.document;
+      if (doc) {
+        try {
+          await supabase.functions.invoke("client-register", { body: { document: doc } });
+        } catch {}
+      }
       navigate("/portal");
     } catch (err: any) {
       toast({ title: "Erro ao entrar", description: err.message, variant: "destructive" });
