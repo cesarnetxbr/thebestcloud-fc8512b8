@@ -27,6 +27,8 @@ import {
   Zap,
   FolderOpen,
   Briefcase,
+  Headphones,
+  Kanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
