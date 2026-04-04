@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Search, ArrowLeft, Pencil, Trash2, Users } from "lucide-react";
+import { Plus, Search, ArrowLeft, Pencil, Trash2, Users, Ban, Power } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Customer {
