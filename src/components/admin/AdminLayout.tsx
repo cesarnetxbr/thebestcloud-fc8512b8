@@ -64,6 +64,20 @@ const navSections: NavSection[] = [
       { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
       { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
     ],
+    expandable: {
+      label: "Gestão Financeira",
+      icon: Briefcase,
+      items: [
+        { label: "Resumo", icon: BarChart3, path: "/admin/financial" },
+        { label: "Painel CFO", icon: PieChart, path: "/admin/financial/cfo" },
+        { label: "DRE & Caixa", icon: FileText, path: "/admin/financial/dre" },
+        { label: "Receitas", icon: TrendingUp, path: "/admin/financial/receitas" },
+        { label: "Despesas", icon: TrendingDown, path: "/admin/financial/despesas" },
+        { label: "Comissões", icon: DollarSign, path: "/admin/financial/comissoes" },
+        { label: "Automações", icon: Zap, path: "/admin/financial/automacoes" },
+        { label: "Categorias", icon: FolderOpen, path: "/admin/financial/categorias" },
+      ],
+    },
   },
   {
     title: "PRODUTOS",
