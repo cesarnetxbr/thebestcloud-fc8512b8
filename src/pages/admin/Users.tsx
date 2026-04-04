@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Users, Search, Settings2 } from "lucide-react";
+import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
@@ -53,7 +55,16 @@ interface UserWithRole {
   full_name: string | null;
   role: string;
   role_id: string;
+  last_login_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  created_by_name: string | null;
 }
+
+const formatDate = (date: string | null) => {
+  if (!date) return "—";
+  return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: ptBR });
+};
 
 const Users_Page = () => {
   const { user: currentUser } = useAuth();
@@ -64,6 +75,7 @@ const Users_Page = () => {
   const [permissions, setPermissions] = useState<Record<string, { can_view: boolean; can_create: boolean; can_edit: boolean; can_delete: boolean }>>({});
   const [presets, setPresets] = useState<any[]>([]);
   const [permDialogOpen, setPermDialogOpen] = useState(false);
+  const [detailUser, setDetailUser] = useState<UserWithRole | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -79,6 +91,10 @@ const Users_Page = () => {
           full_name: profile?.full_name || null,
           role: r.role,
           role_id: r.id,
+          last_login_at: (profile as any)?.last_login_at || null,
+          created_at: profile?.created_at || null,
+          updated_at: profile?.updated_at || null,
+          created_by_name: (profile as any)?.created_by_name || null,
         };
       });
       setUsers(merged);
@@ -199,6 +215,8 @@ const Users_Page = () => {
                 <TableRow>
                   <TableHead>Usuário</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Último Login</TableHead>
+                  <TableHead>Cadastrado em</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -224,9 +242,26 @@ const Users_Page = () => {
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openPermissions(u)}>
-                        <Settings2 className="h-4 w-4 mr-1" /> Permissões
-                      </Button>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
+                        {formatDate(u.last_login_at)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {formatDate(u.created_at)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="outline" size="sm" onClick={() => setDetailUser(u)} title="Detalhes">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => openPermissions(u)}>
+                          <Settings2 className="h-4 w-4 mr-1" /> Permissões
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -235,6 +270,59 @@ const Users_Page = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Detail Dialog */}
+      <Dialog open={!!detailUser} onOpenChange={(open) => !open && setDetailUser(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Usuário</DialogTitle>
+          </DialogHeader>
+          {detailUser && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold">{detailUser.full_name || "Sem nome"}</p>
+                  <Badge className={ROLE_COLORS[detailUser.role]}>{ROLE_LABELS[detailUser.role]}</Badge>
+                </div>
+              </div>
+
+              <div className="grid gap-3 text-sm">
+                <div className="flex items-start gap-2 p-2 border rounded">
+                  <Clock className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Último Login</p>
+                    <p className="text-muted-foreground">{formatDate(detailUser.last_login_at)}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 border rounded">
+                  <CalendarDays className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Cadastrado em</p>
+                    <p className="text-muted-foreground">{formatDate(detailUser.created_at)}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 border rounded">
+                  <UserPlus className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Cadastrado por</p>
+                    <p className="text-muted-foreground">{detailUser.created_by_name || "Sistema (auto-cadastro)"}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 border rounded">
+                  <Pencil className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Última alteração de perfil</p>
+                    <p className="text-muted-foreground">{formatDate(detailUser.updated_at)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Permissions Dialog */}
       <Dialog open={permDialogOpen} onOpenChange={setPermDialogOpen}>
