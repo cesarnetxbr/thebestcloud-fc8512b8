@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Link2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Link2, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ConnectionForm {
@@ -89,6 +89,25 @@ const Connections = () => {
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+
+  const syncTenants = async (connectionId: string) => {
+    setSyncingId(connectionId);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-acronis-tenants", {
+        body: { connection_id: connectionId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Sincronização concluída: ${data.synced} tenants sincronizados`);
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+    } catch (e: any) {
+      toast.error(`Erro na sincronização: ${e.message}`);
+    } finally {
+      setSyncingId(null);
+    }
+  };
 
   const closeDialog = () => {
     setDialogOpen(false);
@@ -181,6 +200,15 @@ const Connections = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Sincronizar tenants"
+                          disabled={syncingId === conn.id}
+                          onClick={() => syncTenants(conn.id)}
+                        >
+                          <RefreshCw className={`h-4 w-4 ${syncingId === conn.id ? "animate-spin" : ""}`} />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
