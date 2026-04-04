@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
           created_at: profile?.created_at ?? authUser?.created_at ?? null,
           updated_at: profile?.updated_at ?? null,
           created_by_name: profile?.created_by_name ?? null,
+          is_active: profile?.is_active ?? true,
         };
       })
       .sort((a, b) => {
