@@ -45,7 +45,10 @@ const Header = () => {
 
           <div className="flex items-center gap-4">
             <Link to="/portal/login">
-              <Button variant="outline" size="sm">Portal</Button>
+              <Button variant="outline" size="sm">Portal do Cliente</Button>
+            </Link>
+            <Link to="/admin/login">
+              <Button variant="outline" size="sm">Área Administrativa</Button>
             </Link>
             <Button variant="cta" onClick={() => scrollToSection("trial")}>
               Teste Grátis
