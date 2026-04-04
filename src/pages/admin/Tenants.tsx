@@ -68,6 +68,23 @@ const Tenants = () => {
   const [search, setSearch] = useState("");
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const syncAllTenants = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-all-tenants");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const totalSynced = data.results?.reduce((sum: number, r: any) => sum + (r.synced || 0), 0) || 0;
+      toast.success(`Sincronização concluída: ${totalSynced} clientes atualizados`);
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+    } catch (e: any) {
+      toast.error(`Erro na sincronização: ${e.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["tenants"],
