@@ -94,8 +94,30 @@ Deno.serve(async (req) => {
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access_token;
 
-    // Step 2: Fetch tenants from Acronis
-    const tenantsUrl = `${connection.datacenter_url}/api/2/tenants?subtree_root_id=${tokenData.scope_tenant_id || ""}&limit=500`;
+    // Step 2: Get the root tenant ID from token info
+    let rootTenantId = tokenData.scope_tenant_id;
+    
+    if (!rootTenantId) {
+      // Fetch from /api/2/clients/{client_id}
+      const clientInfoUrl = `${connection.datacenter_url}/api/2/clients/${connection.api_key}`;
+      const clientResp = await fetch(clientInfoUrl, {
+        headers: { "Authorization": `Bearer ${accessToken}` },
+      });
+      if (clientResp.ok) {
+        const clientData = await clientResp.json();
+        rootTenantId = clientData.tenant_id;
+      }
+    }
+
+    if (!rootTenantId) {
+      return new Response(
+        JSON.stringify({ error: "Could not determine root tenant ID" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Step 3: Fetch tenants from Acronis
+    const tenantsUrl = `${connection.datacenter_url}/api/2/tenants?subtree_root_id=${rootTenantId}&limit=500`;
 
     const tenantsResponse = await fetch(tenantsUrl, {
       headers: {
