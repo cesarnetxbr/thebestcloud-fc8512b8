@@ -50,13 +50,13 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-accent" />
-                <a href="tel:+5511999999999" className="text-background/60 hover:text-accent transition-colors">
-                  (11) 9999-9999
+                <a href="tel:+5591989696415" className="text-background/60 hover:text-accent transition-colors">
+                  (91) 98969-6415
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-accent" />
-                <span className="text-background/60">São Paulo, SP - Brasil</span>
+                <span className="text-background/60">Belém, PA - Brasil</span>
               </li>
             </ul>
           </div>
