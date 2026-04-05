@@ -33,6 +33,7 @@ const TrialPage = () => {
     email: "",
     phone: "",
     cpf_cnpj: "",
+    support_option: "" as "" | "email" | "agendar",
     available_date: "",
     available_time: "",
   });
@@ -40,7 +41,6 @@ const TrialPage = () => {
 
   const submitTrial = useMutation({
     mutationFn: async () => {
-      // Find the trial subcategory
       const { data: categories } = await supabase
         .from("ticket_categories")
         .select("id")
@@ -50,6 +50,10 @@ const TrialPage = () => {
 
       const categoryId = categories?.[0]?.id || null;
 
+      const optionLabel = form.support_option === "email"
+        ? "📧 Receber por e-mail (acesso + manual)"
+        : "📅 Agendamento de suporte remoto";
+
       const description = [
         `📋 Solicitação de Teste Gratuito 14 Dias`,
         ``,
@@ -57,8 +61,10 @@ const TrialPage = () => {
         `E-mail: ${form.email}`,
         `WhatsApp: ${form.phone}`,
         form.cpf_cnpj ? `CPF/CNPJ: ${form.cpf_cnpj}` : null,
-        `Data disponível: ${form.available_date}`,
-        `Horário disponível: ${form.available_time}`,
+        ``,
+        `Opção escolhida: ${optionLabel}`,
+        form.support_option === "agendar" ? `Data disponível: ${form.available_date}` : null,
+        form.support_option === "agendar" ? `Horário disponível: ${form.available_time}` : null,
         ``,
         `🎁 Benefícios do teste:`,
         `• 15 dias de teste gratuito`,
@@ -85,7 +91,9 @@ const TrialPage = () => {
     onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
   });
 
-  const canSubmit = form.name && form.email && form.phone && form.available_date && form.available_time;
+  const canSubmit =
+    form.name && form.email && form.phone && form.support_option &&
+    (form.support_option === "email" || (form.available_date && form.available_time));
 
   if (submitted) {
     return (
