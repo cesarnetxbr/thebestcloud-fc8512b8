@@ -39,6 +39,7 @@ const advantages = [
   },
 ];
 
+const clientBenefits = [
   {
     icon: Shield,
     title: "Proteção Completa",
@@ -112,13 +113,15 @@ const Benefits = () => {
           </div>
         </div>
 
-        {/* Awards */}
-        <div className="flex justify-center gap-12 mb-24">
-          {awards.map((award, i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
-              <img src={award.image} alt={award.label} className="h-12 object-contain" loading="lazy" />
-              <p className="text-xs text-muted-foreground text-center whitespace-pre-line">{award.label}</p>
-              <p className="text-xs text-muted-foreground">{award.year}</p>
+        {/* Parceiros */}
+        <div className="text-center mb-6">
+          <h3 className="text-lg font-semibold text-muted-foreground uppercase tracking-wider">Parceiros</h3>
+        </div>
+        <div className="flex justify-center items-center gap-16 mb-24">
+          {partners.map((partner, i) => (
+            <div key={i} className="flex flex-col items-center gap-3">
+              <img src={partner.image} alt={partner.label} className="h-16 object-contain" loading="lazy" />
+              <p className="text-sm text-muted-foreground text-center">{partner.label}</p>
             </div>
           ))}
         </div>
