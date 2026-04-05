@@ -26,10 +26,18 @@ const formatCNPJ = (value: string) => {
     .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
 };
 
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 const ClientSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [docType, setDocType] = useState<"cpf" | "cnpj">("cnpj");
   const [document, setDocument] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,12 +50,22 @@ const ClientSignup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanDoc = document.replace(/\D/g, "");
-    if (docType === "cpf" && cleanDoc.length !== 11) {
-      toast({ title: "CPF inválido", description: "O CPF deve ter 11 dígitos", variant: "destructive" });
-      return;
+    const cleanPhone = whatsapp.replace(/\D/g, "");
+
+    // Validate document only if provided
+    if (cleanDoc.length > 0) {
+      if (docType === "cpf" && cleanDoc.length !== 11) {
+        toast({ title: "CPF inválido", description: "O CPF deve ter 11 dígitos", variant: "destructive" });
+        return;
+      }
+      if (docType === "cnpj" && cleanDoc.length !== 14) {
+        toast({ title: "CNPJ inválido", description: "O CNPJ deve ter 14 dígitos", variant: "destructive" });
+        return;
+      }
     }
-    if (docType === "cnpj" && cleanDoc.length !== 14) {
-      toast({ title: "CNPJ inválido", description: "O CNPJ deve ter 14 dígitos", variant: "destructive" });
+
+    if (cleanPhone.length < 10) {
+      toast({ title: "WhatsApp inválido", description: "Informe um número válido com DDD", variant: "destructive" });
       return;
     }
 
@@ -57,7 +75,12 @@ const ClientSignup = () => {
         email,
         password,
         options: {
-          data: { full_name: fullName, document: cleanDoc, document_type: docType },
+          data: {
+            full_name: fullName,
+            phone: cleanPhone,
+            document: cleanDoc || null,
+            document_type: cleanDoc ? docType : null,
+          },
           emailRedirectTo: window.location.origin + "/portal",
         },
       });
@@ -66,7 +89,7 @@ const ClientSignup = () => {
       // If user was created and session exists, register as client immediately
       if (signUpData.session) {
         const { data: regData } = await supabase.functions.invoke("client-register", {
-          body: { document: cleanDoc },
+          body: { document: cleanDoc || null, phone: cleanPhone },
         });
         if (regData?.linked) {
           toast({ title: "Conta vinculada!", description: regData.message });
@@ -97,8 +120,18 @@ const ClientSignup = () => {
             <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
             <Input type="password" placeholder="Senha (mínimo 6 caracteres)" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
             
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">WhatsApp</Label>
+              <Input
+                placeholder="(91) 98969-6415"
+                value={whatsapp}
+                onChange={e => setWhatsapp(formatPhone(e.target.value))}
+                required
+              />
+            </div>
+
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Tipo de documento</Label>
+              <Label className="text-sm font-medium">Tipo de documento <span className="text-muted-foreground font-normal">(opcional)</span></Label>
               <RadioGroup value={docType} onValueChange={(val) => { setDocType(val as "cpf" | "cnpj"); setDocument(""); }} className="flex gap-4">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="cpf" id="cpf" />
@@ -113,10 +146,9 @@ const ClientSignup = () => {
                 placeholder={docType === "cpf" ? "000.000.000-00" : "00.000.000/0000-00"}
                 value={document}
                 onChange={e => handleDocChange(e.target.value)}
-                required
               />
               <p className="text-xs text-muted-foreground">
-                Informe o {docType.toUpperCase()} para vincular sua conta à empresa cadastrada.
+                Informe o {docType.toUpperCase()} para vincular sua conta à empresa cadastrada. Você pode informar depois.
               </p>
             </div>
 
