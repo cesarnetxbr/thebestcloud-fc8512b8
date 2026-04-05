@@ -1,34 +1,46 @@
-## Mapeamento do Existente
+## Módulo LGPD — Plano de Implementação
 
-**Módulos protegidos (não serão alterados):**
+### Módulos Protegidos (não serão alterados)
 - Landing Page, Dashboard, Conexões, Tenants, SKUs, Tabelas de Custo/Venda
 - Faturamento, Gestão Financeira, Solicitações Comerciais, Chamados, Auditoria
+- Portal do Cliente, Ouvidoria, Usuários, Clientes
 
-**Módulos expandidos:**
-- **Clientes** (`/admin/customers`): já possui CRUD completo com delete. Será expandido com vínculo a user_id e opção de desativar
-- **Usuários** (`/admin/users`): já possui criação, roles e permissões. Será expandido com opções de desativar e excluir
+### Módulos Expandidos
+- **Header**: adicionar link para Política de Privacidade no footer
+- **Footer**: adicionar links LGPD (Privacidade, Cookies, DPO)
+- **AdminLayout**: adicionar menu "LGPD" no sidebar
 
-## Etapas de Implementação
+### Novas Tabelas (Migration)
+1. **`lgpd_data_mapping`** — Registro de operações de tratamento (ROPA)
+   - `data_category`, `purpose`, `legal_basis`, `storage_location`, `retention_period`, `third_parties`, `is_sensitive`
+2. **`lgpd_consent_records`** — Log de consentimentos obtidos
+   - `user_identifier`, `consent_type`, `granted`, `ip_address`, `user_agent`
+3. **`lgpd_data_requests`** — Solicitações de titulares (acesso/correção/exclusão)
+   - `requester_name`, `requester_email`, `request_type`, `status`, `response`, `protocol_number`
+4. **`lgpd_incidents`** — Registro de incidentes de segurança
+   - `title`, `description`, `severity`, `affected_data`, `notified_anpd`, `resolution`
 
-### Etapa 1 — Migration
-- Adicionar coluna `user_id` na tabela `customers` (referência a auth.users, nullable)
-- Adicionar coluna `is_active` na tabela `profiles` (default true)
-- Atualizar RLS se necessário
+### Novas Páginas
 
-### Etapa 2 — Edge Function `admin-manage-user`
-- Ação `deactivate`: marca `profiles.is_active = false`
-- Ação `delete`: remove user via admin API + cascata em user_roles/profiles
-- Verificação de admin obrigatória
+**Área Administrativa (`/admin/lgpd/...`)**
+1. `/admin/lgpd` — Dashboard LGPD (visão geral de conformidade)
+2. `/admin/lgpd/ropa` — Mapeamento de Dados (CRUD da tabela lgpd_data_mapping)
+3. `/admin/lgpd/consents` — Registros de Consentimento (visualização dos logs)
+4. `/admin/lgpd/requests` — Solicitações de Titulares (gerenciar pedidos)
+5. `/admin/lgpd/incidents` — Incidentes de Segurança (registro e acompanhamento)
+6. `/admin/lgpd/settings` — Config DPO + Política de Privacidade
 
-### Etapa 3 — UI Usuários (`/admin/users`)
-- Botões "Desativar" e "Excluir" na tabela e no dialog de detalhes
-- Indicador visual de status ativo/inativo
-- Confirmação antes de excluir
+**Páginas Públicas**
+7. `/privacidade` — Política de Privacidade completa
+8. `/cookies` — Política de Cookies
 
-### Etapa 4 — UI Clientes (`/admin/customers`)
-- Campo para vincular usuário do tipo "cliente" ao cadastro
-- Botão "Desativar" (altera status para "inactive")
-- Status já existe na tabela, apenas expandir a UI
+**Componentes**
+9. **CookieConsentBanner** — Banner de cookies com aceitar/recusar/personalizar
+10. **Links no Footer** para Privacidade, Cookies e contato DPO
 
-### Etapa 5 — Portal do Cliente
-- Na autenticação, buscar o `customer_id` vinculado ao user logado para filtrar faturas/chamados
+### Etapas de Execução
+1. **Migration** — Criar tabelas + RLS
+2. **Páginas públicas** — Privacidade + Cookies
+3. **Cookie Banner** — Componente global com persistência
+4. **Admin LGPD** — Dashboard + ROPA + Solicitações + Incidentes
+5. **Integração** — Menu admin + Footer + rotas
