@@ -15,7 +15,30 @@ const partners = [
   { image: googleCloudLogo, label: "Google Cloud" },
 ];
 
-const clientBenefits = [
+const advantages = [
+  {
+    id: "complexidade",
+    label: "Sem complexidade",
+    title: "Chega de múltiplas ferramentas",
+    description: "Sua empresa provavelmente usa diversas soluções separadas para se proteger contra ameaças cibernéticas. Com a The Best Cloud, você unifica tudo em uma plataforma integrada — backup, antivírus, anti-ransomware e mais — reduzindo custos e eliminando a complexidade.",
+    image: reduzaComplexidade,
+  },
+  {
+    id: "gestao",
+    label: "Gestão simples",
+    title: "Tudo sob controle, sem complicação",
+    description: "Gerencie a proteção de toda a sua infraestrutura de TI a partir de um único painel. Políticas de backup, avaliações de vulnerabilidade e atualizações de segurança em um só lugar, com poucos cliques.",
+    image: simplifique,
+  },
+  {
+    id: "protecao",
+    label: "Proteção inteligente",
+    title: "Proteção com inteligência artificial",
+    description: "Detecte e bloqueie ciberameaças automaticamente, inclusive as desconhecidas. Nossa tecnologia baseada em IA identifica comportamentos maliciosos em tempo real, oferecendo proteção máxima com mínima intervenção da sua equipe.",
+    image: protecaoCompleta,
+  },
+];
+
   {
     icon: Shield,
     title: "Proteção Completa",
