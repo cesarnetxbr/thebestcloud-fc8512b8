@@ -71,7 +71,35 @@ const ClientDashboard = () => {
     enabled: !!user,
   });
 
+  const { data: commercialRequests = [] } = useQuery({
+    queryKey: ["client_commercial_requests", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("commercial_requests")
+        .select("id, status")
+        .eq("created_by", user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: ombudsmanReports = [] } = useQuery({
+    queryKey: ["client_ombudsman_reports", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ombudsman_reports")
+        .select("id, status")
+        .eq("created_by", user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const openTickets = tickets.filter((t: any) => t.status !== "fechado" && t.status !== "resolvido").length;
+  const openRequests = commercialRequests.filter((r: any) => r.status !== "fechado" && r.status !== "concluido").length;
+  const pendingReports = ombudsmanReports.filter((r: any) => r.status !== "arquivado" && r.status !== "respondido").length;
 
   const handleReasonClick = (reason: typeof contactReasons[0]) => {
     navigate(reason.route);
