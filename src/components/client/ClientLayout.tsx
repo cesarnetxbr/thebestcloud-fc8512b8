@@ -2,7 +2,7 @@ import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Headphones, FileText, LogOut, Menu, X, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Headphones, FileText, LogOut, Menu, X, ShoppingCart, MessageSquareWarning } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Chamados", icon: Headphones, path: "/portal/chamados" },
   { label: "Faturas", icon: FileText, path: "/portal/faturas" },
   { label: "Solicitar Serviços", icon: ShoppingCart, path: "/portal/servicos" },
+  { label: "Ouvidoria", icon: MessageSquareWarning, path: "/portal/ouvidoria" },
 ];
 
 const ClientLayout = () => {
