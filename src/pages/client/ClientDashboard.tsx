@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Headphones, Package, AlertCircle, ShoppingCart, MessageSquare, DollarSign, ClipboardList } from "lucide-react";
+import { FileText, Headphones, Package, AlertCircle, ShoppingCart, MessageSquare, DollarSign, ClipboardList, Scale, Send } from "lucide-react";
 
 const contactReasons = [
   {
@@ -71,7 +71,35 @@ const ClientDashboard = () => {
     enabled: !!user,
   });
 
+  const { data: commercialRequests = [] } = useQuery({
+    queryKey: ["client_commercial_requests", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("commercial_requests")
+        .select("id, status")
+        .eq("created_by", user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: ombudsmanReports = [] } = useQuery({
+    queryKey: ["client_ombudsman_reports", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ombudsman_reports")
+        .select("id, status")
+        .eq("created_by", user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const openTickets = tickets.filter((t: any) => t.status !== "fechado" && t.status !== "resolvido").length;
+  const openRequests = commercialRequests.filter((r: any) => r.status !== "fechado" && r.status !== "concluido").length;
+  const pendingReports = ombudsmanReports.filter((r: any) => r.status !== "arquivado" && r.status !== "respondido").length;
 
   const handleReasonClick = (reason: typeof contactReasons[0]) => {
     navigate(reason.route);
@@ -104,7 +132,7 @@ const ClientDashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Chamados Abertos</CardTitle>
@@ -112,6 +140,26 @@ const ClientDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{openTickets}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Solicitações</CardTitle>
+            <Send className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{openRequests}</div>
+            <p className="text-xs text-muted-foreground">{commercialRequests.length} no total</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Ouvidoria</CardTitle>
+            <Scale className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingReports}</div>
+            <p className="text-xs text-muted-foreground">{ombudsmanReports.length} no total</p>
           </CardContent>
         </Card>
         <Card>
