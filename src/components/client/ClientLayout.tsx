@@ -1,4 +1,5 @@
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,9 @@ const ClientLayout = () => {
           <span className="font-bold text-lg">Portal do Cliente</span>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden"><X className="h-5 w-5" /></button>
         </div>
+        <Link to="/" className="flex items-center gap-2 px-6 py-2 text-xs text-primary-foreground/60 hover:text-primary-foreground transition-colors">
+          <ArrowLeft className="h-3 w-3" />Voltar ao site
+        </Link>
 
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map(item => {
