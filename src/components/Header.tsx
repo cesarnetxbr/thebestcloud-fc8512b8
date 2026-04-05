@@ -110,7 +110,7 @@ const Header = () => {
               <img src={logo} alt="The Best Cloud" className="h-14 md:h-16 w-auto" />
             </Link>
             <Link to="/teste-gratis">
-              <Button size="sm" className="hidden sm:inline-flex bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+              <Button size="sm" className="inline-flex bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full animate-pulse">
                 🎁 Teste 14 Dias Grátis
               </Button>
             </Link>
