@@ -38,7 +38,7 @@ const contactReasons = [
     description: "Registre uma reclamação para que nossa equipe possa resolver.",
     color: "text-red-600",
     bgColor: "bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50",
-    route: "/portal/chamados",
+    route: "/portal/ouvidoria",
     ticketCategory: "Reclamação",
   },
   {
