@@ -5,9 +5,15 @@ import reduzaComplexidade from "@/assets/landing/reduza-complexidade.webp";
 import simplifique from "@/assets/landing/simplifique-gestao.webp";
 import protecaoCompleta from "@/assets/landing/protecao-completa.webp";
 import plataformaSeguranca from "@/assets/landing/plataforma-seguranca.webp";
-import avTest from "@/assets/awards/av-test.webp";
-import techcrunch from "@/assets/awards/techcrunch.webp";
-import comptia from "@/assets/awards/comptia.webp";
+import awsLogo from "@/assets/partners/aws.png";
+import azureLogo from "@/assets/partners/azure.png";
+import googleCloudLogo from "@/assets/partners/google-cloud.png";
+
+const partners = [
+  { image: awsLogo, label: "Amazon Web Services" },
+  { image: azureLogo, label: "Microsoft Azure" },
+  { image: googleCloudLogo, label: "Google Cloud" },
+];
 
 const advantages = [
   {
@@ -31,12 +37,6 @@ const advantages = [
     description: "Detecte e bloqueie ciberameaças automaticamente, inclusive as desconhecidas. Nossa tecnologia baseada em IA identifica comportamentos maliciosos em tempo real, oferecendo proteção máxima com mínima intervenção da sua equipe.",
     image: protecaoCompleta,
   },
-];
-
-const awards = [
-  { image: avTest, label: "AV-TEST participant\nand test winner", year: "2021" },
-  { image: techcrunch, label: "TechCrunch", year: "2021" },
-  { image: comptia, label: "CompTIA", year: "2021" },
 ];
 
 const clientBenefits = [
@@ -113,13 +113,15 @@ const Benefits = () => {
           </div>
         </div>
 
-        {/* Awards */}
-        <div className="flex justify-center gap-12 mb-24">
-          {awards.map((award, i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
-              <img src={award.image} alt={award.label} className="h-12 object-contain" loading="lazy" />
-              <p className="text-xs text-muted-foreground text-center whitespace-pre-line">{award.label}</p>
-              <p className="text-xs text-muted-foreground">{award.year}</p>
+        {/* Parceiros */}
+        <div className="text-center mb-6">
+          <h3 className="text-lg font-semibold text-muted-foreground uppercase tracking-wider">Parceiros</h3>
+        </div>
+        <div className="flex justify-center items-center gap-16 mb-24">
+          {partners.map((partner, i) => (
+            <div key={i} className="flex flex-col items-center gap-3">
+              <img src={partner.image} alt={partner.label} className="h-16 object-contain" loading="lazy" />
+              <p className="text-sm text-muted-foreground text-center">{partner.label}</p>
             </div>
           ))}
         </div>
