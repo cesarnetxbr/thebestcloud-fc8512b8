@@ -325,7 +325,19 @@ const Tickets = () => {
                 <div><strong>Cliente:</strong> {detailTicket.customers?.name || "—"}</div>
                 <div><strong>Categoria:</strong> {detailTicket.ticket_categories?.name || "—"}</div>
               </div>
-              {detailTicket.description && <p className="text-sm bg-muted p-3 rounded">{detailTicket.description}</p>}
+              {detailTicket.description && <p className="text-sm bg-muted p-3 rounded whitespace-pre-line">{detailTicket.description}</p>}
+
+              {isTrialTicket(detailTicket) && !detailTicket.customer_id && (
+                <Button
+                  variant="outline"
+                  className="w-full border-primary text-primary hover:bg-primary/10"
+                  onClick={() => convertToCustomer.mutate(detailTicket)}
+                  disabled={convertToCustomer.isPending}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Converter em Cliente
+                </Button>
+              )}
 
               <div className="border-t pt-4">
                 <h4 className="font-semibold mb-2">Mensagens</h4>
