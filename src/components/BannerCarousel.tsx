@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Shield, Lock, Clock, Database, Globe, AlertTriangle, CloudOff, Smartphone } from "lucide-react";
 
@@ -63,11 +64,9 @@ const slides = [
   },
 ];
 
-const WHATSAPP_URL =
-  "https://api.whatsapp.com/send/?phone=5591989696415&text=Ol%C3%A1%21+Gostaria+de+saber+mais+sobre+os+servi%C3%A7os+da+The+Best+Cloud&type=phone_number&app_absent=0";
-
 const BannerCarousel = () => {
   const [current, setCurrent] = useState(0);
+  const navigate = useNavigate();
 
   const next = useCallback(() => setCurrent((c) => (c + 1) % slides.length), []);
   const prev = useCallback(() => setCurrent((c) => (c - 1 + slides.length) % slides.length), []);
@@ -77,7 +76,7 @@ const BannerCarousel = () => {
     return () => clearInterval(timer);
   }, [next]);
 
-  const handleCta = () => window.open(WHATSAPP_URL, "_blank");
+  const handleCta = () => navigate("/portal/login");
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-[hsl(215,60%,30%)] to-[hsl(25,60%,40%)]">
