@@ -92,7 +92,7 @@ const TrialPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-8 pb-8 space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+            <CheckCircle className="h-16 w-16 text-primary mx-auto" />
             <h2 className="text-2xl font-bold">Solicitação Enviada!</h2>
             <p className="text-muted-foreground">
               Em breve nossa equipe entrará em contato para configurar seu teste gratuito de 14 dias.
