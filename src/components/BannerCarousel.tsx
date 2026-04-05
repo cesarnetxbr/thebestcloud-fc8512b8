@@ -76,7 +76,8 @@ const BannerCarousel = () => {
     return () => clearInterval(timer);
   }, [next]);
 
-  const handleCta = () => navigate("/portal");
+  const handleTrial = () => navigate("/teste-gratis");
+  const handleContact = () => navigate("/portal");
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-[hsl(215,60%,30%)] to-[hsl(25,60%,40%)]">
@@ -117,13 +118,13 @@ const BannerCarousel = () => {
                   ))}
                 </div>
                 <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
-                  <Button variant="cta" size="lg" onClick={handleCta}>
+                  <Button variant="cta" size="lg" onClick={handleTrial}>
                     {slide.cta}
                   </Button>
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={handleCta}
+                    onClick={handleContact}
                     className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-primary-foreground/5"
                   >
                     {slide.ctaSecondary}
@@ -185,13 +186,13 @@ const BannerCarousel = () => {
                   {slide.subdescription}
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <Button variant="cta" size="lg" onClick={handleCta}>
+                  <Button variant="cta" size="lg" onClick={handleTrial}>
                     {slide.cta}
                   </Button>
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={handleCta}
+                    onClick={handleContact}
                     className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-primary-foreground/5"
                   >
                     {slide.ctaSecondary}
