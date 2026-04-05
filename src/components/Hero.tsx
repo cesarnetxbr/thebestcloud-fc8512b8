@@ -12,7 +12,7 @@ const Hero = () => {
 
   return (
     <section className="relative pt-20 md:pt-24 overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90">
-      <div className="container mx-auto px-4 py-10 md:py-14">
+      <div className="container mx-auto px-4 py-10 md:py-14 pb-20 md:pb-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-in">
             <span className="inline-block bg-primary-foreground/10 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full border border-primary-foreground/20 mb-6">
