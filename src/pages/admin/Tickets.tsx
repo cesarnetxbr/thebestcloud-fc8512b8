@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Plus, MessageSquare, Eye, Search } from "lucide-react";
+import { Plus, MessageSquare, Eye, Search, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 
 const statusColors: Record<string, string> = {
@@ -144,6 +144,45 @@ const Tickets = () => {
       refetchMessages();
       toast({ title: "Mensagem enviada" });
     },
+  });
+
+  const parseTrialDescription = (desc: string) => {
+    const get = (label: string) => {
+      const match = desc.match(new RegExp(`${label}:\\s*(.+)`));
+      return match?.[1]?.trim() || "";
+    };
+    return {
+      name: get("Nome"),
+      email: get("E-mail"),
+      phone: get("WhatsApp"),
+      cpf_cnpj: get("CPF/CNPJ"),
+    };
+  };
+
+  const isTrialTicket = (t: any) =>
+    t?.created_by === "00000000-0000-0000-0000-000000000000" &&
+    t?.subject?.includes("Teste Grátis");
+
+  const convertToCustomer = useMutation({
+    mutationFn: async (ticket: any) => {
+      const parsed = parseTrialDescription(ticket.description || "");
+      if (!parsed.name) throw new Error("Não foi possível extrair o nome do chamado.");
+      const { error } = await supabase.from("customers").insert({
+        name: parsed.name,
+        email: parsed.email || null,
+        phone: parsed.phone || null,
+        cnpj: parsed.cpf_cnpj || null,
+        status: "active",
+        plan: "trial",
+        notes: `Convertido do chamado ${ticket.ticket_number}`,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers_list"] });
+      toast({ title: "Cliente criado com sucesso a partir do chamado de teste!" });
+    },
+    onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
   });
 
   const getProfileName = (uid: string) => {
@@ -286,7 +325,19 @@ const Tickets = () => {
                 <div><strong>Cliente:</strong> {detailTicket.customers?.name || "—"}</div>
                 <div><strong>Categoria:</strong> {detailTicket.ticket_categories?.name || "—"}</div>
               </div>
-              {detailTicket.description && <p className="text-sm bg-muted p-3 rounded">{detailTicket.description}</p>}
+              {detailTicket.description && <p className="text-sm bg-muted p-3 rounded whitespace-pre-line">{detailTicket.description}</p>}
+
+              {isTrialTicket(detailTicket) && !detailTicket.customer_id && (
+                <Button
+                  variant="outline"
+                  className="w-full border-primary text-primary hover:bg-primary/10"
+                  onClick={() => convertToCustomer.mutate(detailTicket)}
+                  disabled={convertToCustomer.isPending}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Converter em Cliente
+                </Button>
+              )}
 
               <div className="border-t pt-4">
                 <h4 className="font-semibold mb-2">Mensagens</h4>
