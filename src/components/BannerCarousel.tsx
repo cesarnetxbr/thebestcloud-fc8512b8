@@ -81,7 +81,7 @@ const BannerCarousel = () => {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-[hsl(215,60%,30%)] to-[hsl(25,60%,40%)]">
-      <div className="container mx-auto px-4 py-16 md:py-20 min-h-[420px] flex items-center">
+      <div className="container mx-auto px-4 py-10 md:py-14 min-h-[340px] flex items-center">
         {/* Slides */}
         {slides.map((slide, i) => (
           <div
@@ -125,7 +125,7 @@ const BannerCarousel = () => {
                     variant="outline"
                     size="lg"
                     onClick={handleCta}
-                    className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                    className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-primary-foreground/5"
                   >
                     {slide.ctaSecondary}
                   </Button>
@@ -193,7 +193,7 @@ const BannerCarousel = () => {
                     variant="outline"
                     size="lg"
                     onClick={handleCta}
-                    className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                    className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-primary-foreground/5"
                   >
                     {slide.ctaSecondary}
                   </Button>
