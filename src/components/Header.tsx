@@ -105,9 +105,16 @@ const Header = () => {
     <header className="fixed top-0 w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="The Best Cloud" className="h-14 md:h-16 w-auto" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-2">
+              <img src={logo} alt="The Best Cloud" className="h-14 md:h-16 w-auto" />
+            </Link>
+            <Link to="/teste-gratis">
+              <Button size="sm" className="hidden sm:inline-flex bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+                🎁 Teste 14 Dias Grátis
+              </Button>
+            </Link>
+          </div>
 
           {/* Nav desktop */}
           <nav className="hidden lg:flex items-center gap-8">
