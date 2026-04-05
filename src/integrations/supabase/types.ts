@@ -613,6 +613,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ombudsman_reports: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          protocol_number: string
+          responded_at: string | null
+          responded_by: string | null
+          status: string
+          subject: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          protocol_number: string
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          subject: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          protocol_number?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          subject?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       price_table_items: {
         Row: {
           created_at: string

@@ -71,6 +71,7 @@ const navSections: NavSection[] = [
     title: "SUPORTE",
     items: [
       { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
+      { label: "Ouvidoria", icon: ClipboardList, path: "/admin/ouvidoria" },
     ],
   },
   {

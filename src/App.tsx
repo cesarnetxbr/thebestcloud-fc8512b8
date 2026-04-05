@@ -45,6 +45,8 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientTickets from "./pages/client/ClientTickets";
 import ClientInvoices from "./pages/client/ClientInvoices";
 import ClientServices from "./pages/client/ClientServices";
+import ClientOmbudsman from "./pages/client/ClientOmbudsman";
+import AdminOmbudsman from "./pages/admin/Ombudsman";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +93,7 @@ const App = () => (
               <Route path="tickets" element={<Tickets />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="financial" element={<FinancialSummary />} />
               <Route path="financial/cfo" element={<CFOPanel />} />
               <Route path="financial/dre" element={<DRECaixa />} />
@@ -116,6 +119,7 @@ const App = () => (
               <Route path="chamados" element={<ClientTickets />} />
               <Route path="faturas" element={<ClientInvoices />} />
               <Route path="servicos" element={<ClientServices />} />
+              <Route path="ouvidoria" element={<ClientOmbudsman />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
