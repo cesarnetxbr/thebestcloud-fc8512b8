@@ -20,6 +20,9 @@ import {
   Globe,
   ClipboardList,
   BarChart3,
+  Shield,
+  Database,
+  AlertTriangle,
   PieChart,
   TrendingUp,
   TrendingDown,
@@ -111,6 +114,21 @@ const navSections: NavSection[] = [
     items: [
       { label: "SKUs / Produtos", icon: Package, path: "/admin/skus" },
     ],
+  },
+  {
+    title: "LGPD",
+    items: [],
+    expandable: {
+      label: "Proteção de Dados",
+      icon: Shield,
+      items: [
+        { label: "Painel LGPD", icon: Shield, path: "/admin/lgpd" },
+        { label: "Mapeamento (ROPA)", icon: Database, path: "/admin/lgpd/ropa" },
+        { label: "Consentimentos", icon: Users, path: "/admin/lgpd/consents" },
+        { label: "Solicitações", icon: FileText, path: "/admin/lgpd/requests" },
+        { label: "Incidentes", icon: AlertTriangle, path: "/admin/lgpd/incidents" },
+      ],
+    },
   },
   {
     items: [

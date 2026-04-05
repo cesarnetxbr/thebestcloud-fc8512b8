@@ -613,6 +613,186 @@ export type Database = {
         }
         Relationships: []
       }
+      lgpd_consent_records: {
+        Row: {
+          consent_type: string
+          created_at: string
+          details: Json | null
+          granted: boolean
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_identifier: string
+        }
+        Insert: {
+          consent_type?: string
+          created_at?: string
+          details?: Json | null
+          granted?: boolean
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_identifier: string
+        }
+        Update: {
+          consent_type?: string
+          created_at?: string
+          details?: Json | null
+          granted?: boolean
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_identifier?: string
+        }
+        Relationships: []
+      }
+      lgpd_data_mapping: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_category: string
+          data_subjects: string
+          id: string
+          is_sensitive: boolean
+          legal_basis: string
+          notes: string | null
+          personal_data_types: string
+          purpose: string
+          retention_period: string
+          storage_location: string
+          third_parties: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_category: string
+          data_subjects?: string
+          id?: string
+          is_sensitive?: boolean
+          legal_basis: string
+          notes?: string | null
+          personal_data_types: string
+          purpose: string
+          retention_period?: string
+          storage_location?: string
+          third_parties?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_category?: string
+          data_subjects?: string
+          id?: string
+          is_sensitive?: boolean
+          legal_basis?: string
+          notes?: string | null
+          personal_data_types?: string
+          purpose?: string
+          retention_period?: string
+          storage_location?: string
+          third_parties?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lgpd_data_requests: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          description: string | null
+          id: string
+          protocol_number: string
+          request_type: string
+          requester_document: string | null
+          requester_email: string
+          requester_name: string
+          responded_at: string | null
+          responded_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          protocol_number: string
+          request_type?: string
+          requester_document?: string | null
+          requester_email: string
+          requester_name: string
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          protocol_number?: string
+          request_type?: string
+          requester_document?: string | null
+          requester_email?: string
+          requester_name?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lgpd_incidents: {
+        Row: {
+          affected_count: number | null
+          affected_data: string | null
+          created_at: string
+          description: string
+          id: string
+          notified_anpd: boolean
+          notified_at: string | null
+          reported_by: string | null
+          resolution: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_count?: number | null
+          affected_data?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          notified_anpd?: boolean
+          notified_at?: string | null
+          reported_by?: string | null
+          resolution?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_count?: number | null
+          affected_data?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          notified_anpd?: boolean
+          notified_at?: string | null
+          reported_by?: string | null
+          resolution?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ombudsman_reports: {
         Row: {
           admin_response: string | null
