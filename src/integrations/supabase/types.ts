@@ -923,6 +923,7 @@ export type Database = {
           is_active: boolean | null
           is_default: boolean | null
           name: string
+          parent_id: string | null
           updated_at: string
         }
         Insert: {
@@ -934,6 +935,7 @@ export type Database = {
           is_active?: boolean | null
           is_default?: boolean | null
           name: string
+          parent_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -945,9 +947,18 @@ export type Database = {
           is_active?: boolean | null
           is_default?: boolean | null
           name?: string
+          parent_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ticket_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ticket_messages: {
         Row: {
