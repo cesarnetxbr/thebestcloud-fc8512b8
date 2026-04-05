@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Plus, MessageSquare, Eye, Search } from "lucide-react";
+import { Plus, MessageSquare, Eye, Search, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 
 const statusColors: Record<string, string> = {
