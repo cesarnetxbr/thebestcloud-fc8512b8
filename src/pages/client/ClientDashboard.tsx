@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Headphones, Package, AlertCircle, ShoppingCart, MessageSquare, DollarSign, ClipboardList } from "lucide-react";
+import { FileText, Headphones, Package, AlertCircle, ShoppingCart, MessageSquare, DollarSign, ClipboardList, Scale, Send } from "lucide-react";
 
 const contactReasons = [
   {
