@@ -32,13 +32,14 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await callerClient.auth.getUser();
     if (authError || !user) return json({ error: "Não autenticado" }, 401);
 
-    const { document } = await req.json();
-    if (!document) return json({ error: "CPF ou CNPJ é obrigatório" }, 400);
+    const { document, phone } = await req.json();
 
-    // Clean document (remove non-digits)
-    const cleanDoc = document.replace(/\D/g, "");
-    if (cleanDoc.length !== 11 && cleanDoc.length !== 14) {
-      return json({ error: "CPF deve ter 11 dígitos e CNPJ deve ter 14 dígitos" }, 400);
+    // Update profile phone if provided
+    if (phone) {
+      await adminClient
+        .from("profiles")
+        .update({ phone })
+        .eq("user_id", user.id);
     }
 
     // Check if user already has a role
@@ -57,6 +58,22 @@ Deno.serve(async (req) => {
         console.error("Role insert error:", roleError);
         return json({ error: "Falha ao atribuir perfil de cliente" }, 500);
       }
+    }
+
+    // If no document provided, just create role and return
+    if (!document) {
+      return json({
+        success: true,
+        linked: false,
+        customer_name: null,
+        message: "Conta criada com perfil de cliente. Você pode informar seu CPF/CNPJ posteriormente para vincular ao cadastro.",
+      });
+    }
+
+    // Clean document (remove non-digits)
+    const cleanDoc = document.replace(/\D/g, "");
+    if (cleanDoc.length !== 11 && cleanDoc.length !== 14) {
+      return json({ error: "CPF deve ter 11 dígitos e CNPJ deve ter 14 dígitos" }, 400);
     }
 
     // Find customer by CPF or CNPJ
