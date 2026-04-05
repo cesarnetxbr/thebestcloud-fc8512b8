@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Gift, Info, CheckCircle, ArrowLeft } from "lucide-react";
+import { Gift, Info, CheckCircle, ArrowLeft, Mail, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const formatPhone = (value: string) => {
