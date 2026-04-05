@@ -76,7 +76,7 @@ const BannerCarousel = () => {
     return () => clearInterval(timer);
   }, [next]);
 
-  const handleCta = () => navigate("/portal/login");
+  const handleCta = () => navigate("/portal");
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-[hsl(215,60%,30%)] to-[hsl(25,60%,40%)]">

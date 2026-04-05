@@ -118,7 +118,7 @@ const Header = () => {
 
           {/* Actions desktop */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/portal/login">
+            <Link to="/portal">
               <Button variant="outline" size="sm">Portal do Cliente</Button>
             </Link>
             <Link to="/admin/login">
@@ -172,7 +172,7 @@ const Header = () => {
               </div>
             ))}
             <div className="flex flex-col gap-2 pt-4">
-              <Link to="/portal/login">
+              <Link to="/portal">
                 <Button variant="outline" size="sm" className="w-full">Portal do Cliente</Button>
               </Link>
               <Link to="/admin/login">

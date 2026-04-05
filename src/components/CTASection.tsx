@@ -5,7 +5,7 @@ const CTASection = () => {
   const navigate = useNavigate();
 
   const handleContact = () => {
-    navigate("/portal/login");
+    navigate("/portal");
   };
 
   const scrollToSolutions = () => {
