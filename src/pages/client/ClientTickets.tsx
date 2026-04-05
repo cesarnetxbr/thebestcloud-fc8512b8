@@ -196,12 +196,12 @@ const ClientTickets = () => {
               {/* Formulário especial de Teste Grátis */}
               {isTrialSelected ? (
                 <div className="space-y-4">
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-700 font-semibold">
+                  <div className="bg-accent/30 border border-accent rounded-lg p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-primary font-semibold">
                       <Gift className="h-5 w-5" />
                       Teste 14 Dias Grátis — Sem Cartão
                     </div>
-                    <div className="flex items-start gap-2 text-sm text-emerald-600">
+                    <div className="flex items-start gap-2 text-sm text-muted-foreground">
                       <Info className="h-4 w-4 mt-0.5 shrink-0" />
                       <p>Você terá <strong>15 dias de teste</strong> com direito a <strong>50 GB de espaço</strong> e <strong>1 licença desktop</strong>.</p>
                     </div>
