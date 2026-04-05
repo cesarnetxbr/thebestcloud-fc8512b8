@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Gift, Info, CheckCircle, ArrowLeft } from "lucide-react";
+import { Gift, Info, CheckCircle, ArrowLeft, Mail, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const formatPhone = (value: string) => {
@@ -33,6 +33,7 @@ const TrialPage = () => {
     email: "",
     phone: "",
     cpf_cnpj: "",
+    support_option: "" as "" | "email" | "agendar",
     available_date: "",
     available_time: "",
   });
@@ -40,7 +41,6 @@ const TrialPage = () => {
 
   const submitTrial = useMutation({
     mutationFn: async () => {
-      // Find the trial subcategory
       const { data: categories } = await supabase
         .from("ticket_categories")
         .select("id")
@@ -50,6 +50,10 @@ const TrialPage = () => {
 
       const categoryId = categories?.[0]?.id || null;
 
+      const optionLabel = form.support_option === "email"
+        ? "📧 Receber por e-mail (acesso + manual)"
+        : "📅 Agendamento de suporte remoto";
+
       const description = [
         `📋 Solicitação de Teste Gratuito 14 Dias`,
         ``,
@@ -57,8 +61,10 @@ const TrialPage = () => {
         `E-mail: ${form.email}`,
         `WhatsApp: ${form.phone}`,
         form.cpf_cnpj ? `CPF/CNPJ: ${form.cpf_cnpj}` : null,
-        `Data disponível: ${form.available_date}`,
-        `Horário disponível: ${form.available_time}`,
+        ``,
+        `Opção escolhida: ${optionLabel}`,
+        form.support_option === "agendar" ? `Data disponível: ${form.available_date}` : null,
+        form.support_option === "agendar" ? `Horário disponível: ${form.available_time}` : null,
         ``,
         `🎁 Benefícios do teste:`,
         `• 15 dias de teste gratuito`,
@@ -85,7 +91,9 @@ const TrialPage = () => {
     onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
   });
 
-  const canSubmit = form.name && form.email && form.phone && form.available_date && form.available_time;
+  const canSubmit =
+    form.name && form.email && form.phone && form.support_option &&
+    (form.support_option === "email" || (form.available_date && form.available_time));
 
   if (submitted) {
     return (
@@ -153,25 +161,78 @@ const TrialPage = () => {
             value={form.cpf_cnpj}
             onChange={(e) => setForm({ ...form, cpf_cnpj: formatCpfCnpj(e.target.value) })}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm text-muted-foreground mb-1 block">Data disponível *</label>
-              <Input
-                type="date"
-                value={form.available_date}
-                onChange={(e) => setForm({ ...form, available_date: e.target.value })}
-                min={new Date().toISOString().split("T")[0]}
-              />
+
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-foreground block">Como deseja receber o acesso? *</label>
+            <div
+              onClick={() => setForm({ ...form, support_option: "email", available_date: "", available_time: "" })}
+              className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                form.support_option === "email"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/40"
+              }`}
+            >
+              <div className={`mt-0.5 h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                form.support_option === "email" ? "border-primary" : "border-muted-foreground"
+              }`}>
+                {form.support_option === "email" && <div className="h-2 w-2 rounded-full bg-primary" />}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">Receber por e-mail</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Receba as informações de acesso e o manual de uso diretamente no seu e-mail.
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="text-sm text-muted-foreground mb-1 block">Horário disponível *</label>
-              <Input
-                type="time"
-                value={form.available_time}
-                onChange={(e) => setForm({ ...form, available_time: e.target.value })}
-              />
+            <div
+              onClick={() => setForm({ ...form, support_option: "agendar" })}
+              className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                form.support_option === "agendar"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/40"
+              }`}
+            >
+              <div className={`mt-0.5 h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                form.support_option === "agendar" ? "border-primary" : "border-muted-foreground"
+              }`}>
+                {form.support_option === "agendar" && <div className="h-2 w-2 rounded-full bg-primary" />}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">Agendar suporte remoto</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Agende uma data e horário para instalação assistida com nossa equipe técnica.
+                </p>
+              </div>
             </div>
           </div>
+
+          {form.support_option === "agendar" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">Data disponível *</label>
+                <Input
+                  type="date"
+                  value={form.available_date}
+                  onChange={(e) => setForm({ ...form, available_date: e.target.value })}
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">Horário disponível *</label>
+                <Input
+                  type="time"
+                  value={form.available_time}
+                  onChange={(e) => setForm({ ...form, available_time: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
 
           <Button
             onClick={() => submitTrial.mutate()}
