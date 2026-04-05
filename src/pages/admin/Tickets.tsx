@@ -146,6 +146,45 @@ const Tickets = () => {
     },
   });
 
+  const parseTrialDescription = (desc: string) => {
+    const get = (label: string) => {
+      const match = desc.match(new RegExp(`${label}:\\s*(.+)`));
+      return match?.[1]?.trim() || "";
+    };
+    return {
+      name: get("Nome"),
+      email: get("E-mail"),
+      phone: get("WhatsApp"),
+      cpf_cnpj: get("CPF/CNPJ"),
+    };
+  };
+
+  const isTrialTicket = (t: any) =>
+    t?.created_by === "00000000-0000-0000-0000-000000000000" &&
+    t?.subject?.includes("Teste Grátis");
+
+  const convertToCustomer = useMutation({
+    mutationFn: async (ticket: any) => {
+      const parsed = parseTrialDescription(ticket.description || "");
+      if (!parsed.name) throw new Error("Não foi possível extrair o nome do chamado.");
+      const { error } = await supabase.from("customers").insert({
+        name: parsed.name,
+        email: parsed.email || null,
+        phone: parsed.phone || null,
+        cnpj: parsed.cpf_cnpj || null,
+        status: "active",
+        plan: "trial",
+        notes: `Convertido do chamado ${ticket.ticket_number}`,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers_list"] });
+      toast({ title: "Cliente criado com sucesso a partir do chamado de teste!" });
+    },
+    onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
+  });
+
   const getProfileName = (uid: string) => {
     const p = profiles.find((pr: any) => pr.user_id === uid);
     return p?.full_name || uid?.slice(0, 8);
