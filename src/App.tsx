@@ -49,6 +49,15 @@ import ClientInvoices from "./pages/client/ClientInvoices";
 import ClientServices from "./pages/client/ClientServices";
 import ClientOmbudsman from "./pages/client/ClientOmbudsman";
 import AdminOmbudsman from "./pages/admin/Ombudsman";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import LgpdRequest from "./pages/LgpdRequest";
+import CookieConsentBanner from "./components/CookieConsentBanner";
+import LgpdDashboard from "./pages/admin/lgpd/LgpdDashboard";
+import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
+import LgpdConsents from "./pages/admin/lgpd/LgpdConsents";
+import LgpdRequests from "./pages/admin/lgpd/LgpdRequests";
+import LgpdIncidents from "./pages/admin/lgpd/LgpdIncidents";
 
 const queryClient = new QueryClient();
 
@@ -60,11 +69,15 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
+          <CookieConsentBanner />
           <Routes>
             {/* Landing page pública */}
             <Route path="/" element={<Index />} />
             <Route path="/solucao/:slug" element={<SolutionPage />} />
             <Route path="/teste-gratis" element={<TrialPage />} />
+            <Route path="/privacidade" element={<PrivacyPolicy />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
+            <Route path="/lgpd/solicitar" element={<LgpdRequest />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
@@ -98,6 +111,11 @@ const App = () => (
               <Route path="commercial-requests" element={<CommercialRequests />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
+              <Route path="lgpd" element={<LgpdDashboard />} />
+              <Route path="lgpd/ropa" element={<LgpdRopa />} />
+              <Route path="lgpd/consents" element={<LgpdConsents />} />
+              <Route path="lgpd/requests" element={<LgpdRequests />} />
+              <Route path="lgpd/incidents" element={<LgpdIncidents />} />
               <Route path="financial" element={<FinancialSummary />} />
               <Route path="financial/cfo" element={<CFOPanel />} />
               <Route path="financial/dre" element={<DRECaixa />} />

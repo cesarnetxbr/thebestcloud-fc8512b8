@@ -66,9 +66,11 @@ const Footer = () => {
           <p className="text-background/50 text-xs">
             © {currentYear} The Best Cloud. Todos os direitos reservados.
           </p>
-          <div className="flex gap-4 text-xs">
-            <a href="#" className="text-background/50 hover:text-accent transition-colors">Política de Privacidade</a>
-            <a href="#" className="text-background/50 hover:text-accent transition-colors">Termos de Uso</a>
+          <div className="flex flex-wrap gap-4 text-xs">
+            <Link to="/privacidade" className="text-background/50 hover:text-accent transition-colors">Política de Privacidade</Link>
+            <Link to="/cookies" className="text-background/50 hover:text-accent transition-colors">Política de Cookies</Link>
+            <Link to="/lgpd/solicitar" className="text-background/50 hover:text-accent transition-colors">Seus Direitos (LGPD)</Link>
+            <a href="mailto:dpo@thebestcloud.com.br" className="text-background/50 hover:text-accent transition-colors">DPO: dpo@thebestcloud.com.br</a>
           </div>
         </div>
       </div>
