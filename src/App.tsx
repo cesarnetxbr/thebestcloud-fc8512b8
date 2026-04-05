@@ -45,6 +45,8 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientTickets from "./pages/client/ClientTickets";
 import ClientInvoices from "./pages/client/ClientInvoices";
 import ClientServices from "./pages/client/ClientServices";
+import ClientOmbudsman from "./pages/client/ClientOmbudsman";
+import AdminOmbudsman from "./pages/admin/Ombudsman";
 
 const queryClient = new QueryClient();
 
