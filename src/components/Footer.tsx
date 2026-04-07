@@ -8,7 +8,7 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-10">
           <div className="lg:col-span-1">
             <img src={logo} alt="The Best Cloud" className="h-10 w-auto mb-4 brightness-0 invert" />
             <p className="text-background/70 text-sm leading-relaxed max-w-sm">
@@ -40,6 +40,15 @@ const Footer = () => {
           </div>
 
           <div>
+            <h4 className="font-semibold text-sm mb-4 text-background/90">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/privacidade" className="text-background/60 hover:text-accent transition-colors">Política de Privacidade</Link></li>
+              <li><Link to="/lgpd/solicitar" className="text-background/60 hover:text-accent transition-colors">LGPD</Link></li>
+              <li><Link to="/portal/ouvidoria" className="text-background/60 hover:text-accent transition-colors">Ouvidoria</Link></li>
+            </ul>
+          </div>
+
+          <div>
             <h4 className="font-semibold text-sm mb-4 text-background/90">Contato</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2">
@@ -67,9 +76,7 @@ const Footer = () => {
             © {currentYear} The Best Cloud. Todos os direitos reservados.
           </p>
           <div className="flex flex-wrap gap-4 text-xs">
-            <Link to="/privacidade" className="text-background/50 hover:text-accent transition-colors">Política de Privacidade</Link>
             <Link to="/cookies" className="text-background/50 hover:text-accent transition-colors">Política de Cookies</Link>
-            <Link to="/lgpd/solicitar" className="text-background/50 hover:text-accent transition-colors">Seus Direitos (LGPD)</Link>
             <a href="mailto:dpo@thebestcloud.com.br" className="text-background/50 hover:text-accent transition-colors">DPO: dpo@thebestcloud.com.br</a>
           </div>
         </div>

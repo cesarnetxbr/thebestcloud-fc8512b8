@@ -6,7 +6,6 @@ import logo from "@/assets/logo.png";
 
 const menuItems = [
   { label: "Início", href: "/" },
-  { label: "Ouvidoria", href: "/portal/ouvidoria" },
   {
     label: "Segurança",
     children: [
