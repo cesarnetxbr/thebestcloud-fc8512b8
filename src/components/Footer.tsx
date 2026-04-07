@@ -8,7 +8,7 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-10">
           <div className="lg:col-span-1">
             <img src={logo} alt="The Best Cloud" className="h-10 w-auto mb-4 brightness-0 invert" />
             <p className="text-background/70 text-sm leading-relaxed max-w-sm">
@@ -76,9 +76,7 @@ const Footer = () => {
             © {currentYear} The Best Cloud. Todos os direitos reservados.
           </p>
           <div className="flex flex-wrap gap-4 text-xs">
-            <Link to="/privacidade" className="text-background/50 hover:text-accent transition-colors">Política de Privacidade</Link>
             <Link to="/cookies" className="text-background/50 hover:text-accent transition-colors">Política de Cookies</Link>
-            <Link to="/lgpd/solicitar" className="text-background/50 hover:text-accent transition-colors">Seus Direitos (LGPD)</Link>
             <a href="mailto:dpo@thebestcloud.com.br" className="text-background/50 hover:text-accent transition-colors">DPO: dpo@thebestcloud.com.br</a>
           </div>
         </div>
