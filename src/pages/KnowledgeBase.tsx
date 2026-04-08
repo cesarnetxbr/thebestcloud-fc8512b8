@@ -108,7 +108,11 @@ const KnowledgeBase = () => {
             />
           </div>
 
-          {/* Stats */}
+          {/* AI Smart Search */}
+          <div className="mt-8">
+            <KBSmartSearch />
+          </div>
+
           <div className="flex flex-wrap justify-center gap-6 mt-8">
             <div className="text-center">
               <p className="text-2xl font-bold text-primary">{stats.total}</p>
