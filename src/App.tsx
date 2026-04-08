@@ -59,6 +59,7 @@ import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
 import LgpdConsents from "./pages/admin/lgpd/LgpdConsents";
 import LgpdRequests from "./pages/admin/lgpd/LgpdRequests";
 import LgpdIncidents from "./pages/admin/lgpd/LgpdIncidents";
+import Quotes from "./pages/admin/Quotes";
 
 const queryClient = new QueryClient();
 

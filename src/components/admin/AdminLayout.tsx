@@ -68,6 +68,7 @@ const navSections: NavSection[] = [
     title: "COMERCIAL",
     items: [
       { label: "Solicitações", icon: Kanban, path: "/admin/commercial-requests" },
+      { label: "Orçamentos", icon: FileText, path: "/admin/quotes" },
     ],
   },
   {
