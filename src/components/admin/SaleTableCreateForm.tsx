@@ -22,7 +22,15 @@ interface SaleItemRow {
   percentage: string;
   sale_value: string;
   variation: "fixed" | "percentage";
+  category: string;
 }
+
+const SALE_CATEGORIES = [
+  { value: "seguranca", label: "Segurança" },
+  { value: "protecao", label: "Proteção" },
+  { value: "operacoes", label: "Operações" },
+  { value: "outros_servicos", label: "Outros Serviços" },
+];
 
 interface SaleTableCreateFormProps {
   onCreated: () => void;
