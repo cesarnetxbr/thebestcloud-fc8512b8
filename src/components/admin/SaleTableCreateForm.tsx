@@ -200,6 +200,7 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
       sku_code: r.sku_code,
       currency: r.currency,
       unit_value: parseFloat(r.sale_value) || 0,
+      category: r.category,
     }));
 
     const { error: itemsError } = await supabase.from("price_table_items").insert(items);
