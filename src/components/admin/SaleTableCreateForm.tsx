@@ -330,10 +330,26 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
           {rows.map((row, index) => (
             <div
               key={index}
-              className="grid grid-cols-[40px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 items-center px-2 py-2 border-b last:border-b-0 hover:bg-muted/30 min-w-[1000px]"
+              className="grid grid-cols-[40px_120px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 items-center px-2 py-2 border-b last:border-b-0 hover:bg-muted/30 min-w-[1100px]"
             >
               <div className="flex items-center justify-center text-muted-foreground cursor-grab">
                 <GripVertical className="h-4 w-4" />
+              </div>
+              <div className="px-1">
+                <Select value={row.category} onValueChange={(v) => {
+                  const updated = [...rows];
+                  updated[index] = { ...updated[index], category: v };
+                  setRows(updated);
+                }}>
+                  <SelectTrigger className="h-9 text-xs border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SALE_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="px-1">
                 <span className="text-sm truncate block" title={row.item_name}>{row.item_name}</span>
