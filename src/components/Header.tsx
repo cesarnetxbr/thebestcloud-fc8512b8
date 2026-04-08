@@ -6,6 +6,7 @@ import logo from "@/assets/logo.png";
 
 const menuItems = [
   { label: "Início", href: "/" },
+  { label: "Base de Conhecimento", href: "/base-conhecimento" },
   {
     label: "Segurança",
     children: [

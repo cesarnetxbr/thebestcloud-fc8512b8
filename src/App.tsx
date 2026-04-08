@@ -53,6 +53,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import LgpdRequest from "./pages/LgpdRequest";
 import PublicOmbudsman from "./pages/PublicOmbudsman";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import LgpdDashboard from "./pages/admin/lgpd/LgpdDashboard";
 import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/lgpd/solicitar" element={<LgpdRequest />} />
             <Route path="/ouvidoria" element={<PublicOmbudsman />} />
+            <Route path="/base-conhecimento" element={<KnowledgeBase />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
