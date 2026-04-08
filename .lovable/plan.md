@@ -1,46 +1,34 @@
-## Módulo LGPD — Plano de Implementação
+## Módulo de Orçamentos — Plano de Implementação
 
-### Módulos Protegidos (não serão alterados)
+### Módulos Protegidos (sem alteração)
 - Landing Page, Dashboard, Conexões, Tenants, SKUs, Tabelas de Custo/Venda
-- Faturamento, Gestão Financeira, Solicitações Comerciais, Chamados, Auditoria
-- Portal do Cliente, Ouvidoria, Usuários, Clientes
+- Faturamento, Gestão Financeira, Solicitações Comerciais, Chamados, Ouvidoria
+- Portal do Cliente, LGPD, Usuários, Auditoria, Configurações
 
 ### Módulos Expandidos
-- **Header**: adicionar link para Política de Privacidade no footer
-- **Footer**: adicionar links LGPD (Privacidade, Cookies, DPO)
-- **AdminLayout**: adicionar menu "LGPD" no sidebar
+- **AdminLayout**: adicionar item "Orçamentos" na seção COMERCIAL
+- **App.tsx**: adicionar rota `/admin/quotes`
 
 ### Novas Tabelas (Migration)
-1. **`lgpd_data_mapping`** — Registro de operações de tratamento (ROPA)
-   - `data_category`, `purpose`, `legal_basis`, `storage_location`, `retention_period`, `third_parties`, `is_sensitive`
-2. **`lgpd_consent_records`** — Log de consentimentos obtidos
-   - `user_identifier`, `consent_type`, `granted`, `ip_address`, `user_agent`
-3. **`lgpd_data_requests`** — Solicitações de titulares (acesso/correção/exclusão)
-   - `requester_name`, `requester_email`, `request_type`, `status`, `response`, `protocol_number`
-4. **`lgpd_incidents`** — Registro de incidentes de segurança
-   - `title`, `description`, `severity`, `affected_data`, `notified_anpd`, `resolution`
+1. **`quotes`** — Propostas comerciais
+   - `quote_number`, `customer_id`, `customer_name`, `contact_name`, `contact_email`, `contact_phone`, `contact_department`
+   - `introduction_text`, `payment_terms`, `validity_days`, `status` (rascunho/enviado/aprovado/recusado)
+   - `total_value`, `notes`, `created_by`, `signed_by_name`, `signed_by_title`
 
-### Novas Páginas
+2. **`quote_items`** — Itens da proposta
+   - `quote_id`, `item_number`, `category` (implementação/backup/cybersegurança/etc)
+   - `service_name`, `description`, `quantity`, `unit_price`, `total_price`, `markup_info`
 
-**Área Administrativa (`/admin/lgpd/...`)**
-1. `/admin/lgpd` — Dashboard LGPD (visão geral de conformidade)
-2. `/admin/lgpd/ropa` — Mapeamento de Dados (CRUD da tabela lgpd_data_mapping)
-3. `/admin/lgpd/consents` — Registros de Consentimento (visualização dos logs)
-4. `/admin/lgpd/requests` — Solicitações de Titulares (gerenciar pedidos)
-5. `/admin/lgpd/incidents` — Incidentes de Segurança (registro e acompanhamento)
-6. `/admin/lgpd/settings` — Config DPO + Política de Privacidade
+### Nova Página
+- `/admin/quotes` — Lista de orçamentos com CRUD completo
+  - Formulário de criação com seções baseadas no modelo PDF
+  - Pré-preenchimento com dados do cliente (da tabela `customers`)
+  - Categorias de serviços: Implementação, Treinamento, Proteção de Dados, Cybersegurança, Gerenciamento
+  - Visualização/preview da proposta com cores e logo The Best Cloud
+  - Geração de PDF para download
 
-**Páginas Públicas**
-7. `/privacidade` — Política de Privacidade completa
-8. `/cookies` — Política de Cookies
-
-**Componentes**
-9. **CookieConsentBanner** — Banner de cookies com aceitar/recusar/personalizar
-10. **Links no Footer** para Privacidade, Cookies e contato DPO
-
-### Etapas de Execução
-1. **Migration** — Criar tabelas + RLS
-2. **Páginas públicas** — Privacidade + Cookies
-3. **Cookie Banner** — Componente global com persistência
-4. **Admin LGPD** — Dashboard + ROPA + Solicitações + Incidentes
-5. **Integração** — Menu admin + Footer + rotas
+### Etapas
+1. **Migration** — Criar tabelas `quotes` e `quote_items` com RLS
+2. **Página admin** — CRUD de orçamentos com formulário por seções
+3. **Preview/PDF** — Visualização e geração de PDF da proposta
+4. **Integração** — Menu admin + rota
