@@ -368,6 +368,7 @@ const Quotes = () => {
                       <SelectContent>
                         {saleTableItems
                           .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
+                          .filter((s, i, arr) => arr.findIndex((x) => x.item_name === s.item_name) === i)
                           .map((s) => (
                             <SelectItem key={s.id} value={s.item_name}>
                               {s.item_name}
