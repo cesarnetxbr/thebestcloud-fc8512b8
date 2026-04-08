@@ -52,6 +52,7 @@ import AdminOmbudsman from "./pages/admin/Ombudsman";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import LgpdRequest from "./pages/LgpdRequest";
+import PublicOmbudsman from "./pages/PublicOmbudsman";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import LgpdDashboard from "./pages/admin/lgpd/LgpdDashboard";
 import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
