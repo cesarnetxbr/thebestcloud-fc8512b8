@@ -297,8 +297,9 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
       ) : (
         <div className="border rounded-lg overflow-x-auto">
           {/* Header */}
-          <div className="grid grid-cols-[40px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 bg-muted/50 px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b min-w-[1000px]">
+          <div className="grid grid-cols-[40px_120px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 bg-muted/50 px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b min-w-[1100px]">
             <div></div>
+            <div className="px-2">Categoria</div>
             <div className="px-2">Nome do item</div>
             <div className="px-2">SKU</div>
             <div className="px-2">Moeda</div>
