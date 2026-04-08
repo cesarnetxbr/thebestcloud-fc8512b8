@@ -840,6 +840,7 @@ export type Database = {
       }
       price_table_items: {
         Row: {
+          category: string
           created_at: string
           currency: string
           id: string
@@ -849,6 +850,7 @@ export type Database = {
           unit_value: number
         }
         Insert: {
+          category?: string
           created_at?: string
           currency?: string
           id?: string
@@ -858,6 +860,7 @@ export type Database = {
           unit_value?: number
         }
         Update: {
+          category?: string
           created_at?: string
           currency?: string
           id?: string
