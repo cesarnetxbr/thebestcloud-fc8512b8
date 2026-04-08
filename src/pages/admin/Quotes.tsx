@@ -583,7 +583,7 @@ const Quotes = () => {
                             )}
                           </td>
                           <td className="p-2 border">
-                            {SERVICE_CATEGORIES.find((c) => c.value === item.category)?.label || item.category}
+                            {QUOTE_CATEGORIES.find((c) => c.value === item.category)?.label || item.category}
                           </td>
                           <td className="p-2 border text-right">{item.quantity}</td>
                           <td className="p-2 border text-right">{formatCurrency(item.unit_price)}</td>
