@@ -44,7 +44,7 @@ interface QuoteItem {
 
 const emptyItem = (): QuoteItem => ({
   item_number: 1,
-  category: "servico",
+  category: "outros_servicos",
   service_name: "",
   description: "",
   quantity: 1,
