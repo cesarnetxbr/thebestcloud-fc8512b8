@@ -954,6 +954,130 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          item_number: number
+          markup_info: string | null
+          quantity: number
+          quote_id: string
+          service_name: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_number?: number
+          markup_info?: string | null
+          quantity?: number
+          quote_id: string
+          service_name: string
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_number?: number
+          markup_info?: string | null
+          quantity?: number
+          quote_id?: string
+          service_name?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          contact_department: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          customer_name: string
+          id: string
+          introduction_text: string | null
+          notes: string | null
+          payment_terms: string | null
+          quote_number: string
+          signed_by_name: string | null
+          signed_by_title: string | null
+          status: string
+          total_value: number | null
+          updated_at: string
+          validity_days: number | null
+        }
+        Insert: {
+          contact_department?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          customer_name: string
+          id?: string
+          introduction_text?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          quote_number: string
+          signed_by_name?: string | null
+          signed_by_title?: string | null
+          status?: string
+          total_value?: number | null
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Update: {
+          contact_department?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          customer_name?: string
+          id?: string
+          introduction_text?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          quote_number?: string
+          signed_by_name?: string | null
+          signed_by_title?: string | null
+          status?: string
+          total_value?: number | null
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permission_presets: {
         Row: {
           can_create: boolean | null
