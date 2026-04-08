@@ -16,23 +16,11 @@ import { toast } from "sonner";
 import { Plus, Eye, Trash2, FileText, Download, Search, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 
-const SERVICE_CATEGORIES = [
-  { value: "implementacao", label: "Implementação" },
-  { value: "treinamento", label: "Treinamento" },
-  { value: "backup", label: "Proteção de Dados (Backup)" },
-  { value: "backup_avancado", label: "Backup Avançado" },
-  { value: "backup_365", label: "Backup 365 / Google Workspace" },
-  { value: "dr", label: "Recuperação de Desastres (DR)" },
-  { value: "cyberseguranca", label: "Cybersegurança" },
-  { value: "edr", label: "EDR" },
-  { value: "xdr", label: "XDR" },
-  { value: "mdr", label: "MDR" },
-  { value: "dlp", label: "DLP" },
-  { value: "email_security", label: "Segurança de Email" },
-  { value: "gerenciamento", label: "Gerenciamento Avançado" },
-  { value: "inventario", label: "Inventário HW/SW" },
-  { value: "servicos_gerenciados", label: "Serviços Gerenciados" },
-  { value: "outro", label: "Outro" },
+const QUOTE_CATEGORIES = [
+  { value: "seguranca", label: "Segurança" },
+  { value: "protecao", label: "Proteção" },
+  { value: "operacoes", label: "Operações" },
+  { value: "outros_servicos", label: "Outros Serviços" },
 ];
 
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
