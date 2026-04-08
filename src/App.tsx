@@ -78,6 +78,7 @@ const App = () => (
             <Route path="/privacidade" element={<PrivacyPolicy />} />
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/lgpd/solicitar" element={<LgpdRequest />} />
+            <Route path="/ouvidoria" element={<PublicOmbudsman />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
