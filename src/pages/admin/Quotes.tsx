@@ -16,23 +16,11 @@ import { toast } from "sonner";
 import { Plus, Eye, Trash2, FileText, Download, Search, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 
-const SERVICE_CATEGORIES = [
-  { value: "implementacao", label: "Implementação" },
-  { value: "treinamento", label: "Treinamento" },
-  { value: "backup", label: "Proteção de Dados (Backup)" },
-  { value: "backup_avancado", label: "Backup Avançado" },
-  { value: "backup_365", label: "Backup 365 / Google Workspace" },
-  { value: "dr", label: "Recuperação de Desastres (DR)" },
-  { value: "cyberseguranca", label: "Cybersegurança" },
-  { value: "edr", label: "EDR" },
-  { value: "xdr", label: "XDR" },
-  { value: "mdr", label: "MDR" },
-  { value: "dlp", label: "DLP" },
-  { value: "email_security", label: "Segurança de Email" },
-  { value: "gerenciamento", label: "Gerenciamento Avançado" },
-  { value: "inventario", label: "Inventário HW/SW" },
-  { value: "servicos_gerenciados", label: "Serviços Gerenciados" },
-  { value: "outro", label: "Outro" },
+const QUOTE_CATEGORIES = [
+  { value: "seguranca", label: "Segurança" },
+  { value: "protecao", label: "Proteção" },
+  { value: "operacoes", label: "Operações" },
+  { value: "outros_servicos", label: "Outros Serviços" },
 ];
 
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -56,7 +44,7 @@ interface QuoteItem {
 
 const emptyItem = (): QuoteItem => ({
   item_number: 1,
-  category: "servico",
+  category: "outros_servicos",
   service_name: "",
   description: "",
   quantity: 1,
@@ -110,6 +98,25 @@ const Quotes = () => {
         .order("name");
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: saleTableItems = [] } = useQuery({
+    queryKey: ["sale-table-items"],
+    queryFn: async () => {
+      const { data: saleTables } = await supabase
+        .from("price_tables")
+        .select("id")
+        .eq("type", "sale");
+      if (!saleTables?.length) return [];
+      const tableIds = saleTables.map((t) => t.id);
+      const { data, error } = await supabase
+        .from("price_table_items")
+        .select("id, item_name, unit_value, category, price_table_id")
+        .in("price_table_id", tableIds)
+        .order("item_name");
+      if (error) throw error;
+      return data || [];
     },
   });
 
@@ -324,12 +331,17 @@ const Quotes = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <Label>Categoria</Label>
-                    <Select value={item.category} onValueChange={(v) => updateItem(idx, "category", v)}>
+                    <Select value={item.category} onValueChange={(v) => {
+                      updateItem(idx, "category", v);
+                      updateItem(idx, "service_name", "");
+                      updateItem(idx, "unit_price", 0);
+                      updateItem(idx, "total_price", 0);
+                    }}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {SERVICE_CATEGORIES.map((c) => (
+                        {QUOTE_CATEGORIES.map((c) => (
                           <SelectItem key={c.value} value={c.value}>
                             {c.label}
                           </SelectItem>
@@ -339,10 +351,30 @@ const Quotes = () => {
                   </div>
                   <div className="md:col-span-2">
                     <Label>Nome do Serviço *</Label>
-                    <Input
+                    <Select
                       value={item.service_name}
-                      onChange={(e) => updateItem(idx, "service_name", e.target.value)}
-                    />
+                      onValueChange={(v) => {
+                        const saleItem = saleTableItems.find((s) => s.item_name === v);
+                        updateItem(idx, "service_name", v);
+                        if (saleItem) {
+                          updateItem(idx, "unit_price", saleItem.unit_value || 0);
+                          updateItem(idx, "total_price", (saleItem.unit_value || 0) * item.quantity);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um serviço" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {saleTableItems
+                          .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
+                          .map((s) => (
+                            <SelectItem key={s.id} value={s.item_name}>
+                              {s.item_name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
@@ -595,7 +627,7 @@ const Quotes = () => {
                             )}
                           </td>
                           <td className="p-2 border">
-                            {SERVICE_CATEGORIES.find((c) => c.value === item.category)?.label || item.category}
+                            {QUOTE_CATEGORIES.find((c) => c.value === item.category)?.label || item.category}
                           </td>
                           <td className="p-2 border text-right">{item.quantity}</td>
                           <td className="p-2 border text-right">{formatCurrency(item.unit_price)}</td>

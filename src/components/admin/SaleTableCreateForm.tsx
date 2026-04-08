@@ -22,7 +22,15 @@ interface SaleItemRow {
   percentage: string;
   sale_value: string;
   variation: "fixed" | "percentage";
+  category: string;
 }
+
+const SALE_CATEGORIES = [
+  { value: "seguranca", label: "Segurança" },
+  { value: "protecao", label: "Proteção" },
+  { value: "operacoes", label: "Operações" },
+  { value: "outros_servicos", label: "Outros Serviços" },
+];
 
 interface SaleTableCreateFormProps {
   onCreated: () => void;
@@ -93,6 +101,7 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
           percentage: "0",
           sale_value: String(item.unit_value),
           variation: "fixed" as const,
+          category: item.category || "outros_servicos",
         }))
       );
     } else {
@@ -152,7 +161,7 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
   };
 
   const addRow = () => {
-    setRows([...rows, { item_name: "", sku_code: "", currency: "BRL", cost_value: 0, percentage: "0", sale_value: "0", variation: "fixed" }]);
+    setRows([...rows, { item_name: "", sku_code: "", currency: "BRL", cost_value: 0, percentage: "0", sale_value: "0", variation: "fixed", category: "outros_servicos" }]);
   };
 
   const removeRow = (index: number) => {
@@ -191,6 +200,7 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
       sku_code: r.sku_code,
       currency: r.currency,
       unit_value: parseFloat(r.sale_value) || 0,
+      category: r.category,
     }));
 
     const { error: itemsError } = await supabase.from("price_table_items").insert(items);
@@ -287,8 +297,9 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
       ) : (
         <div className="border rounded-lg overflow-x-auto">
           {/* Header */}
-          <div className="grid grid-cols-[40px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 bg-muted/50 px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b min-w-[1000px]">
+          <div className="grid grid-cols-[40px_120px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 bg-muted/50 px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b min-w-[1100px]">
             <div></div>
+            <div className="px-2">Categoria</div>
             <div className="px-2">Nome do item</div>
             <div className="px-2">SKU</div>
             <div className="px-2">Moeda</div>
@@ -319,10 +330,26 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
           {rows.map((row, index) => (
             <div
               key={index}
-              className="grid grid-cols-[40px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 items-center px-2 py-2 border-b last:border-b-0 hover:bg-muted/30 min-w-[1000px]"
+              className="grid grid-cols-[40px_120px_1fr_140px_100px_140px_140px_140px_100px_80px] gap-0 items-center px-2 py-2 border-b last:border-b-0 hover:bg-muted/30 min-w-[1100px]"
             >
               <div className="flex items-center justify-center text-muted-foreground cursor-grab">
                 <GripVertical className="h-4 w-4" />
+              </div>
+              <div className="px-1">
+                <Select value={row.category} onValueChange={(v) => {
+                  const updated = [...rows];
+                  updated[index] = { ...updated[index], category: v };
+                  setRows(updated);
+                }}>
+                  <SelectTrigger className="h-9 text-xs border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SALE_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="px-1">
                 <span className="text-sm truncate block" title={row.item_name}>{row.item_name}</span>
