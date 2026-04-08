@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { articles, categories } from "@/data/knowledgeBase";
+import KBSmartSearch from "@/components/KBSmartSearch";
 
 const categoryIcons: Record<string, typeof BookOpen> = {
   todos: BookOpen,
