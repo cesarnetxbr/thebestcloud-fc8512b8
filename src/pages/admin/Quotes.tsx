@@ -101,6 +101,25 @@ const Quotes = () => {
     },
   });
 
+  const { data: saleTableItems = [] } = useQuery({
+    queryKey: ["sale-table-items"],
+    queryFn: async () => {
+      const { data: saleTables } = await supabase
+        .from("price_tables")
+        .select("id")
+        .eq("type", "sale");
+      if (!saleTables?.length) return [];
+      const tableIds = saleTables.map((t) => t.id);
+      const { data, error } = await supabase
+        .from("price_table_items")
+        .select("id, item_name, unit_value, category, price_table_id")
+        .in("price_table_id", tableIds)
+        .order("item_name");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async () => {
       const totalValue = items.reduce((sum, i) => sum + (i.total_price || 0), 0);
