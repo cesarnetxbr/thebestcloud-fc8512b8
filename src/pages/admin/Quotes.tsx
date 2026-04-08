@@ -331,12 +331,17 @@ const Quotes = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <Label>Categoria</Label>
-                    <Select value={item.category} onValueChange={(v) => updateItem(idx, "category", v)}>
+                    <Select value={item.category} onValueChange={(v) => {
+                      updateItem(idx, "category", v);
+                      updateItem(idx, "service_name", "");
+                      updateItem(idx, "unit_price", 0);
+                      updateItem(idx, "total_price", 0);
+                    }}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {SERVICE_CATEGORIES.map((c) => (
+                        {QUOTE_CATEGORIES.map((c) => (
                           <SelectItem key={c.value} value={c.value}>
                             {c.label}
                           </SelectItem>
@@ -346,10 +351,30 @@ const Quotes = () => {
                   </div>
                   <div className="md:col-span-2">
                     <Label>Nome do Serviço *</Label>
-                    <Input
+                    <Select
                       value={item.service_name}
-                      onChange={(e) => updateItem(idx, "service_name", e.target.value)}
-                    />
+                      onValueChange={(v) => {
+                        const saleItem = saleTableItems.find((s) => s.item_name === v);
+                        updateItem(idx, "service_name", v);
+                        if (saleItem) {
+                          updateItem(idx, "unit_price", saleItem.unit_value || 0);
+                          updateItem(idx, "total_price", (saleItem.unit_value || 0) * item.quantity);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um serviço" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {saleTableItems
+                          .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
+                          .map((s) => (
+                            <SelectItem key={s.id} value={s.item_name}>
+                              {s.item_name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
