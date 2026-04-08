@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { articles, categories } from "@/data/knowledgeBase";
+import KBSmartSearch from "@/components/KBSmartSearch";
 
 const categoryIcons: Record<string, typeof BookOpen> = {
   todos: BookOpen,
@@ -107,7 +108,11 @@ const KnowledgeBase = () => {
             />
           </div>
 
-          {/* Stats */}
+          {/* AI Smart Search */}
+          <div className="mt-8">
+            <KBSmartSearch />
+          </div>
+
           <div className="flex flex-wrap justify-center gap-6 mt-8">
             <div className="text-center">
               <p className="text-2xl font-bold text-primary">{stats.total}</p>
