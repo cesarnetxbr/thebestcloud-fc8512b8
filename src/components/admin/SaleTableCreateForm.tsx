@@ -101,6 +101,7 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
           percentage: "0",
           sale_value: String(item.unit_value),
           variation: "fixed" as const,
+          category: item.category || "outros_servicos",
         }))
       );
     } else {
