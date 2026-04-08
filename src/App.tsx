@@ -59,6 +59,7 @@ import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
 import LgpdConsents from "./pages/admin/lgpd/LgpdConsents";
 import LgpdRequests from "./pages/admin/lgpd/LgpdRequests";
 import LgpdIncidents from "./pages/admin/lgpd/LgpdIncidents";
+import Quotes from "./pages/admin/Quotes";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="tickets" element={<Tickets />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
+              <Route path="quotes" element={<Quotes />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="lgpd" element={<LgpdDashboard />} />
