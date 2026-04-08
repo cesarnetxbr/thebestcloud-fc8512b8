@@ -161,7 +161,7 @@ const SaleTableCreateForm = ({ onCreated, onCancel }: SaleTableCreateFormProps) 
   };
 
   const addRow = () => {
-    setRows([...rows, { item_name: "", sku_code: "", currency: "BRL", cost_value: 0, percentage: "0", sale_value: "0", variation: "fixed" }]);
+    setRows([...rows, { item_name: "", sku_code: "", currency: "BRL", cost_value: 0, percentage: "0", sale_value: "0", variation: "fixed", category: "outros_servicos" }]);
   };
 
   const removeRow = (index: number) => {
