@@ -230,12 +230,18 @@ const InvoiceCostDetail = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex justify-center gap-4 flex-wrap">
+      <div className="flex justify-center gap-3 flex-wrap">
         <Button variant="outline" size="sm" onClick={goToSaleComparison}>
           <GitCompareArrows className="h-4 w-4 mr-2" /> Comparar com Venda
         </Button>
         <Button variant="outline" size="sm" onClick={exportCSV}>
-          <Download className="h-4 w-4 mr-2" /> Download
+          <Download className="h-4 w-4 mr-2" /> CSV
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoiceXLS(d); }}>
+          <FileSpreadsheet className="h-4 w-4 mr-2" /> XLS
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoicePDF(d); }}>
+          <FileText className="h-4 w-4 mr-2" /> PDF
         </Button>
       </div>
 
