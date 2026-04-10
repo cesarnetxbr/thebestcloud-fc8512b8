@@ -248,7 +248,13 @@ const InvoiceSaleDetail = () => {
           <RefreshCw className="h-4 w-4 mr-2" /> Sincronizar CRM
         </Button>
         <Button variant="outline" size="sm" onClick={exportCSV}>
-          <Download className="h-4 w-4 mr-2" /> Download
+          <Download className="h-4 w-4 mr-2" /> CSV
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoiceXLS(d); }}>
+          <FileSpreadsheet className="h-4 w-4 mr-2" /> XLS
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoicePDF(d); }}>
+          <FileText className="h-4 w-4 mr-2" /> PDF
         </Button>
       </div>
 
