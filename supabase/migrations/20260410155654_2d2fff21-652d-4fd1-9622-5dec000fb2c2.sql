@@ -1,0 +1,1 @@
+DELETE FROM public.tenant_usage WHERE usage_date = '2026-04-10';
