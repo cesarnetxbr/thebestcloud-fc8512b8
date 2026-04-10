@@ -668,12 +668,117 @@ const Tenants = () => {
               {/* Sale Table Selector */}
               <Select
                 value={selectedTenant.sale_table_id || ""}
-                onValueChange={(v) => {
+                onValueChange={async (v) => {
+                  const newTableId = v || null;
                   linkMutation.mutate({
                     tenantId: selectedTenant.id,
-                    updates: { sale_table_id: v || null },
+                    updates: { sale_table_id: newTableId },
                   });
                   setSelectedTenant({ ...selectedTenant, sale_table_id: v });
+
+                  // Recalculate sale prices in tenant_usage and draft invoices
+                  if (newTableId) {
+                    try {
+                      // 1. Fetch new sale table prices
+                      const { data: saleItems } = await supabase
+                        .from("price_table_items")
+                        .select("sku_code, unit_value")
+                        .eq("price_table_id", newTableId);
+
+                      const priceMap: Record<string, number> = {};
+                      if (saleItems) {
+                        for (const si of saleItems) {
+                          priceMap[si.sku_code] = Number(si.unit_value);
+                        }
+                      }
+
+                      // 2. Update tenant_usage with new sale prices
+                      const { data: usageRows } = await supabase
+                        .from("tenant_usage")
+                        .select("id, sku_code, quantity")
+                        .eq("tenant_id", selectedTenant.id);
+
+                      if (usageRows && usageRows.length > 0) {
+                        for (const row of usageRows) {
+                          const newUnitPrice = priceMap[row.sku_code] || 0;
+                          const newTotalPrice = newUnitPrice * Number(row.quantity);
+                          await supabase
+                            .from("tenant_usage")
+                            .update({ unit_price: newUnitPrice, total_price: newTotalPrice })
+                            .eq("id", row.id);
+                        }
+                      }
+
+                      // 3. Recalculate draft invoices for this tenant's customer
+                      if (selectedTenant.customer_id) {
+                        const { data: draftInvoices } = await supabase
+                          .from("invoices")
+                          .select("id")
+                          .eq("customer_id", selectedTenant.customer_id)
+                          .eq("status", "draft");
+
+                        if (draftInvoices && draftInvoices.length > 0) {
+                          for (const inv of draftInvoices) {
+                            // Fetch invoice items and recalculate
+                            const { data: items } = await supabase
+                              .from("invoice_items")
+                              .select("id, sku_id, quantity, unit_cost")
+                              .eq("invoice_id", inv.id);
+
+                            if (items && items.length > 0) {
+                              // Get SKU codes for these items
+                              const skuIds = items.map(i => i.sku_id);
+                              const { data: skus } = await supabase
+                                .from("skus")
+                                .select("id, code")
+                                .in("id", skuIds);
+
+                              const skuCodeMap: Record<string, string> = {};
+                              if (skus) {
+                                for (const s of skus) skuCodeMap[s.id] = s.code;
+                              }
+
+                              let totalCost = 0;
+                              let totalSale = 0;
+
+                              for (const item of items) {
+                                const code = skuCodeMap[item.sku_id];
+                                const newUnitPrice = code ? (priceMap[code] || 0) : 0;
+                                const qty = Number(item.quantity);
+                                const itemTotalCost = Number(item.unit_cost) * qty;
+                                const itemTotalPrice = newUnitPrice * qty;
+                                totalCost += itemTotalCost;
+                                totalSale += itemTotalPrice;
+
+                                await supabase
+                                  .from("invoice_items")
+                                  .update({
+                                    unit_price: newUnitPrice,
+                                    total_cost: itemTotalCost,
+                                    total_price: itemTotalPrice,
+                                  })
+                                  .eq("id", item.id);
+                              }
+
+                              await supabase
+                                .from("invoices")
+                                .update({
+                                  total_sale: totalSale,
+                                  total_cost: totalCost,
+                                  margin: totalSale - totalCost,
+                                  updated_at: new Date().toISOString(),
+                                })
+                                .eq("id", inv.id);
+                            }
+                          }
+                        }
+                        toast.success("Preços de venda recalculados com sucesso");
+                      }
+                    } catch (err: any) {
+                      console.error("Erro ao recalcular preços:", err);
+                      toast.error("Erro ao recalcular preços de venda");
+                    }
+                  }
                 }}
               >
                 <SelectTrigger>
