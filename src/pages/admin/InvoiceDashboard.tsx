@@ -263,7 +263,7 @@ const InvoiceDashboard = () => {
               )}
             </Button>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Ao clicar, você irá sincronizar o consumo e gerar faturas de {now.toLocaleString("pt-BR", { month: "long" })} de {now.getFullYear()}
+              Ao clicar, você irá sincronizar o consumo e gerar faturas de {monthNames[Number(selectedMonth)].toLowerCase()} de {selectedYear}
             </p>
           </CardContent>
         </Card>
