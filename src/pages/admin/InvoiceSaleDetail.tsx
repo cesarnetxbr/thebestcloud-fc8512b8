@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Download, GitCompareArrows, Mail, RefreshCw, FileSpreadsheet, FileText, ArrowLeftRight } from "lucide-react";
+import { ArrowLeft, Download, GitCompareArrows, Mail, RefreshCw, FileSpreadsheet, FileText, ArrowLeftRight, Trash2, Lock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { exportInvoiceXLS, exportInvoicePDF } from "@/utils/invoiceExport";
 import { InvoiceCompareDialog } from "@/components/admin/InvoiceCompareDialog";
@@ -53,6 +55,31 @@ const InvoiceSaleDetail = () => {
   const [loading, setLoading] = useState(true);
   const [tenantName, setTenantName] = useState<string>("—");
   const [compareOpen, setCompareOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const isDraft = invoice?.status === "draft" || !invoice?.status;
+  const isClosed = invoice?.status === "closed";
+
+  const handleDelete = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    await supabase.from("invoice_items").delete().eq("invoice_id", id);
+    const { error } = await supabase.from("invoices").delete().eq("id", id);
+    setActionLoading(false);
+    if (error) { toast.error("Erro ao excluir fatura"); return; }
+    toast.success("Fatura excluída com sucesso");
+    navigate("/admin/invoices/venda");
+  };
+
+  const handleClose = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    const { error } = await supabase.from("invoices").update({ status: "closed" }).eq("id", id);
+    setActionLoading(false);
+    if (error) { toast.error("Erro ao encerrar fatura"); return; }
+    toast.success("Fatura encerrada com sucesso");
+    setInvoice(prev => prev ? { ...prev, status: "closed" } : prev);
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -261,6 +288,58 @@ const InvoiceSaleDetail = () => {
         <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoicePDF(d); }}>
           <FileText className="h-4 w-4 mr-2" /> PDF
         </Button>
+
+        {isDraft && !isClosed && (
+          <>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-destructive border-destructive hover:bg-destructive/10" disabled={actionLoading}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir fatura?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação é irreversível. A fatura <strong>{invoice.invoice_number}</strong> e todos os seus itens serão removidos permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="default" size="sm" disabled={actionLoading}>
+                  <Lock className="h-4 w-4 mr-2" /> Encerrar Fatura
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Encerrar fatura?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Ao encerrar, a fatura <strong>{invoice.invoice_number}</strong> será marcada como fechada e não poderá mais ser editada ou excluída.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClose}>Encerrar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
+
+        {isClosed && (
+          <Badge variant="secondary" className="bg-green-100 text-green-800 px-3 py-1">
+            <Lock className="h-3 w-3 mr-1" /> Fatura Encerrada
+          </Badge>
+        )}
       </div>
 
       <InvoiceCompareDialog
