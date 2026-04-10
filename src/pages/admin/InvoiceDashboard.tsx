@@ -27,8 +27,8 @@ const InvoiceDashboard = () => {
   const [trendPeriod, setTrendPeriod] = useState<"year" | "6m">("year");
 
   const now = new Date();
-  const periodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const periodEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   const periodLabel = `${periodStart.toLocaleDateString("pt-BR")} – ${periodEnd.toLocaleDateString("pt-BR")}`;
 
   const fetchData = async () => {
