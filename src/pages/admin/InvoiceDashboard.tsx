@@ -63,11 +63,8 @@ const InvoiceDashboard = () => {
         const d = new Date(inv.period_start);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         if (!monthMap[key]) monthMap[key] = { cost: 0, sale: 0 };
-        if (inv.invoice_number?.startsWith("COST-")) {
-          monthMap[key].cost += Number(inv.total_cost) || 0;
-        } else if (inv.invoice_number?.startsWith("SALE-")) {
-          monthMap[key].sale += Number(inv.total_sale) || 0;
-        }
+        monthMap[key].cost += Number(inv.total_cost) || 0;
+        monthMap[key].sale += Number(inv.total_sale) || 0;
       });
       const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
       const trend = Object.entries(monthMap)
