@@ -51,6 +51,7 @@ const InvoiceCostDetail = () => {
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [tenantName, setTenantName] = useState<string>("—");
+  const [compareOpen, setCompareOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
