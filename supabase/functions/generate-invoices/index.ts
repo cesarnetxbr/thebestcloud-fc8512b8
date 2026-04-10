@@ -162,13 +162,15 @@ Deno.serve(async (req) => {
             }
           }
           if (skuId) {
-            await supabase.from("invoice_items").insert({
+            const { error: itemErr } = await supabase.from("invoice_items").insert({
               invoice_id: existingCost.id,
               sku_id: skuId,
               quantity: item.quantity,
               unit_cost: item.unit_cost,
               unit_price: item.unit_price,
             });
+            if (itemErr) console.error("Cost item insert error:", JSON.stringify(itemErr));
+            else console.log("Cost item inserted for", item.sku_code);
           }
         }
         costInvoicesCreated++;
