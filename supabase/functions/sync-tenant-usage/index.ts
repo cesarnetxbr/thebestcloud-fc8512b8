@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const BYTES_TO_GB = 1073741824;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -17,7 +19,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Optional: specific tenant_id or connection_id from body
     let targetTenantId: string | null = null;
     let targetDate: string | null = null;
     try {
@@ -28,7 +29,24 @@ Deno.serve(async (req) => {
 
     const usageDate = targetDate || new Date().toISOString().split("T")[0];
 
-    // Fetch all active connections
+    // Load SKU mapping from DB
+    const { data: skuMappings } = await supabase
+      .from("acronis_sku_mapping")
+      .select("acronis_name, sku_code, unit_type, is_billable, description");
+
+    const mappingLookup: Record<string, { sku_code: string; unit_type: string; is_billable: boolean; description: string }> = {};
+    if (skuMappings) {
+      for (const m of skuMappings) {
+        mappingLookup[m.acronis_name] = {
+          sku_code: m.sku_code,
+          unit_type: m.unit_type,
+          is_billable: m.is_billable,
+          description: m.description || m.acronis_name,
+        };
+      }
+    }
+
+    // Fetch active connections
     const { data: connections, error: connError } = await supabase
       .from("connections")
       .select("id, name, datacenter_url, api_key, api_secret")
@@ -42,7 +60,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch default cost table
+    // Fetch default cost table and build cost lookup
     const { data: defaultCostTable } = await supabase
       .from("price_tables")
       .select("id")
@@ -50,7 +68,6 @@ Deno.serve(async (req) => {
       .eq("is_default", true)
       .single();
 
-    // Build cost lookup from default cost table
     const costLookup: Record<string, { name: string; cost: number }> = {};
     if (defaultCostTable) {
       const { data: costItems } = await supabase
@@ -87,7 +104,7 @@ Deno.serve(async (req) => {
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
 
-        // Get tenants linked to customers with sale tables
+        // Get tenants linked to customers
         let tenantQuery = supabase
           .from("tenants")
           .select("id, name, external_id, customer_id, sale_table_id, connection_id")
@@ -105,7 +122,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Pre-load sale table lookups for all unique sale_table_ids
+        // Pre-load sale table lookups
         const saleTableIds = [...new Set(tenants.map(t => t.sale_table_id).filter(Boolean))];
         const saleLookups: Record<string, Record<string, number>> = {};
 
@@ -127,7 +144,7 @@ Deno.serve(async (req) => {
 
         for (const tenant of tenants) {
           try {
-            // Fetch usage from Acronis API for this tenant
+            // Fetch usage from Acronis API
             const usagesUrl = `${conn.datacenter_url}/api/2/tenants/${tenant.external_id}/usages`;
             const usagesResponse = await fetch(usagesUrl, {
               headers: { "Authorization": `Bearer ${accessToken}` },
@@ -142,64 +159,46 @@ Deno.serve(async (req) => {
             const usagesData = await usagesResponse.json();
             const items = usagesData.items || [];
 
-            // Get sale prices for this tenant
             const salePrices = tenant.sale_table_id ? (saleLookups[tenant.sale_table_id] || {}) : {};
 
-            // Process each usage item
             for (const usage of items) {
-              const skuCode = usage.offering_item?.name || usage.name || "";
-              if (!skuCode) continue;
-
-              // Map Acronis usage name to our SKU code format
-              const quantity = Number(usage.value || usage.usage_value || 0);
-              if (quantity === 0) continue;
-
-              // Find matching SKU in our cost table
-              // Acronis API returns names like "storage", "workstations", etc.
-              // We need to match by the application_id + offering_item combination
-              const infraId = usage.infra_id || "";
-              const editionName = usage.edition || "";
               const offeringName = usage.offering_item?.name || usage.name || "";
-              
-              // Try to find matching SKU code
-              let matchedSkuCode = "";
-              let unitCost = 0;
-              let skuName = offeringName;
+              if (!offeringName) continue;
 
-              // Direct SKU code match (Acronis sometimes returns measurement_name which maps to our codes)
-              const measurementName = usage.measurement_name || usage.offering_item?.measurement_name || "";
-              
-              // Try matching by offering item name patterns
-              for (const [code, info] of Object.entries(costLookup)) {
-                const itemNameLower = info.name.toLowerCase();
-                const offeringLower = offeringName.toLowerCase();
-                
-                if (code === offeringName || code === measurementName) {
-                  matchedSkuCode = code;
-                  unitCost = info.cost;
-                  skuName = info.name;
-                  break;
-                }
-                
-                // Fuzzy match: check if offering name is contained
-                if (offeringLower && itemNameLower.includes(offeringLower)) {
-                  matchedSkuCode = code;
-                  unitCost = info.cost;
-                  skuName = info.name;
-                  break;
-                }
-              }
+              let rawQuantity = Number(usage.value || usage.usage_value || 0);
+              if (rawQuantity === 0) continue;
 
-              // If no match found, use the offering name directly with zero cost
-              if (!matchedSkuCode) {
+              // Use mapping table to resolve SKU code
+              const mapping = mappingLookup[offeringName];
+              let matchedSkuCode: string;
+              let skuName: string;
+              let quantity: number;
+
+              if (mapping) {
+                matchedSkuCode = mapping.sku_code;
+                skuName = mapping.description;
+                // Convert bytes to GB for storage items
+                if (mapping.unit_type === "bytes_to_gb") {
+                  quantity = Math.round((rawQuantity / BYTES_TO_GB) * 100) / 100;
+                } else {
+                  quantity = rawQuantity;
+                }
+              } else {
+                // Fallback: use offering name as code
                 matchedSkuCode = offeringName.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 20) || "UNKNOWN";
+                skuName = offeringName;
+                quantity = rawQuantity;
               }
+
+              // Look up cost and sale prices
+              const costInfo = costLookup[matchedSkuCode];
+              const unitCost = costInfo ? costInfo.cost : 0;
+              if (costInfo) skuName = costInfo.name;
 
               const totalCost = unitCost * quantity;
               const unitPrice = salePrices[matchedSkuCode] || 0;
               const totalPrice = unitPrice * quantity;
 
-              // Upsert into tenant_usage
               const { error: upsertError } = await supabase
                 .from("tenant_usage")
                 .upsert(
