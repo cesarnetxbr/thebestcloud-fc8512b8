@@ -54,6 +54,7 @@ const InvoiceCostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [tenantName, setTenantName] = useState<string>("—");
   const [saleTableName, setSaleTableName] = useState<string>("—");
+  const [compareOpen, setCompareOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const isDraft = invoice?.status === "draft" || !invoice?.status;
