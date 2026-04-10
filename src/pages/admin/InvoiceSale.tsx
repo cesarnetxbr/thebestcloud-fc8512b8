@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ const formatDate = (d: string | null) =>
   d ? new Date(d).toLocaleDateString("pt-BR") : "—";
 
 const InvoiceSale = () => {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -160,7 +162,7 @@ const InvoiceSale = () => {
                 </TableRow>
               ) : (
                 paginated.map((r) => (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/invoices/venda/${r.id}`)}>
                     <TableCell className="font-mono text-sm">{r.invoice_number}</TableCell>
                     <TableCell className="font-medium">{r.customer_name}</TableCell>
                     <TableCell>{r.product}</TableCell>
