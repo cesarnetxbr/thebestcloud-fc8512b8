@@ -27,9 +27,16 @@ const InvoiceDashboard = () => {
   const [trendPeriod, setTrendPeriod] = useState<"year" | "6m">("year");
 
   const now = new Date();
-  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  // Billing period selection
+  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
+  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+
+  const periodStart = new Date(Number(selectedYear), Number(selectedMonth), 1);
+  const periodEnd = new Date(Number(selectedYear), Number(selectedMonth) + 1, 0);
   const periodLabel = `${periodStart.toLocaleDateString("pt-BR")} – ${periodEnd.toLocaleDateString("pt-BR")}`;
+
+  const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  const availableYears = Array.from({ length: 3 }, (_, i) => String(now.getFullYear() - i));
 
   const fetchData = async () => {
     setLoading(true);
