@@ -113,10 +113,20 @@ const InvoiceSaleDetail = () => {
 
         const { data: tenants } = await supabase
           .from("tenants")
-          .select("name")
+          .select("name, sale_table_id")
           .eq("customer_id", inv.customer_id)
           .limit(1);
-        if (tenants && tenants.length > 0) setTenantName(tenants[0].name);
+        if (tenants && tenants.length > 0) {
+          setTenantName(tenants[0].name);
+          if (tenants[0].sale_table_id) {
+            const { data: st } = await supabase
+              .from("price_tables")
+              .select("name")
+              .eq("id", tenants[0].sale_table_id)
+              .single();
+            if (st) setSaleTableName(st.name);
+          }
+        }
       }
 
       const { data: itemsData } = await supabase
