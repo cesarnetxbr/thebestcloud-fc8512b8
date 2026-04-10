@@ -39,24 +39,23 @@ const InvoiceDashboard = () => {
       .order("total_sale", { ascending: false });
 
     if (invoices) {
-      const costInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("COST-"));
-      const saleInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("SALE-"));
-
-      const totalCost = costInvoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-      const totalSale = saleInvoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
-      const totalMargin = totalSale - totalCost;
+      // Use all invoices for KPI calculation — each invoice has both total_cost and total_sale
+      const totalCost = invoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const totalSale = invoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const totalMargin = invoices.reduce((s, i) => s + (Number(i.margin) || 0), 0);
       setStats({ totalCost, totalSale, totalMargin });
 
       // Top invoices by sale or cost
-      const topSale = saleInvoices.slice(0, 10).map((inv: any) => ({
+      const sorted = [...invoices].sort((a, b) =>
+        topViewMode === "sale"
+          ? (Number(b.total_sale) || 0) - (Number(a.total_sale) || 0)
+          : (Number(b.total_cost) || 0) - (Number(a.total_cost) || 0)
+      );
+      const topItems = sorted.slice(0, 10).map((inv: any) => ({
         name: inv.customers?.name?.substring(0, 15) || "—",
-        value: Number(inv.total_sale) || 0,
+        value: topViewMode === "sale" ? (Number(inv.total_sale) || 0) : (Number(inv.total_cost) || 0),
       }));
-      const topCost = costInvoices.slice(0, 10).map((inv: any) => ({
-        name: inv.customers?.name?.substring(0, 15) || "—",
-        value: Number(inv.total_cost) || 0,
-      }));
-      setTopInvoices(topViewMode === "sale" ? topSale : topCost);
+      setTopInvoices(topItems);
 
       // Monthly trend
       const monthMap: Record<string, { cost: number; sale: number }> = {};
@@ -64,11 +63,8 @@ const InvoiceDashboard = () => {
         const d = new Date(inv.period_start);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         if (!monthMap[key]) monthMap[key] = { cost: 0, sale: 0 };
-        if (inv.invoice_number?.startsWith("COST-")) {
-          monthMap[key].cost += Number(inv.total_cost) || 0;
-        } else if (inv.invoice_number?.startsWith("SALE-")) {
-          monthMap[key].sale += Number(inv.total_sale) || 0;
-        }
+        monthMap[key].cost += Number(inv.total_cost) || 0;
+        monthMap[key].sale += Number(inv.total_sale) || 0;
       });
       const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
       const trend = Object.entries(monthMap)
@@ -164,10 +160,10 @@ const InvoiceDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-2">
               <Receipt className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-base">Faturamento total</h3>
+              <h3 className="font-semibold text-base">Margem total</h3>
             </div>
-            <p className="text-3xl font-bold">{formatCurrency(stats.totalSale)}</p>
-            <p className="text-sm text-green-500 mt-1">Último mês: {periodLabel}</p>
+            <p className="text-3xl font-bold">{formatCurrency(stats.totalMargin)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices")}>
               Ver o faturamento
             </Button>
@@ -177,11 +173,11 @@ const InvoiceDashboard = () => {
         <Card className="shadow-soft">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="h-5 w-5 text-orange-500" />
+              <DollarSign className="h-5 w-5 text-destructive" />
               <h3 className="font-semibold text-base">Valores de custo</h3>
             </div>
             <p className="text-3xl font-bold">{formatCurrency(stats.totalCost)}</p>
-            <p className="text-sm text-orange-500 mt-1">Último mês: {periodLabel}</p>
+            <p className="text-sm text-destructive mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/custo")}>
               Ver tabela de custos
             </Button>
@@ -191,11 +187,11 @@ const InvoiceDashboard = () => {
         <Card className="shadow-soft">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-base">Valores de venda</h3>
             </div>
             <p className="text-3xl font-bold">{formatCurrency(stats.totalSale)}</p>
-            <p className="text-sm text-green-500 mt-1">Último mês: {periodLabel}</p>
+            <p className="text-sm text-primary mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/venda")}>
               Ver tabela de venda
             </Button>
