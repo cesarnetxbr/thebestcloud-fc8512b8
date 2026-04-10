@@ -66,15 +66,29 @@ const InvoiceCost = () => {
     fetch();
   }, []);
 
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    rows.forEach(r => {
+      const d = new Date(r.period_start);
+      months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    });
+    return Array.from(months).sort().reverse();
+  }, [rows]);
+
   const filtered = useMemo(() => {
     return rows.filter((r) => {
+      if (filterMonth && filterMonth !== "all") {
+        const d = new Date(r.period_start);
+        const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (m !== filterMonth) return false;
+      }
       if (filterInvoice && !r.invoice_number.toLowerCase().includes(filterInvoice.toLowerCase())) return false;
       if (filterClient && !r.customer_name.toLowerCase().includes(filterClient.toLowerCase())) return false;
       if (filterProduct && !r.product.toLowerCase().includes(filterProduct.toLowerCase())) return false;
       if (filterValue && !formatCurrency(r.total_cost).includes(filterValue)) return false;
       return true;
     });
-  }, [rows, filterInvoice, filterClient, filterProduct, filterValue]);
+  }, [rows, filterInvoice, filterClient, filterProduct, filterValue, filterMonth]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
