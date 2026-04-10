@@ -36,8 +36,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw, X, Download, Eye, Save } from "lucide-react";
 
 interface TenantForm {
   name: string;
@@ -57,6 +58,9 @@ const emptyForm: TenantForm = {
   notes: "",
 };
 
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
 const Tenants = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -69,6 +73,10 @@ const Tenants = () => {
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [realtimeOpen, setRealtimeOpen] = useState(false);
+  const [selectedUsageDate, setSelectedUsageDate] = useState<string | null>(null);
+  const [enableBilling, setEnableBilling] = useState(true);
+  const [enableRealtime, setEnableRealtime] = useState(true);
 
   const syncAllTenants = async () => {
     setSyncing(true);
@@ -135,7 +143,44 @@ const Tenants = () => {
     },
   });
 
+  // Fetch usage dates for selected tenant
+  const { data: usageDates } = useQuery({
+    queryKey: ["tenant-usage-dates", selectedTenant?.id],
+    queryFn: async () => {
+      if (!selectedTenant?.id) return [];
+      const { data, error } = await supabase
+        .from("tenant_usage")
+        .select("usage_date")
+        .eq("tenant_id", selectedTenant.id)
+        .order("usage_date", { ascending: false });
+      if (error) throw error;
+      const uniqueDates = [...new Set(data.map((d: any) => d.usage_date))];
+      return uniqueDates as string[];
+    },
+    enabled: !!selectedTenant?.id && (detailOpen || realtimeOpen),
+  });
+
+  // Fetch usage data for selected date
+  const { data: usageItems } = useQuery({
+    queryKey: ["tenant-usage-items", selectedTenant?.id, selectedUsageDate],
+    queryFn: async () => {
+      if (!selectedTenant?.id || !selectedUsageDate) return [];
+      const { data, error } = await supabase
+        .from("tenant_usage")
+        .select("*")
+        .eq("tenant_id", selectedTenant.id)
+        .eq("usage_date", selectedUsageDate)
+        .order("sku_name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTenant?.id && !!selectedUsageDate,
+  });
+
   const linkedCount = tenants?.filter((t) => t.customer_id).length || 0;
+  const billingCount = tenants?.filter((t) => t.customer_id && t.sale_table_id).length || 0;
+  const realtimeCount = usageDates?.length ? tenants?.filter((t) => t.customer_id).length || 0 : 0;
+  const bothCount = Math.min(billingCount, realtimeCount);
   const totalCount = tenants?.length || 0;
 
   const saveMutation = useMutation({
@@ -149,10 +194,7 @@ const Tenants = () => {
         notes: form.notes || null,
       };
       if (editingId) {
-        const { error } = await supabase
-          .from("tenants")
-          .update(payload)
-          .eq("id", editingId);
+        const { error } = await supabase.from("tenants").update(payload).eq("id", editingId);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("tenants").insert(payload);
@@ -169,10 +211,7 @@ const Tenants = () => {
 
   const linkMutation = useMutation({
     mutationFn: async ({ tenantId, updates }: { tenantId: string; updates: Record<string, any> }) => {
-      const { error } = await supabase
-        .from("tenants")
-        .update(updates)
-        .eq("id", tenantId);
+      const { error } = await supabase.from("tenants").update(updates).eq("id", tenantId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -228,9 +267,16 @@ const Tenants = () => {
   const openDetail = (tenant: any) => {
     setSelectedTenant(tenant);
     setDetailOpen(true);
+    setSelectedUsageDate(null);
   };
 
-  // Filter
+  const openRealtimeView = () => {
+    setRealtimeOpen(true);
+    if (usageDates && usageDates.length > 0 && !selectedUsageDate) {
+      setSelectedUsageDate(usageDates[0]);
+    }
+  };
+
   let filtered = tenants;
   if (connectionFilter) {
     filtered = filtered?.filter((t) => t.connection_id === connectionFilter);
@@ -243,22 +289,33 @@ const Tenants = () => {
 
   const getCustomer = (customerId: string | null) =>
     customers?.find((c) => c.id === customerId);
-
   const getCustomerName = (customerId: string | null) =>
     getCustomer(customerId)?.name || "-";
-
   const getConnectionName = (connectionId: string | null) =>
     connections?.find((c) => c.id === connectionId)?.name || "-";
-
   const getSaleTableName = (saleTableId: string | null) =>
     saleTables?.find((s) => s.id === saleTableId)?.name || "-";
 
-  const connectionName = connectionFilter
-    ? getConnectionName(connectionFilter)
-    : null;
-
+  const connectionName = connectionFilter ? getConnectionName(connectionFilter) : null;
   const selectedCustomer = selectedTenant ? getCustomer(selectedTenant.customer_id) : null;
   const isConnected = selectedTenant?.customer_id != null;
+
+  const totalUsageCost = usageItems?.reduce((s, i) => s + Number(i.total_cost), 0) || 0;
+  const totalUsageSale = usageItems?.reduce((s, i) => s + Number(i.total_price), 0) || 0;
+
+  const exportUsageCSV = () => {
+    if (!usageItems || usageItems.length === 0) return;
+    const header = "Nome,SKU,Qtd.,Custo Unit.,Total Custo,Venda Unit.,Total Venda\n";
+    const csv = usageItems.map((i) =>
+      `"${i.sku_name}",${i.sku_code},${i.quantity},${formatCurrency(Number(i.unit_cost))},${formatCurrency(Number(i.total_cost))},${formatCurrency(Number(i.unit_price))},${formatCurrency(Number(i.total_price))}`
+    ).join("\n");
+    const blob = new Blob([header + csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `consumo-${selectedTenant?.name}-${selectedUsageDate}.csv`;
+    a.click();
+  };
 
   return (
     <div className="space-y-6">
@@ -302,28 +359,57 @@ const Tenants = () => {
         />
       </div>
 
+      {/* Trial Banner */}
+      <Card className="bg-gradient-to-r from-amber-900/20 to-amber-800/10 border-amber-700/30">
+        <CardContent className="py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-amber-500 text-xl">⚠</span>
+            <div>
+              <p className="font-semibold text-sm">Você está no período de teste</p>
+              <p className="text-xs text-muted-foreground">
+                Durante o trial, você pode vincular até 2 clientes. Ative sua assinatura para liberar a quota completa do seu plano.
+              </p>
+            </div>
+          </div>
+          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0">
+            Ativar assinatura
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Stats */}
       <Card>
         <CardContent className="py-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Clientes vinculados</p>
-              <p className="text-lg font-bold">
-                {linkedCount} de {totalCount}
-              </p>
+              <p className="text-xs text-muted-foreground">Clientes vinculados</p>
+              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-lg font-bold">{linkedCount} de {totalCount}</p>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {totalCount > 0
-                ? Math.round((linkedCount / totalCount) * 100)
-                : 0}
-              % utilizado
-            </span>
+            <div>
+              <p className="text-xs text-muted-foreground">Clientes vinculados</p>
+              <p className="text-xs text-muted-foreground">Faturamento</p>
+              <p className="text-lg font-bold">{billingCount} de {totalCount}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Clientes vinculados</p>
+              <p className="text-xs text-muted-foreground">Realtime view</p>
+              <p className="text-lg font-bold">{realtimeCount} de {totalCount}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Clientes vinculados</p>
+              <p className="text-xs text-muted-foreground">Faturamento + Realtime</p>
+              <p className="text-lg font-bold">{bothCount} de {totalCount}</p>
+            </div>
           </div>
-          <Progress
-            value={totalCount > 0 ? (linkedCount / totalCount) * 100 : 0}
-          />
         </CardContent>
       </Card>
+
+      <div className="flex justify-center">
+        <Button variant="outline" size="sm" className="text-primary border-primary">
+          Fazer upgrade
+        </Button>
+      </div>
 
       {/* Connection section header */}
       {connectionName && (
@@ -363,12 +449,8 @@ const Tenants = () => {
                         <span>Cliente</span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {getCustomerName(tenant.customer_id)}
-                    </TableCell>
-                    <TableCell>
-                      {getSaleTableName(tenant.sale_table_id)}
-                    </TableCell>
+                    <TableCell>{getCustomerName(tenant.customer_id)}</TableCell>
+                    <TableCell>{getSaleTableName(tenant.sale_table_id)}</TableCell>
                     <TableCell>
                       {tenant.customer_id ? (
                         <Badge className="gap-1 bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30">
@@ -395,6 +477,126 @@ const Tenants = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Realtime View Modal */}
+      <Dialog open={realtimeOpen} onOpenChange={setRealtimeOpen}>
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Realtime View</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex gap-6">
+            {/* Left: Usage History */}
+            <div className="w-48 shrink-0 space-y-2">
+              <h4 className="text-sm font-semibold">Histórico de Consumo</h4>
+              {usageDates && usageDates.length > 0 ? (
+                <div className="space-y-1">
+                  {usageDates.map((date) => (
+                    <button
+                      key={date}
+                      onClick={() => setSelectedUsageDate(date)}
+                      className={`w-full text-left rounded-md px-3 py-2 text-sm border transition-colors ${
+                        selectedUsageDate === date
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="font-medium">{date}</div>
+                      <div className="text-xs text-muted-foreground">Consumo diário</div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  <p className="font-medium">Nenhum relatório de realtime disponível ainda.</p>
+                  <p className="text-xs mt-1">
+                    Os relatórios são gerados diariamente quando o Realtime View está ativo. Ative-o para começar a coletar dados.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Right: Usage Details */}
+            <div className="flex-1 min-w-0">
+              {selectedUsageDate && usageItems && usageItems.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-lg">{selectedUsageDate}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        TABELA DE VENDA: {getSaleTableName(selectedTenant?.sale_table_id)}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={exportUsageCSV}>
+                      <Download className="h-4 w-4 mr-2" /> Baixar
+                    </Button>
+                  </div>
+
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead className="text-right">Qtd.</TableHead>
+                        <TableHead className="text-right">Custo Unit.</TableHead>
+                        <TableHead className="text-right">Total Custo</TableHead>
+                        <TableHead className="text-right">Venda Unit.</TableHead>
+                        <TableHead className="text-right">Total Venda</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {usageItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="text-sm truncate max-w-[200px]">{item.sku_name}</TableCell>
+                          <TableCell className="font-mono text-xs">{item.sku_code}</TableCell>
+                          <TableCell className="text-right">{Number(item.quantity).toLocaleString("pt-BR")}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(Number(item.unit_cost))}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(Number(item.total_cost))}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(Number(item.unit_price))}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(Number(item.total_price))}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  <div className="flex items-center justify-between bg-muted/50 rounded-lg p-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">TOTAL DE CUSTO</p>
+                      <p className="text-lg font-bold">{formatCurrency(totalUsageCost)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">TOTAL DE VENDA</p>
+                      <p className="text-lg font-bold">{formatCurrency(totalUsageSale)}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="font-semibold">Nenhum relatório disponível</p>
+                  <p className="text-sm mt-2">
+                    Os relatórios de realtime são gerados automaticamente quando o Realtime View está ativo. Ative o Realtime View para começar a coletar dados de consumo diário.
+                  </p>
+                  {!selectedUsageDate && (
+                    <p className="text-sm mt-2">Nenhum SKU com consumo encontrado para este dia.</p>
+                  )}
+                  <div className="flex items-center justify-between bg-muted/50 rounded-lg p-4 mt-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">TOTAL DE CUSTO</p>
+                      <p className="text-lg font-bold">{formatCurrency(0)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">TOTAL DE VENDA</p>
+                      <p className="text-lg font-bold">{formatCurrency(0)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Detail sidebar */}
       <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
@@ -428,45 +630,32 @@ const Tenants = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Conexão</p>
-                  <p className="text-sm">{getConnectionName(selectedTenant.connection_id)}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Modo de Precificação</p>
+                  <p className="text-sm">production</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
                   <p className="text-sm">{selectedTenant.status === "active" ? "Ativo" : "Inativo"}</p>
                 </div>
-                {selectedTenant.notes && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Observações</p>
-                    <p className="text-sm">{selectedTenant.notes}</p>
-                  </div>
-                )}
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Status MFA</p>
+                  <p className="text-sm">Habilitado</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Idioma</p>
+                  <p className="text-sm">pt-BR</p>
+                </div>
               </div>
 
               <Separator />
 
               {/* Connection Status Banner */}
               {isConnected ? (
-                <div className="flex items-center justify-between rounded-lg bg-green-600/10 border border-green-600/30 p-3">
+                <div className="rounded-lg bg-green-600/10 border border-green-600/30 p-3">
                   <div className="flex items-center gap-2 text-green-400">
                     <LinkIcon className="h-4 w-4" />
                     <span className="text-sm font-semibold">Cliente Conectado</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                    onClick={() => {
-                      linkMutation.mutate({
-                        tenantId: selectedTenant.id,
-                        updates: { customer_id: null },
-                      });
-                      setSelectedTenant({ ...selectedTenant, customer_id: null });
-                    }}
-                    title="Desvincular cliente"
-                  >
-                    <Unlink className="h-4 w-4" />
-                  </Button>
                 </div>
               ) : (
                 <div className="rounded-lg bg-muted/50 border border-border p-3">
@@ -477,104 +666,140 @@ const Tenants = () => {
                 </div>
               )}
 
-              {/* Customer Info (when connected) */}
-              {isConnected && selectedCustomer && (
-                <Card>
-                  <CardContent className="p-4 space-y-3">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Nome do Cliente</p>
-                      <p className="text-sm font-semibold">{selectedCustomer.razao_social || selectedCustomer.name}</p>
-                    </div>
-                    {selectedCustomer.cnpj && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">CNPJ</p>
-                        <p className="text-sm">{selectedCustomer.cnpj}</p>
-                      </div>
-                    )}
-                    {selectedCustomer.email && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">E-mail</p>
-                        <p className="text-sm">{selectedCustomer.email}</p>
-                      </div>
-                    )}
-                    {selectedCustomer.phone && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Telefone</p>
-                        <p className="text-sm">{selectedCustomer.phone}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+              {/* Customer Selector */}
+              <Select
+                value={selectedTenant.customer_id || ""}
+                onValueChange={(v) => {
+                  linkMutation.mutate({
+                    tenantId: selectedTenant.id,
+                    updates: { customer_id: v || null },
+                  });
+                  setSelectedTenant({ ...selectedTenant, customer_id: v });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pesquise por um cliente..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers?.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.razao_social || c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              {/* Connect Customer */}
+              {/* Sale Table Selector */}
+              <Select
+                value={selectedTenant.sale_table_id || ""}
+                onValueChange={(v) => {
+                  linkMutation.mutate({
+                    tenantId: selectedTenant.id,
+                    updates: { sale_table_id: v || null },
+                  });
+                  setSelectedTenant({ ...selectedTenant, sale_table_id: v });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione tabela de venda..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {saleTables?.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Billing & Realtime Toggles */}
               <div className="space-y-3">
-                <h4 className="text-sm font-semibold">Conectar Cliente</h4>
-                <Select
-                  value={selectedTenant.customer_id || ""}
-                  onValueChange={(v) => {
-                    linkMutation.mutate({
-                      tenantId: selectedTenant.id,
-                      updates: { customer_id: v || null },
-                    });
-                    setSelectedTenant({ ...selectedTenant, customer_id: v });
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Faturamento</span>
+                  <Switch checked={enableBilling} onCheckedChange={setEnableBilling} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Realtime View</span>
+                  <Switch checked={enableRealtime} onCheckedChange={setEnableRealtime} />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  size="sm"
+                  onClick={() => {
+                    toast.success("Configurações salvas");
                   }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pesquise por um cliente..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers?.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Save className="h-4 w-4 mr-2" /> Salvar
+                </Button>
+                {isConnected && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      linkMutation.mutate({
+                        tenantId: selectedTenant.id,
+                        updates: { customer_id: null },
+                      });
+                      setSelectedTenant({ ...selectedTenant, customer_id: null });
+                    }}
+                  >
+                    <Unlink className="h-4 w-4 mr-2" /> Desconectar
+                  </Button>
+                )}
               </div>
+
+              {/* Realtime View Button */}
+              {isConnected && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={openRealtimeView}
+                >
+                  <Eye className="h-4 w-4 mr-2" /> Abrir Realtime View
+                </Button>
+              )}
 
               <Separator />
 
-              {/* Sale Table Section */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold">Conexões Ativas</h4>
-                <Card>
-                  <CardContent className="p-4 space-y-3">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Tabela de Preço</p>
-                      <Select
-                        value={selectedTenant.sale_table_id || ""}
-                        onValueChange={(v) => {
-                          linkMutation.mutate({
-                            tenantId: selectedTenant.id,
-                            updates: { sale_table_id: v || null },
-                          });
-                          setSelectedTenant({ ...selectedTenant, sale_table_id: v });
-                        }}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Selecione uma tabela de venda..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {saleTables?.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Produto</p>
-                      <p className="text-sm">Acronis</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Customer Info (when connected) */}
+              {isConnected && selectedCustomer && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold">Informações de Contato do Tenant</h4>
+                  <Card>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Nome do Cliente</p>
+                        <p className="text-sm font-semibold">{selectedCustomer.razao_social || selectedCustomer.name}</p>
+                      </div>
+                      {selectedCustomer.cnpj && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">CNPJ</p>
+                          <p className="text-sm">{selectedCustomer.cnpj}</p>
+                        </div>
+                      )}
+                      {selectedCustomer.email && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">E-mail</p>
+                          <p className="text-sm">{selectedCustomer.email}</p>
+                        </div>
+                      )}
+                      {selectedCustomer.phone && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Telefone</p>
+                          <p className="text-sm">{selectedCustomer.phone}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
-              <Separator />
-
-              {/* Actions */}
+              {/* Edit/Delete Actions */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -621,9 +846,7 @@ const Tenants = () => {
               <Label>ID Externo</Label>
               <Input
                 value={form.external_id}
-                onChange={(e) =>
-                  setForm({ ...form, external_id: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, external_id: e.target.value })}
                 placeholder="Identificador externo (opcional)"
               />
             </div>
