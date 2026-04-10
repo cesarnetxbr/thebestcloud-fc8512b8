@@ -111,7 +111,23 @@ const InvoiceCost = () => {
         </p>
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); setPage(1); }}>
+            <SelectTrigger className="w-[180px] h-9">
+              <SelectValue placeholder="Todos os meses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os meses</SelectItem>
+              {availableMonths.map(m => {
+                const [y, mo] = m.split("-");
+                const label = new Date(Number(y), Number(mo) - 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+                return <SelectItem key={m} value={m}>{label}</SelectItem>;
+              })}
+            </SelectContent>
+          </Select>
+        </div>
         <Button variant="outline" size="sm" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-2" /> Baixar CSV
         </Button>
