@@ -169,7 +169,9 @@ Deno.serve(async (req) => {
               if (rawQuantity === 0) continue;
 
               // Use mapping table to resolve SKU code
+              // Skip non-billable items entirely
               const mapping = mappingLookup[offeringName];
+              if (mapping && !mapping.is_billable) continue;
               let matchedSkuCode: string;
               let skuName: string;
               let quantity: number;
