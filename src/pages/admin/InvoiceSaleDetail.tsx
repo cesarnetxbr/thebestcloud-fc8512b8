@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Download, GitCompareArrows, Mail, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, GitCompareArrows, Mail, RefreshCw, FileSpreadsheet, FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { exportInvoiceXLS, exportInvoicePDF } from "@/utils/invoiceExport";
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
@@ -120,6 +121,30 @@ const InvoiceSaleDetail = () => {
     const a = document.createElement("a"); a.href = url; a.download = `pedido-venda-${invoice.invoice_number}.csv`; a.click();
   };
 
+  const getExportData = () => {
+    if (!invoice) return null;
+    return {
+      invoiceNumber: invoice.invoice_number,
+      customerName: invoice.customer.name,
+      customerCnpj: invoice.customer.cnpj,
+      customerRazaoSocial: invoice.customer.razao_social,
+      tenantName,
+      periodStart: invoice.period_start,
+      periodEnd: invoice.period_end,
+      createdAt: invoice.created_at,
+      dueDate: invoice.due_date,
+      status: invoice.status,
+      items: items.map(i => ({
+        skuName: i.sku.name,
+        skuCode: i.sku.code,
+        quantity: i.quantity,
+        unitValue: i.unit_price,
+        totalValue: i.total_price || 0,
+      })),
+      type: "sale" as const,
+    };
+  };
+
   const costInvoiceNumber = invoice?.invoice_number.replace("SALE-", "COST-");
 
   const goToCostComparison = async () => {
@@ -223,7 +248,13 @@ const InvoiceSaleDetail = () => {
           <RefreshCw className="h-4 w-4 mr-2" /> Sincronizar CRM
         </Button>
         <Button variant="outline" size="sm" onClick={exportCSV}>
-          <Download className="h-4 w-4 mr-2" /> Download
+          <Download className="h-4 w-4 mr-2" /> CSV
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoiceXLS(d); }}>
+          <FileSpreadsheet className="h-4 w-4 mr-2" /> XLS
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => { const d = getExportData(); if (d) exportInvoicePDF(d); }}>
+          <FileText className="h-4 w-4 mr-2" /> PDF
         </Button>
       </div>
 

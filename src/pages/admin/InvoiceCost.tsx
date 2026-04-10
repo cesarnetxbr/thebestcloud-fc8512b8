@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Search, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InvoiceRow {
   id: string;
@@ -37,7 +38,7 @@ const InvoiceCost = () => {
   const [filterClient, setFilterClient] = useState("");
   const [filterProduct, setFilterProduct] = useState("");
   const [filterValue, setFilterValue] = useState("");
-
+  const [filterMonth, setFilterMonth] = useState("all");
   useEffect(() => {
     const fetch = async () => {
       const { data: invoices } = await supabase
@@ -65,15 +66,29 @@ const InvoiceCost = () => {
     fetch();
   }, []);
 
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    rows.forEach(r => {
+      const d = new Date(r.period_start);
+      months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    });
+    return Array.from(months).sort().reverse();
+  }, [rows]);
+
   const filtered = useMemo(() => {
     return rows.filter((r) => {
+      if (filterMonth && filterMonth !== "all") {
+        const d = new Date(r.period_start);
+        const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (m !== filterMonth) return false;
+      }
       if (filterInvoice && !r.invoice_number.toLowerCase().includes(filterInvoice.toLowerCase())) return false;
       if (filterClient && !r.customer_name.toLowerCase().includes(filterClient.toLowerCase())) return false;
       if (filterProduct && !r.product.toLowerCase().includes(filterProduct.toLowerCase())) return false;
       if (filterValue && !formatCurrency(r.total_cost).includes(filterValue)) return false;
       return true;
     });
-  }, [rows, filterInvoice, filterClient, filterProduct, filterValue]);
+  }, [rows, filterInvoice, filterClient, filterProduct, filterValue, filterMonth]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -96,7 +111,23 @@ const InvoiceCost = () => {
         </p>
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Select value={filterMonth} onValueChange={(v) => { setFilterMonth(v); setPage(1); }}>
+            <SelectTrigger className="w-[180px] h-9">
+              <SelectValue placeholder="Todos os meses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os meses</SelectItem>
+              {availableMonths.map(m => {
+                const [y, mo] = m.split("-");
+                const label = new Date(Number(y), Number(mo) - 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+                return <SelectItem key={m} value={m}>{label}</SelectItem>;
+              })}
+            </SelectContent>
+          </Select>
+        </div>
         <Button variant="outline" size="sm" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-2" /> Baixar CSV
         </Button>
