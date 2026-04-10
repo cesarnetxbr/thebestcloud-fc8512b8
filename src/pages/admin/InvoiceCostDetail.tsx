@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Download, GitCompareArrows } from "lucide-react";
+import { ArrowLeft, Download, GitCompareArrows, FileSpreadsheet, FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { exportInvoiceXLS, exportInvoicePDF } from "@/utils/invoiceExport";
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
