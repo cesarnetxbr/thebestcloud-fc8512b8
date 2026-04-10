@@ -168,8 +168,6 @@ Deno.serve(async (req) => {
               quantity: item.quantity,
               unit_cost: item.unit_cost,
               unit_price: item.unit_price,
-              total_cost: item.total_cost,
-              total_price: item.total_price,
             });
           }
         }
@@ -218,8 +216,6 @@ Deno.serve(async (req) => {
               quantity: item.quantity,
               unit_cost: item.unit_cost,
               unit_price: item.unit_price,
-              total_cost: item.total_cost,
-              total_price: item.total_price,
             });
           }
         }
@@ -252,8 +248,6 @@ Deno.serve(async (req) => {
               quantity: item.quantity,
               unit_cost: item.unit_cost,
               unit_price: item.unit_price,
-              total_cost: item.total_cost,
-              total_price: item.total_price,
             });
           }
         }
@@ -286,8 +280,6 @@ Deno.serve(async (req) => {
               quantity: item.quantity,
               unit_cost: item.unit_cost,
               unit_price: item.unit_price,
-              total_cost: item.total_cost,
-              total_price: item.total_price,
             });
           }
         }
