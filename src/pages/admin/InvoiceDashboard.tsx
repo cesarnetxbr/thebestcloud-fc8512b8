@@ -39,15 +39,15 @@ const InvoiceDashboard = () => {
       .order("total_sale", { ascending: false });
 
     if (invoices) {
-      const totalCost = invoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-      const totalSale = invoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const costInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("COST-"));
+      const saleInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("SALE-"));
+
+      const totalCost = costInvoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const totalSale = saleInvoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
       const totalMargin = totalSale - totalCost;
       setStats({ totalCost, totalSale, totalMargin });
 
       // Top invoices by sale or cost
-      const costInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("COST-"));
-      const saleInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("SALE-"));
-
       const topSale = saleInvoices.slice(0, 10).map((inv: any) => ({
         name: inv.customers?.name?.substring(0, 15) || "—",
         value: Number(inv.total_sale) || 0,
