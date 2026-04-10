@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download, Search, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InvoiceRow {
@@ -18,6 +19,7 @@ interface InvoiceRow {
   period_end: string;
   created_at: string;
   total_sale: number;
+  status: string;
 }
 
 const PAGE_SIZE = 15;
@@ -42,7 +44,7 @@ const InvoiceSale = () => {
     const fetch = async () => {
       const { data: invoices } = await supabase
         .from("invoices")
-        .select("id, invoice_number, period_start, period_end, total_sale, due_date, created_at, customers(name)")
+        .select("id, invoice_number, period_start, period_end, total_sale, due_date, created_at, status, customers(name)")
         .like("invoice_number", "SALE-%")
         .order("created_at", { ascending: false });
 
@@ -57,6 +59,7 @@ const InvoiceSale = () => {
           period_end: inv.period_end,
           created_at: inv.created_at,
           total_sale: Number(inv.total_sale) || 0,
+          status: inv.status || "draft",
         }));
         setRows(mapped);
       }
@@ -176,6 +179,7 @@ const InvoiceSale = () => {
                     </div>
                   </div>
                 </TableHead>
+                <TableHead><span className="text-xs font-semibold">Status</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -201,6 +205,11 @@ const InvoiceSale = () => {
                     <TableCell>{formatDate(r.period_start)} — {formatDate(r.period_end)}</TableCell>
                     <TableCell>{formatDate(r.created_at)}</TableCell>
                     <TableCell className="text-right font-medium">{formatCurrency(r.total_sale)}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={r.status === "closed" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"}>
+                        {r.status === "closed" ? "Encerrada" : "Rascunho"}
+                      </Badge>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
