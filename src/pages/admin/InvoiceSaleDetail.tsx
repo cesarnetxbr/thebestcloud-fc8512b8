@@ -121,6 +121,30 @@ const InvoiceSaleDetail = () => {
     const a = document.createElement("a"); a.href = url; a.download = `pedido-venda-${invoice.invoice_number}.csv`; a.click();
   };
 
+  const getExportData = () => {
+    if (!invoice) return null;
+    return {
+      invoiceNumber: invoice.invoice_number,
+      customerName: invoice.customer.name,
+      customerCnpj: invoice.customer.cnpj,
+      customerRazaoSocial: invoice.customer.razao_social,
+      tenantName,
+      periodStart: invoice.period_start,
+      periodEnd: invoice.period_end,
+      createdAt: invoice.created_at,
+      dueDate: invoice.due_date,
+      status: invoice.status,
+      items: items.map(i => ({
+        skuName: i.sku.name,
+        skuCode: i.sku.code,
+        quantity: i.quantity,
+        unitValue: i.unit_price,
+        totalValue: i.total_price || 0,
+      })),
+      type: "sale" as const,
+    };
+  };
+
   const costInvoiceNumber = invoice?.invoice_number.replace("SALE-", "COST-");
 
   const goToCostComparison = async () => {
