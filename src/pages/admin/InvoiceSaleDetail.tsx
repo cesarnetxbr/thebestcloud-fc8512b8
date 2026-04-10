@@ -54,6 +54,7 @@ const InvoiceSaleDetail = () => {
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [tenantName, setTenantName] = useState<string>("—");
+  const [saleTableName, setSaleTableName] = useState<string>("—");
   const [compareOpen, setCompareOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -112,10 +113,20 @@ const InvoiceSaleDetail = () => {
 
         const { data: tenants } = await supabase
           .from("tenants")
-          .select("name")
+          .select("name, sale_table_id")
           .eq("customer_id", inv.customer_id)
           .limit(1);
-        if (tenants && tenants.length > 0) setTenantName(tenants[0].name);
+        if (tenants && tenants.length > 0) {
+          setTenantName(tenants[0].name);
+          if (tenants[0].sale_table_id) {
+            const { data: st } = await supabase
+              .from("price_tables")
+              .select("name")
+              .eq("id", tenants[0].sale_table_id)
+              .single();
+            if (st) setSaleTableName(st.name);
+          }
+        }
       }
 
       const { data: itemsData } = await supabase
@@ -236,6 +247,7 @@ const InvoiceSaleDetail = () => {
               <p><span className="font-medium">Razão Social:</span> {invoice.customer.razao_social || invoice.customer.name}</p>
               <p><span className="font-medium">Nome Fantasia:</span> {invoice.customer.nome_fantasia || invoice.customer.name}</p>
               <p><span className="font-medium">Tenant:</span> {tenantName}</p>
+              <p><span className="font-medium">Tabela de Venda:</span> <Badge variant="outline">{saleTableName}</Badge></p>
             </div>
           </CardContent>
         </Card>
