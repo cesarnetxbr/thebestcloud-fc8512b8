@@ -160,10 +160,10 @@ const InvoiceDashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-2">
               <Receipt className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-base">Faturamento total</h3>
+              <h3 className="font-semibold text-base">Margem total</h3>
             </div>
-            <p className="text-3xl font-bold">{formatCurrency(stats.totalSale)}</p>
-            <p className="text-sm text-green-500 mt-1">Último mês: {periodLabel}</p>
+            <p className="text-3xl font-bold">{formatCurrency(stats.totalMargin)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices")}>
               Ver o faturamento
             </Button>
@@ -173,11 +173,11 @@ const InvoiceDashboard = () => {
         <Card className="shadow-soft">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="h-5 w-5 text-orange-500" />
+              <DollarSign className="h-5 w-5 text-destructive" />
               <h3 className="font-semibold text-base">Valores de custo</h3>
             </div>
             <p className="text-3xl font-bold">{formatCurrency(stats.totalCost)}</p>
-            <p className="text-sm text-orange-500 mt-1">Último mês: {periodLabel}</p>
+            <p className="text-sm text-destructive mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/custo")}>
               Ver tabela de custos
             </Button>
@@ -187,11 +187,11 @@ const InvoiceDashboard = () => {
         <Card className="shadow-soft">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-base">Valores de venda</h3>
             </div>
             <p className="text-3xl font-bold">{formatCurrency(stats.totalSale)}</p>
-            <p className="text-sm text-green-500 mt-1">Último mês: {periodLabel}</p>
+            <p className="text-sm text-primary mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/venda")}>
               Ver tabela de venda
             </Button>
