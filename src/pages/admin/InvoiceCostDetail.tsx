@@ -236,6 +236,9 @@ const InvoiceCostDetail = () => {
         <Button variant="outline" size="sm" onClick={goToSaleComparison}>
           <GitCompareArrows className="h-4 w-4 mr-2" /> Comparar com Venda
         </Button>
+        <Button variant="outline" size="sm" onClick={() => setCompareOpen(true)}>
+          <ArrowLeftRight className="h-4 w-4 mr-2" /> Comparar em outra tabela
+        </Button>
         <Button variant="outline" size="sm" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-2" /> CSV
         </Button>
@@ -246,6 +249,19 @@ const InvoiceCostDetail = () => {
           <FileText className="h-4 w-4 mr-2" /> PDF
         </Button>
       </div>
+
+      <InvoiceCompareDialog
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        type="cost"
+        items={items.map(i => ({
+          skuName: i.sku.name,
+          skuCode: i.sku.code,
+          quantity: i.quantity,
+          unitValue: i.unit_cost,
+          totalValue: i.total_cost || 0,
+        }))}
+      />
 
       {/* Items Table */}
       <div>
