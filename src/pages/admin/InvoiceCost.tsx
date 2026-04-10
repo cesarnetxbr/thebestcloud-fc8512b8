@@ -108,10 +108,16 @@ const InvoiceCost = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-muted-foreground">
-          Acompanhe o que você está pagando por cada serviço. As informações são sincronizadas diretamente da sua base de dados.
-        </p>
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/invoices")}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h2 className="text-xl font-semibold">Custo</h2>
+          <p className="text-muted-foreground text-sm">
+            Acompanhe o que você está pagando por cada serviço.
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
