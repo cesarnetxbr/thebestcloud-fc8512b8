@@ -248,6 +248,8 @@ const InvoiceSaleDetail = () => {
               <p><span className="font-medium">Nome Fantasia:</span> {invoice.customer.nome_fantasia || invoice.customer.name}</p>
               <p><span className="font-medium">Tenant:</span> {tenantName}</p>
               <p><span className="font-medium">Tabela de Venda:</span> <Badge variant="outline">{saleTableName}</Badge></p>
+            </div>
+          </CardContent>
         </Card>
 
         <Card>
