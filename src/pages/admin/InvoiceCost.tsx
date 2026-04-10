@@ -38,7 +38,7 @@ const InvoiceCost = () => {
   const [filterClient, setFilterClient] = useState("");
   const [filterProduct, setFilterProduct] = useState("");
   const [filterValue, setFilterValue] = useState("");
-
+  const [filterMonth, setFilterMonth] = useState("all");
   useEffect(() => {
     const fetch = async () => {
       const { data: invoices } = await supabase
