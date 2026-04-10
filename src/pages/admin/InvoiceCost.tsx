@@ -41,6 +41,7 @@ const InvoiceCost = () => {
       const { data: invoices } = await supabase
         .from("invoices")
         .select("id, invoice_number, period_start, period_end, total_cost, due_date, created_at, customers(name)")
+        .like("invoice_number", "COST-%")
         .order("created_at", { ascending: false });
 
       if (invoices) {

@@ -235,9 +235,9 @@ const AdminLayout = () => {
                       </button>
                       {isSectionExpanded(exp.label) && (
                         <div className="ml-4 mt-1 space-y-1">
-                          {exp.items.map((item) => {
+                         {exp.items.map((item) => {
                             const active = isActive(item.path);
-                            const isSubItem = item.label === "Custo" || item.label === "Venda";
+                            const isSubItem = item.indent;
                             return (
                               <Link
                                 key={item.path}
