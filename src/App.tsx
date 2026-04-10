@@ -101,6 +101,7 @@ const App = () => (
             >
               <Route index element={<Dashboard />} />
               <Route path="customers" element={<Customers />} />
+              {/* SKUs route kept for backward compatibility */}
               <Route path="skus" element={<Skus />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="invoices/dashboard" element={<InvoiceDashboard />} />
