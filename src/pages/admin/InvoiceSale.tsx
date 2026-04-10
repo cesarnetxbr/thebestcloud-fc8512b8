@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Search, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Download, Search, ChevronLeft, ChevronRight, Calendar, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -106,10 +106,16 @@ const InvoiceSale = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-muted-foreground">
-          Gerencie e acompanhe todas as vendas de faturamento. As informações são sincronizadas diretamente da sua base de dados.
-        </p>
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/invoices")}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h2 className="text-xl font-semibold">Venda</h2>
+          <p className="text-muted-foreground text-sm">
+            Gerencie e acompanhe todas as vendas de faturamento.
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
