@@ -1159,6 +1159,69 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_usage: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          id: string
+          quantity: number
+          sku_code: string
+          sku_name: string
+          tenant_id: string
+          total_cost: number
+          total_price: number
+          unit_cost: number
+          unit_price: number
+          updated_at: string
+          usage_date: string
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          id?: string
+          quantity?: number
+          sku_code: string
+          sku_name?: string
+          tenant_id: string
+          total_cost?: number
+          total_price?: number
+          unit_cost?: number
+          unit_price?: number
+          updated_at?: string
+          usage_date?: string
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          id?: string
+          quantity?: number
+          sku_code?: string
+          sku_name?: string
+          tenant_id?: string
+          total_cost?: number
+          total_price?: number
+          unit_cost?: number
+          unit_price?: number
+          updated_at?: string
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_usage_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_usage_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           connection_id: string | null

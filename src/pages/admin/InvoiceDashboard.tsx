@@ -3,8 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { DollarSign, TrendingUp, Receipt, CalendarDays, Play } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { DollarSign, TrendingUp, Receipt, CalendarDays, Play, RefreshCw, Loader2 } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
@@ -15,60 +17,135 @@ const InvoiceDashboard = () => {
   const [topInvoices, setTopInvoices] = useState<{ name: string; value: number }[]>([]);
   const [skuDistribution, setSkuDistribution] = useState<{ name: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [executing, setExecuting] = useState(false);
+  const [executionStep, setExecutionStep] = useState("");
+  const [topViewMode, setTopViewMode] = useState<"sale" | "cost">("sale");
+  const [skuViewMode, setSkuViewMode] = useState<"sku" | "name">("sku");
+
+  // Monthly consumption trend
+  const [monthlyTrend, setMonthlyTrend] = useState<{ month: string; cost: number; sale: number }[]>([]);
+  const [trendPeriod, setTrendPeriod] = useState<"year" | "6m">("year");
 
   const now = new Date();
-  const periodStart = new Date(now.getFullYear(), now.getMonth() - 1, 3);
-  const periodEnd = new Date(now.getFullYear(), now.getMonth(), 3);
+  const periodStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const periodEnd = new Date(now.getFullYear(), now.getMonth(), 0);
   const periodLabel = `${periodStart.toLocaleDateString("pt-BR")} – ${periodEnd.toLocaleDateString("pt-BR")}`;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // Fetch invoices with customer names for the period
-      const { data: invoices } = await supabase
-        .from("invoices")
-        .select("id, total_cost, total_sale, margin, customers(name)")
-        .order("total_sale", { ascending: false });
+  const fetchData = async () => {
+    setLoading(true);
+    const { data: invoices } = await supabase
+      .from("invoices")
+      .select("id, invoice_number, total_cost, total_sale, margin, period_start, period_end, customers(name)")
+      .order("total_sale", { ascending: false });
 
-      if (invoices) {
-        const totalCost = invoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-        const totalSale = invoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
-        const totalMargin = invoices.reduce((s, i) => s + (Number(i.margin) || 0), 0);
-        setStats({ totalCost, totalSale, totalMargin });
+    if (invoices) {
+      const totalCost = invoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const totalSale = invoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const totalMargin = totalSale - totalCost;
+      setStats({ totalCost, totalSale, totalMargin });
 
-        const top = invoices.slice(0, 10).map((inv: any) => ({
-          name: inv.customers?.name || "—",
-          value: Number(inv.total_sale) || 0,
+      // Top invoices by sale or cost
+      const costInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("COST-"));
+      const saleInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("SALE-"));
+
+      const topSale = saleInvoices.slice(0, 10).map((inv: any) => ({
+        name: inv.customers?.name?.substring(0, 15) || "—",
+        value: Number(inv.total_sale) || 0,
+      }));
+      const topCost = costInvoices.slice(0, 10).map((inv: any) => ({
+        name: inv.customers?.name?.substring(0, 15) || "—",
+        value: Number(inv.total_cost) || 0,
+      }));
+      setTopInvoices(topViewMode === "sale" ? topSale : topCost);
+
+      // Monthly trend
+      const monthMap: Record<string, { cost: number; sale: number }> = {};
+      invoices.forEach((inv: any) => {
+        const d = new Date(inv.period_start);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (!monthMap[key]) monthMap[key] = { cost: 0, sale: 0 };
+        if (inv.invoice_number?.startsWith("COST-")) {
+          monthMap[key].cost += Number(inv.total_cost) || 0;
+        } else if (inv.invoice_number?.startsWith("SALE-")) {
+          monthMap[key].sale += Number(inv.total_sale) || 0;
+        }
+      });
+      const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      const trend = Object.entries(monthMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, v]) => ({
+          month: months[parseInt(key.split("-")[1]) - 1],
+          cost: v.cost,
+          sale: v.sale,
         }));
-        setTopInvoices(top);
-      }
+      setMonthlyTrend(trendPeriod === "6m" ? trend.slice(-6) : trend.slice(-12));
+    }
 
-      // Fetch SKU distribution from invoice items
-      const { data: items } = await supabase
-        .from("invoice_items")
-        .select("sku_id, quantity, skus(name)");
+    // SKU distribution
+    const { data: items } = await supabase
+      .from("invoice_items")
+      .select("sku_id, quantity, skus(name, code)");
 
-      if (items) {
-        const skuMap: Record<string, number> = {};
-        items.forEach((item: any) => {
-          const name = item.skus?.name || item.sku_id;
-          skuMap[name] = (skuMap[name] || 0) + Number(item.quantity);
-        });
-        const dist = Object.entries(skuMap)
-          .map(([name, value]) => ({ name, value }))
-          .sort((a, b) => b.value - a.value)
-          .slice(0, 8);
-        setSkuDistribution(dist);
-      }
+    if (items) {
+      const skuMap: Record<string, number> = {};
+      items.forEach((item: any) => {
+        const name = skuViewMode === "sku" ? (item.skus?.code || item.sku_id) : (item.skus?.name || item.sku_id);
+        skuMap[name] = (skuMap[name] || 0) + Number(item.quantity);
+      });
+      const dist = Object.entries(skuMap)
+        .map(([name, value]) => ({ name: name.substring(0, 15), value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
+      setSkuDistribution(dist);
+    }
 
-      setLoading(false);
-    };
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [topViewMode, skuViewMode, trendPeriod]);
+
+  const handleExecute = async () => {
+    setExecuting(true);
+    try {
+      // Step 1: Sync usage from Acronis
+      setExecutionStep("Sincronizando consumo da Acronis...");
+      const { data: syncData, error: syncError } = await supabase.functions.invoke("sync-tenant-usage");
+      if (syncError) throw syncError;
+      if (syncData?.error) throw new Error(syncData.error);
+
+      const totalSynced = syncData.results?.reduce((sum: number, r: any) => sum + (r.usage_items_synced || 0), 0) || 0;
+      toast.info(`Consumo sincronizado: ${totalSynced} itens`);
+
+      // Step 2: Generate invoices
+      setExecutionStep("Gerando faturas de custo e venda...");
+      const { data: genData, error: genError } = await supabase.functions.invoke("generate-invoices", {
+        body: {
+          period_start: periodStart.toISOString().split("T")[0],
+          period_end: periodEnd.toISOString().split("T")[0],
+        },
+      });
+      if (genError) throw genError;
+      if (genData?.error) throw new Error(genData.error);
+
+      toast.success(
+        `Faturamento concluído! ${genData.cost_invoices || 0} faturas de custo e ${genData.sale_invoices || 0} faturas de venda geradas.`
+      );
+
+      // Refresh dashboard
+      await fetchData();
+    } catch (err: any) {
+      toast.error(`Erro no faturamento: ${err.message}`);
+    } finally {
+      setExecuting(false);
+      setExecutionStep("");
+    }
+  };
 
   const COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#14b8a6"];
 
   const cycleDay = now.getDate();
-  const cycleDayTarget = 3;
   const cycleProgress = Math.min((cycleDay / 30) * 100, 100);
 
   if (loading) {
@@ -117,7 +194,7 @@ const InvoiceDashboard = () => {
               <TrendingUp className="h-5 w-5 text-green-500" />
               <h3 className="font-semibold text-base">Valores de venda</h3>
             </div>
-            <p className="text-3xl font-bold">{formatCurrency(stats.totalMargin > 0 ? stats.totalSale : 0)}</p>
+            <p className="text-3xl font-bold">{formatCurrency(stats.totalSale)}</p>
             <p className="text-sm text-green-500 mt-1">Último mês: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/venda")}>
               Ver tabela de venda
@@ -126,34 +203,92 @@ const InvoiceDashboard = () => {
         </Card>
       </div>
 
-      {/* Billing Cycle */}
-      <Card className="shadow-soft">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-3 mb-4">
-            <CalendarDays className="h-6 w-6 text-primary" />
-            <h3 className="font-semibold text-lg">Ciclo de faturamento</h3>
-            <span className="ml-auto text-sm text-muted-foreground">Dia {String(cycleDayTarget).padStart(2, "0")}</span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-3 mb-4">
-            <div className="bg-primary h-3 rounded-full transition-all" style={{ width: `${cycleProgress}%` }} />
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Ciclo de {now.toLocaleString("pt-BR", { month: "long" })} de {now.getFullYear()} disponível para execução.
-          </p>
-          <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
-            <Play className="h-4 w-4 mr-2" /> Executar Agora
-          </Button>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Ao clicar, você irá gerar faturas referentes a {now.toLocaleString("pt-BR", { month: "long" })} de {now.getFullYear()}
-          </p>
-        </CardContent>
-      </Card>
+      {/* Billing Cycle + Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="shadow-soft">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <CalendarDays className="h-6 w-6 text-primary" />
+              <h3 className="font-semibold text-lg">Ciclo de faturamento</h3>
+              <span className="ml-auto text-sm text-muted-foreground">Dia 10</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-3 mb-4">
+              <div className="bg-primary h-3 rounded-full transition-all" style={{ width: `${cycleProgress}%` }} />
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Faltam {Math.max(0, 30 - cycleDay)} dias para o ciclo atual terminar e iniciar o próximo ciclo.
+            </p>
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleExecute}
+              disabled={executing}
+            >
+              {executing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {executionStep || "Processando..."}
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" /> Executar Agora
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Ao clicar, você irá sincronizar o consumo e gerar faturas de {now.toLocaleString("pt-BR", { month: "long" })} de {now.getFullYear()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-soft">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-base">Tendência de Consumo</h3>
+              <Select value={trendPeriod} onValueChange={(v) => setTrendPeriod(v as any)}>
+                <SelectTrigger className="w-24 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="year">Ano</SelectItem>
+                  <SelectItem value="6m">6 meses</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {monthlyTrend.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={monthlyTrend}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                  <XAxis dataKey="month" fontSize={11} />
+                  <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} fontSize={11} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Legend />
+                  <Bar dataKey="cost" name="Custo" fill="#f59e0b" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="sale" name="Venda" fill="#22c55e" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">Nenhum dado disponível</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="shadow-soft">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-base mb-4">Top 10 faturamentos</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-base">Top 10 faturamentos</h3>
+              <Select value={topViewMode} onValueChange={(v) => setTopViewMode(v as any)}>
+                <SelectTrigger className="w-24 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sale">Venda</SelectItem>
+                  <SelectItem value="cost">Custo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {topInvoices.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={topInvoices} layout="vertical" margin={{ left: 80 }}>
@@ -172,18 +307,39 @@ const InvoiceDashboard = () => {
 
         <Card className="shadow-soft">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-base mb-4">Itens mais consumidos</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-base">Itens mais consumidos</h3>
+              <Select value={skuViewMode} onValueChange={(v) => setSkuViewMode(v as any)}>
+                <SelectTrigger className="w-32 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sku">SKU do item</SelectItem>
+                  <SelectItem value="name">Nome do item</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {skuDistribution.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie data={skuDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={110} paddingAngle={2}>
-                    {skuDistribution.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="60%" height={300}>
+                  <PieChart>
+                    <Pie data={skuDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={110} paddingAngle={2}>
+                      {skuDistribution.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-col gap-1.5 text-xs">
+                  {skuDistribution.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                      <span className="text-muted-foreground truncate max-w-[120px]">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <p className="text-muted-foreground text-center py-8">Nenhum dado disponível</p>
             )}
