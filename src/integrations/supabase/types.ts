@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      acronis_sku_mapping: {
+        Row: {
+          acronis_name: string
+          created_at: string
+          description: string | null
+          id: string
+          is_billable: boolean
+          sku_code: string
+          unit_type: string
+        }
+        Insert: {
+          acronis_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_billable?: boolean
+          sku_code: string
+          unit_type?: string
+        }
+        Update: {
+          acronis_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_billable?: boolean
+          sku_code?: string
+          unit_type?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           created_at: string
