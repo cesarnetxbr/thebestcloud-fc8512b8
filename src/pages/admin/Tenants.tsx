@@ -359,24 +359,6 @@ const Tenants = () => {
         />
       </div>
 
-      {/* Trial Banner */}
-      <Card className="bg-gradient-to-r from-amber-900/20 to-amber-800/10 border-amber-700/30">
-        <CardContent className="py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-amber-500 text-xl">⚠</span>
-            <div>
-              <p className="font-semibold text-sm">Você está no período de teste</p>
-              <p className="text-xs text-muted-foreground">
-                Durante o trial, você pode vincular até 2 clientes. Ative sua assinatura para liberar a quota completa do seu plano.
-              </p>
-            </div>
-          </div>
-          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0">
-            Ativar assinatura
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Stats */}
       <Card>
         <CardContent className="py-4">
@@ -404,12 +386,6 @@ const Tenants = () => {
           </div>
         </CardContent>
       </Card>
-
-      <div className="flex justify-center">
-        <Button variant="outline" size="sm" className="text-primary border-primary">
-          Fazer upgrade
-        </Button>
-      </div>
 
       {/* Connection section header */}
       {connectionName && (
