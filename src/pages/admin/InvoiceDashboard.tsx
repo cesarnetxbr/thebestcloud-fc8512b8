@@ -39,24 +39,23 @@ const InvoiceDashboard = () => {
       .order("total_sale", { ascending: false });
 
     if (invoices) {
-      const costInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("COST-"));
-      const saleInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("SALE-"));
-
-      const totalCost = costInvoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-      const totalSale = saleInvoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
-      const totalMargin = totalSale - totalCost;
+      // Use all invoices for KPI calculation — each invoice has both total_cost and total_sale
+      const totalCost = invoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const totalSale = invoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const totalMargin = invoices.reduce((s, i) => s + (Number(i.margin) || 0), 0);
       setStats({ totalCost, totalSale, totalMargin });
 
       // Top invoices by sale or cost
-      const topSale = saleInvoices.slice(0, 10).map((inv: any) => ({
+      const sorted = [...invoices].sort((a, b) =>
+        topViewMode === "sale"
+          ? (Number(b.total_sale) || 0) - (Number(a.total_sale) || 0)
+          : (Number(b.total_cost) || 0) - (Number(a.total_cost) || 0)
+      );
+      const topItems = sorted.slice(0, 10).map((inv: any) => ({
         name: inv.customers?.name?.substring(0, 15) || "—",
-        value: Number(inv.total_sale) || 0,
+        value: topViewMode === "sale" ? (Number(inv.total_sale) || 0) : (Number(inv.total_cost) || 0),
       }));
-      const topCost = costInvoices.slice(0, 10).map((inv: any) => ({
-        name: inv.customers?.name?.substring(0, 15) || "—",
-        value: Number(inv.total_cost) || 0,
-      }));
-      setTopInvoices(topViewMode === "sale" ? topSale : topCost);
+      setTopInvoices(topItems);
 
       // Monthly trend
       const monthMap: Record<string, { cost: number; sale: number }> = {};
