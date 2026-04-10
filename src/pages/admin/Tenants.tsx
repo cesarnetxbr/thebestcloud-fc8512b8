@@ -752,11 +752,7 @@ const Tenants = () => {
 
                                 await supabase
                                   .from("invoice_items")
-                                  .update({
-                                    unit_price: newUnitPrice,
-                                    total_cost: itemTotalCost,
-                                    total_price: itemTotalPrice,
-                                  })
+                                  .update({ unit_price: newUnitPrice })
                                   .eq("id", item.id);
                               }
 
