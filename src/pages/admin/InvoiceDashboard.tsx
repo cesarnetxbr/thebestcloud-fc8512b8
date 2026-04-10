@@ -27,9 +27,16 @@ const InvoiceDashboard = () => {
   const [trendPeriod, setTrendPeriod] = useState<"year" | "6m">("year");
 
   const now = new Date();
-  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  // Billing period selection
+  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
+  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+
+  const periodStart = new Date(Number(selectedYear), Number(selectedMonth), 1);
+  const periodEnd = new Date(Number(selectedYear), Number(selectedMonth) + 1, 0);
   const periodLabel = `${periodStart.toLocaleDateString("pt-BR")} – ${periodEnd.toLocaleDateString("pt-BR")}`;
+
+  const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  const availableYears = Array.from({ length: 3 }, (_, i) => String(now.getFullYear() - i));
 
   const fetchData = async () => {
     setLoading(true);
@@ -203,16 +210,41 @@ const InvoiceDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="shadow-soft">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3 mb-4">
+             <div className="flex items-center gap-3 mb-4">
               <CalendarDays className="h-6 w-6 text-primary" />
               <h3 className="font-semibold text-lg">Ciclo de faturamento</h3>
               <span className="ml-auto text-sm text-muted-foreground">Dia 10</span>
             </div>
+
+            {/* Period Selection */}
+            <div className="flex gap-3 mb-4">
+              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="flex-1 h-9">
+                  <SelectValue placeholder="Mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthNames.map((name, i) => (
+                    <SelectItem key={i} value={String(i)}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-24 h-9">
+                  <SelectValue placeholder="Ano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.map(y => (
+                    <SelectItem key={y} value={y}>{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="w-full bg-muted rounded-full h-3 mb-4">
               <div className="bg-primary h-3 rounded-full transition-all" style={{ width: `${cycleProgress}%` }} />
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Faltam {Math.max(0, 30 - cycleDay)} dias para o ciclo atual terminar e iniciar o próximo ciclo.
+              Período selecionado: {periodLabel}
             </p>
             <Button
               className="w-full bg-green-600 hover:bg-green-700 text-white"
@@ -231,7 +263,7 @@ const InvoiceDashboard = () => {
               )}
             </Button>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Ao clicar, você irá sincronizar o consumo e gerar faturas de {now.toLocaleString("pt-BR", { month: "long" })} de {now.getFullYear()}
+              Ao clicar, você irá sincronizar o consumo e gerar faturas de {monthNames[Number(selectedMonth)].toLowerCase()} de {selectedYear}
             </p>
           </CardContent>
         </Card>
