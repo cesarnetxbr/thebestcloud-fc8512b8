@@ -38,7 +38,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw, X, Download, Eye, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw, X, Download, Eye, Save, AlertTriangle } from "lucide-react";
+import TrialBadge from "@/components/admin/TrialBadge";
 
 interface TenantForm {
   name: string;
