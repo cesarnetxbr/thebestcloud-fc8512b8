@@ -434,6 +434,7 @@ const Tenants = () => {
                       </div>
                     </TableCell>
                     <TableCell>
+                      {tenant.customer_id ? (
                         <Badge className="gap-1 bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30">
                           <LinkIcon className="h-3 w-3" />
                           Conectado
