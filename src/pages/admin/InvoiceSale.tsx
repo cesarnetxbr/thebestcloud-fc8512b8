@@ -209,7 +209,8 @@ const InvoiceSale = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginated.map((r) => (
+              <>
+                {paginated.map((r) => (
                   <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/invoices/venda/${r.id}`)}>
                     <TableCell className="font-mono text-sm">{r.invoice_number}</TableCell>
                     <TableCell className="font-medium">{r.customer_name}</TableCell>
@@ -225,7 +226,13 @@ const InvoiceSale = () => {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{formatDateTime(r.synced_at)}</TableCell>
                   </TableRow>
-                ))
+                ))}
+                <TableRow className="bg-muted/30 font-semibold border-t-2">
+                  <TableCell colSpan={6} className="text-right text-sm">Total ({filtered.length} faturas)</TableCell>
+                  <TableCell className="text-right text-sm">{formatCurrency(filtered.reduce((sum, r) => sum + r.total_sale, 0))}</TableCell>
+                  <TableCell colSpan={2} />
+                </TableRow>
+              </>
               )}
             </TableBody>
           </Table>
