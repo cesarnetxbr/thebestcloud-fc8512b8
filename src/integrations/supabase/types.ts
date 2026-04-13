@@ -1470,6 +1470,97 @@ export type Database = {
           },
         ]
       }
+      trial_clients: {
+        Row: {
+          available_date: string | null
+          available_time: string | null
+          commercial_notes: string | null
+          converted_at: string | null
+          cpf_cnpj: string | null
+          created_at: string
+          customer_id: string | null
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string
+          status: string
+          support_option: string
+          technical_notes: string | null
+          tenant_id: string | null
+          ticket_id: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          available_date?: string | null
+          available_time?: string | null
+          commercial_notes?: string | null
+          converted_at?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone: string
+          status?: string
+          support_option?: string
+          technical_notes?: string | null
+          tenant_id?: string | null
+          ticket_id?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          available_date?: string | null
+          available_time?: string | null
+          commercial_notes?: string | null
+          converted_at?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string
+          status?: string
+          support_option?: string
+          technical_notes?: string | null
+          tenant_id?: string | null
+          ticket_id?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_clients_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trial_clients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trial_clients_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_permissions: {
         Row: {
           can_create: boolean | null
