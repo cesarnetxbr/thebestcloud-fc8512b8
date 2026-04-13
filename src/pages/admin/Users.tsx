@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const ROLE_LABELS: Record<string, string> = {
+  pending: "⏳ Pendente",
   admin: "Administrador",
   manager: "Gerente",
   supervisor: "Supervisor",
@@ -24,6 +25,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
+  pending: "bg-orange-100 text-orange-800",
   admin: "bg-red-100 text-red-800",
   manager: "bg-blue-100 text-blue-800",
   supervisor: "bg-purple-100 text-purple-800",
