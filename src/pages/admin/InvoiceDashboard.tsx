@@ -169,8 +169,21 @@ const InvoiceDashboard = () => {
     );
   }
 
+  const hasClosedData = stats.totalCost > 0 || stats.totalSale > 0;
+  const hasProjection = projectionStats.totalCost > 0 || projectionStats.totalSale > 0;
+  const displayStats = hasClosedData ? stats : projectionStats;
+  const isProjection = !hasClosedData && hasProjection;
+
   return (
     <div className="space-y-6">
+      {/* Projection notice */}
+      {isProjection && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm flex items-center gap-2">
+          <CalendarDays className="h-4 w-4" />
+          <span><strong>Projeção:</strong> Os valores abaixo são baseados em faturas em rascunho. Encerre o faturamento para exibir valores reais.</span>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-soft">
@@ -178,9 +191,10 @@ const InvoiceDashboard = () => {
             <div className="flex items-center gap-3 mb-2">
               <Receipt className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-base">Margem total</h3>
+              {isProjection && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Projeção</span>}
             </div>
-            <p className="text-3xl font-bold">{formatCurrency(stats.totalMargin)}</p>
-            <p className="text-sm text-muted-foreground mt-1">Último mês: {periodLabel}</p>
+            <p className="text-3xl font-bold">{formatCurrency(displayStats.totalMargin)}</p>
+            <p className="text-sm text-muted-foreground mt-1">{isProjection ? "Rascunho" : "Encerrado"}: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices")}>
               Ver o faturamento
             </Button>
@@ -192,9 +206,10 @@ const InvoiceDashboard = () => {
             <div className="flex items-center gap-3 mb-2">
               <DollarSign className="h-5 w-5 text-destructive" />
               <h3 className="font-semibold text-base">Valores de custo</h3>
+              {isProjection && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Projeção</span>}
             </div>
-            <p className="text-3xl font-bold">{formatCurrency(stats.totalCost)}</p>
-            <p className="text-sm text-destructive mt-1">Último mês: {periodLabel}</p>
+            <p className="text-3xl font-bold">{formatCurrency(displayStats.totalCost)}</p>
+            <p className="text-sm text-destructive mt-1">{isProjection ? "Rascunho" : "Encerrado"}: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/custo")}>
               Ver tabela de custos
             </Button>
@@ -206,9 +221,10 @@ const InvoiceDashboard = () => {
             <div className="flex items-center gap-3 mb-2">
               <TrendingUp className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-base">Valores de venda</h3>
+              {isProjection && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Projeção</span>}
             </div>
-            <p className="text-3xl font-bold">{formatCurrency(stats.totalSale)}</p>
-            <p className="text-sm text-primary mt-1">Último mês: {periodLabel}</p>
+            <p className="text-3xl font-bold">{formatCurrency(displayStats.totalSale)}</p>
+            <p className="text-sm text-primary mt-1">{isProjection ? "Rascunho" : "Encerrado"}: {periodLabel}</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/admin/invoices/venda")}>
               Ver tabela de venda
             </Button>
