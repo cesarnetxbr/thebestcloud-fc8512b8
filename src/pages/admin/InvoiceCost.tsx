@@ -27,8 +27,11 @@ const PAGE_SIZE = 15;
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
-const formatDate = (d: string | null) =>
-  d ? new Date(d).toLocaleDateString("pt-BR") : "—";
+const formatDate = (d: string | null) => {
+  if (!d) return "—";
+  const [y, m, day] = d.split("-");
+  return `${day}/${m}/${y}`;
+};
 const formatDateTime = (d: string | null) =>
   d ? new Date(d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
