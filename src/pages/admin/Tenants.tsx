@@ -184,7 +184,41 @@ const Tenants = () => {
   const bothCount = Math.min(billingCount, realtimeCount);
   const totalCount = tenants?.length || 0;
 
-  const saveMutation = useMutation({
+  // Trial expiry notifications
+  useEffect(() => {
+    if (!tenants) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const expiringTrials = tenants.filter(t => {
+      if (!t.trial_end_date) return false;
+      const end = new Date(t.trial_end_date + "T00:00:00");
+      const daysLeft = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft <= 5 && daysLeft >= 0;
+    });
+
+    const expiredTrials = tenants.filter(t => {
+      if (!t.trial_end_date) return false;
+      const end = new Date(t.trial_end_date + "T00:00:00");
+      return end < today;
+    });
+
+    if (expiredTrials.length > 0) {
+      toast.error(
+        `⚠️ ${expiredTrials.length} tenant(s) com trial EXPIRADO: ${expiredTrials.map(t => t.name).join(", ")}. Altere a tabela de venda!`,
+        { duration: 10000 }
+      );
+    }
+
+    if (expiringTrials.length > 0) {
+      toast.warning(
+        `🔔 ${expiringTrials.length} tenant(s) com trial expirando em breve: ${expiringTrials.map(t => t.name).join(", ")}`,
+        { duration: 8000 }
+      );
+    }
+  }, [tenants]);
+
+
     mutationFn: async () => {
       const payload: any = {
         name: form.name,
