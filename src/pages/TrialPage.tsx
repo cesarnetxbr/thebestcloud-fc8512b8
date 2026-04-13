@@ -74,15 +74,32 @@ const TrialPage = () => {
 
       const num = `CHM-${Date.now().toString().slice(-6)}`;
 
-      const { error } = await supabase.from("tickets").insert({
+      const { data: ticketData, error } = await supabase.from("tickets").insert({
         ticket_number: num,
         subject: `Teste Grátis 14 Dias — ${form.name}`,
         description,
         priority: "media",
         category_id: categoryId,
         created_by: "00000000-0000-0000-0000-000000000000",
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // Also save to trial_clients table
+      const trialStart = new Date().toISOString().split("T")[0];
+      const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+      await supabase.from("trial_clients").insert({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        cpf_cnpj: form.cpf_cnpj || null,
+        support_option: form.support_option,
+        available_date: form.support_option === "agendar" ? form.available_date : null,
+        available_time: form.support_option === "agendar" ? form.available_time : null,
+        ticket_id: ticketData?.id || null,
+        trial_start_date: trialStart,
+        trial_end_date: trialEnd,
+        status: "pending",
+      });
     },
     onSuccess: () => {
       setSubmitted(true);
