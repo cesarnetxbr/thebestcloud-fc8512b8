@@ -337,7 +337,7 @@ const Users_Page = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Select value={u.role} onValueChange={(val) => changeRole(u.user_id, val)}>
+                      <Select value={u.role} onValueChange={(val) => changeRole(u.user_id, u.role, val)}>
                         <SelectTrigger className="w-[160px]">
                           <SelectValue />
                         </SelectTrigger>
