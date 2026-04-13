@@ -671,11 +671,28 @@ const Tenants = () => {
                 value={selectedTenant.sale_table_id || ""}
                 onValueChange={async (v) => {
                   const newTableId = v || null;
+                  const selectedSaleTable = saleTables?.find(s => s.id === v);
+                  const isFreeTrial = selectedSaleTable?.name?.toLowerCase().includes("30 dias free");
+                  
+                  const trialUpdates: Record<string, any> = {};
+                  if (isFreeTrial) {
+                    const startDate = new Date().toISOString().split("T")[0];
+                    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+                    trialUpdates.trial_start_date = startDate;
+                    trialUpdates.trial_end_date = endDate;
+                    trialUpdates.trial_notified = false;
+                    toast.info(`Trial de 30 dias ativado: ${startDate} → ${endDate}`);
+                  } else {
+                    trialUpdates.trial_start_date = null;
+                    trialUpdates.trial_end_date = null;
+                    trialUpdates.trial_notified = false;
+                  }
+
                   linkMutation.mutate({
                     tenantId: selectedTenant.id,
-                    updates: { sale_table_id: newTableId },
+                    updates: { sale_table_id: newTableId, ...trialUpdates },
                   });
-                  setSelectedTenant({ ...selectedTenant, sale_table_id: v });
+                  setSelectedTenant({ ...selectedTenant, sale_table_id: v, ...trialUpdates });
 
                   // Recalculate sale prices in tenant_usage and draft invoices
                   if (newTableId) {
