@@ -38,19 +38,29 @@ const InvoiceDashboard = () => {
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   const availableYears = Array.from({ length: 3 }, (_, i) => String(now.getFullYear() - i));
 
+  const [projectionStats, setProjectionStats] = useState({ totalCost: 0, totalSale: 0, totalMargin: 0 });
+
   const fetchData = async () => {
     setLoading(true);
     const { data: invoices } = await supabase
       .from("invoices")
-      .select("id, invoice_number, total_cost, total_sale, margin, period_start, period_end, customers(name)")
+      .select("id, invoice_number, total_cost, total_sale, margin, period_start, period_end, status, customers(name)")
       .order("total_sale", { ascending: false });
 
     if (invoices) {
-      // Use all invoices for KPI calculation — each invoice has both total_cost and total_sale
-      const totalCost = invoices.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-      const totalSale = invoices.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
-      const totalMargin = invoices.reduce((s, i) => s + (Number(i.margin) || 0), 0);
+      // Separate closed (real) vs draft (projection)
+      const closed = invoices.filter((i: any) => i.status === "closed");
+      const drafts = invoices.filter((i: any) => i.status !== "closed");
+
+      const totalCost = closed.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const totalSale = closed.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const totalMargin = closed.reduce((s, i) => s + (Number(i.margin) || 0), 0);
       setStats({ totalCost, totalSale, totalMargin });
+
+      const projCost = drafts.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const projSale = drafts.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const projMargin = drafts.reduce((s, i) => s + (Number(i.margin) || 0), 0);
+      setProjectionStats({ totalCost: projCost, totalSale: projSale, totalMargin: projMargin });
 
       // Top invoices by sale or cost
       const sorted = [...invoices].sort((a, b) =>
