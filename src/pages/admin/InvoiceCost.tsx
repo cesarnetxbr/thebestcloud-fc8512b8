@@ -18,6 +18,7 @@ interface InvoiceRow {
   period_start: string;
   period_end: string;
   created_at: string;
+  synced_at: string | null;
   total_cost: number;
   status: string;
 }

@@ -220,6 +220,7 @@ const InvoiceSale = () => {
                         {r.status === "closed" ? "Encerrada" : "Rascunho"}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{formatDateTime(r.synced_at)}</TableCell>
                   </TableRow>
                 ))
               )}
