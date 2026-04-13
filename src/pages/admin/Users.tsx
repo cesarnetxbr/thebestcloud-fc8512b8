@@ -161,12 +161,22 @@ const Users_Page = () => {
     fetchPresets();
   }, []);
 
-  const changeRole = async (userId: string, newRole: string) => {
-    const { error } = await supabase.from("user_roles").update({ role: newRole as any }).eq("user_id", userId);
+  const changeRole = async (userId: string, currentRole: string, newRole: string) => {
+    if (newRole === "pending") return;
+    let error;
+    if (currentRole === "pending") {
+      // User has no role yet — insert
+      const result = await supabase.from("user_roles").insert({ user_id: userId, role: newRole as any });
+      error = result.error;
+    } else {
+      // Update existing role
+      const result = await supabase.from("user_roles").update({ role: newRole as any }).eq("user_id", userId);
+      error = result.error;
+    }
     if (error) {
       toast({ title: "Erro ao alterar role", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Role atualizada com sucesso" });
+      toast({ title: currentRole === "pending" ? "Perfil atribuído com sucesso! O usuário agora pode acessar o sistema." : "Role atualizada com sucesso" });
       fetchUsers();
     }
   };
