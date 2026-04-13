@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Users, TrendingUp, AlertTriangle, Package, FileText } from "lucide-react";
+import { DollarSign, Users, TrendingUp, AlertTriangle, Gift, FileText } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 
 const COLORS = ["hsl(215, 70%, 25%)", "hsl(25, 95%, 55%)", "hsl(215, 60%, 55%)", "hsl(25, 95%, 70%)", "hsl(215, 40%, 70%)"];
@@ -11,7 +11,7 @@ const Dashboard = () => {
     totalCustomers: 0,
     activeCustomers: 0,
     totalRevenue: 0,
-    totalSkus: 0,
+    totalTrialClients: 0,
     pendingInvoices: 0,
     totalMargin: 0,
   });
@@ -21,13 +21,15 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [customersRes, skusRes, invoicesRes] = await Promise.all([
+        const [customersRes, trialRes, invoicesRes] = await Promise.all([
           supabase.from("customers").select("*"),
-          supabase.from("skus").select("id", { count: "exact" }),
+          supabase.from("trial_clients").select("id, status"),
           supabase.from("invoices").select("*"),
         ]);
 
         const customers = customersRes.data || [];
+        const trialClients = trialRes.data || [];
+        const activeTrials = trialClients.filter((t: any) => t.status === "active" || t.status === "pending").length;
         const invoices = invoicesRes.data || [];
 
         const active = customers.filter((c) => c.status === "active").length;
@@ -39,7 +41,7 @@ const Dashboard = () => {
           totalCustomers: customers.length,
           activeCustomers: active,
           totalRevenue: revenue,
-          totalSkus: skusRes.count || 0,
+          totalTrialClients: activeTrials,
           pendingInvoices: pending,
           totalMargin: margin,
         });
@@ -93,7 +95,7 @@ const Dashboard = () => {
     { title: "Receita Mensal", value: formatCurrency(stats.totalRevenue), icon: DollarSign, color: "text-green-600" },
     { title: "Clientes Ativos", value: stats.activeCustomers.toString(), icon: Users, color: "text-primary" },
     { title: "Total de Clientes", value: stats.totalCustomers.toString(), icon: TrendingUp, color: "text-accent" },
-    { title: "SKUs Ativos", value: stats.totalSkus.toString(), icon: Package, color: "text-blue-500" },
+    { title: "Clientes Trial", value: stats.totalTrialClients.toString(), icon: Gift, color: "text-orange-500" },
     { title: "Faturas Pendentes", value: stats.pendingInvoices.toString(), icon: FileText, color: "text-yellow-600" },
     { title: "Margem Total", value: formatCurrency(stats.totalMargin), icon: AlertTriangle, color: "text-emerald-600" },
   ];
