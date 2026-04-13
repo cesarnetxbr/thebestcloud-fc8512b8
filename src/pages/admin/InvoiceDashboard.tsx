@@ -48,18 +48,24 @@ const InvoiceDashboard = () => {
       .order("total_sale", { ascending: false });
 
     if (invoices) {
-      // Separate closed (real) vs draft (projection)
-      const closed = invoices.filter((i: any) => i.status === "closed");
-      const drafts = invoices.filter((i: any) => i.status !== "closed");
+      // Separate COST and SALE invoices
+      const costInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("COST-"));
+      const saleInvoices = invoices.filter((i: any) => i.invoice_number?.startsWith("SALE-"));
 
-      const totalCost = closed.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-      const totalSale = closed.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
-      const totalMargin = closed.reduce((s, i) => s + (Number(i.margin) || 0), 0);
+      // Separate closed (real) vs draft (projection)
+      const closedCost = costInvoices.filter((i: any) => i.status === "closed");
+      const closedSale = saleInvoices.filter((i: any) => i.status === "closed");
+      const draftCost = costInvoices.filter((i: any) => i.status !== "closed");
+      const draftSale = saleInvoices.filter((i: any) => i.status !== "closed");
+
+      const totalCost = closedCost.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const totalSale = closedSale.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const totalMargin = totalSale - totalCost;
       setStats({ totalCost, totalSale, totalMargin });
 
-      const projCost = drafts.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
-      const projSale = drafts.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
-      const projMargin = drafts.reduce((s, i) => s + (Number(i.margin) || 0), 0);
+      const projCost = draftCost.reduce((s, i) => s + (Number(i.total_cost) || 0), 0);
+      const projSale = draftSale.reduce((s, i) => s + (Number(i.total_sale) || 0), 0);
+      const projMargin = projSale - projCost;
       setProjectionStats({ totalCost: projCost, totalSale: projSale, totalMargin: projMargin });
 
       // Top invoices by sale or cost
