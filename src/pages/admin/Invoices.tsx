@@ -19,6 +19,7 @@ interface InvoiceWithCustomer {
   margin: number | null;
   status: string | null;
   due_date: string | null;
+  synced_at: string | null;
   customers: { name: string } | null;
 }
 
@@ -47,7 +48,7 @@ const Invoices = () => {
   const fetchInvoices = async () => {
     const { data } = await supabase
       .from("invoices")
-      .select("id, invoice_number, period_start, period_end, total_cost, total_sale, margin, status, due_date, customers(name)")
+      .select("id, invoice_number, period_start, period_end, total_cost, total_sale, margin, status, due_date, synced_at, customers(name)")
       .order("created_at", { ascending: false });
     setInvoices((data as unknown as InvoiceWithCustomer[]) || []);
     setLoading(false);
@@ -83,6 +84,9 @@ const Invoices = () => {
 
   const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("pt-BR") : "—";
+
+  const formatDateTime = (d: string | null) =>
+    d ? new Date(d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
   return (
     <div className="space-y-6">
@@ -125,6 +129,7 @@ const Invoices = () => {
                   <TableHead className="text-right">Venda</TableHead>
                   <TableHead className="text-right">Margem</TableHead>
                   <TableHead>Vencimento</TableHead>
+                  <TableHead>Sincronizado em</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-center">Ações</TableHead>
                 </TableRow>
@@ -141,6 +146,7 @@ const Invoices = () => {
                       <TableCell className="text-right">{formatCurrency(inv.total_sale)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(inv.margin)}</TableCell>
                       <TableCell>{formatDate(inv.due_date)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatDateTime(inv.synced_at)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[inv.status || "draft"]} variant="secondary">
                           {statusLabels[inv.status || "draft"]}
