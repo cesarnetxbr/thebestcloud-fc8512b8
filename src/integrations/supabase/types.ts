@@ -1266,6 +1266,9 @@ export type Database = {
           notes: string | null
           sale_table_id: string | null
           status: string
+          trial_end_date: string | null
+          trial_notified: boolean | null
+          trial_start_date: string | null
           updated_at: string
         }
         Insert: {
@@ -1278,6 +1281,9 @@ export type Database = {
           notes?: string | null
           sale_table_id?: string | null
           status?: string
+          trial_end_date?: string | null
+          trial_notified?: boolean | null
+          trial_start_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -1290,6 +1296,9 @@ export type Database = {
           notes?: string | null
           sale_table_id?: string | null
           status?: string
+          trial_end_date?: string | null
+          trial_notified?: boolean | null
+          trial_start_date?: string | null
           updated_at?: string
         }
         Relationships: [

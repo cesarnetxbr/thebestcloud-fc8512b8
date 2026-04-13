@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +38,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw, X, Download, Eye, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Globe, Search, Home, Link2, LinkIcon, Unlink, RefreshCw, X, Download, Eye, Save, AlertTriangle } from "lucide-react";
+import TrialBadge from "@/components/admin/TrialBadge";
 
 interface TenantForm {
   name: string;
@@ -182,6 +183,40 @@ const Tenants = () => {
   const realtimeCount = usageDates?.length ? tenants?.filter((t) => t.customer_id).length || 0 : 0;
   const bothCount = Math.min(billingCount, realtimeCount);
   const totalCount = tenants?.length || 0;
+
+  // Trial expiry notifications
+  useEffect(() => {
+    if (!tenants) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const expiringTrials = tenants.filter(t => {
+      if (!t.trial_end_date) return false;
+      const end = new Date(t.trial_end_date + "T00:00:00");
+      const daysLeft = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft <= 5 && daysLeft >= 0;
+    });
+
+    const expiredTrials = tenants.filter(t => {
+      if (!t.trial_end_date) return false;
+      const end = new Date(t.trial_end_date + "T00:00:00");
+      return end < today;
+    });
+
+    if (expiredTrials.length > 0) {
+      toast.error(
+        `⚠️ ${expiredTrials.length} tenant(s) com trial EXPIRADO: ${expiredTrials.map(t => t.name).join(", ")}. Altere a tabela de venda!`,
+        { duration: 10000 }
+      );
+    }
+
+    if (expiringTrials.length > 0) {
+      toast.warning(
+        `🔔 ${expiringTrials.length} tenant(s) com trial expirando em breve: ${expiringTrials.map(t => t.name).join(", ")}`,
+        { duration: 8000 }
+      );
+    }
+  }, [tenants]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -426,7 +461,12 @@ const Tenants = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getCustomerName(tenant.customer_id)}</TableCell>
-                    <TableCell>{getSaleTableName(tenant.sale_table_id)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getSaleTableName(tenant.sale_table_id)}
+                        <TrialBadge trialStartDate={tenant.trial_start_date} trialEndDate={tenant.trial_end_date} compact />
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {tenant.customer_id ? (
                         <Badge className="gap-1 bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30">
@@ -670,11 +710,28 @@ const Tenants = () => {
                 value={selectedTenant.sale_table_id || ""}
                 onValueChange={async (v) => {
                   const newTableId = v || null;
+                  const selectedSaleTable = saleTables?.find(s => s.id === v);
+                  const isFreeTrial = selectedSaleTable?.name?.toLowerCase().includes("30 dias free");
+                  
+                  const trialUpdates: Record<string, any> = {};
+                  if (isFreeTrial) {
+                    const startDate = new Date().toISOString().split("T")[0];
+                    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+                    trialUpdates.trial_start_date = startDate;
+                    trialUpdates.trial_end_date = endDate;
+                    trialUpdates.trial_notified = false;
+                    toast.info(`Trial de 30 dias ativado: ${startDate} → ${endDate}`);
+                  } else {
+                    trialUpdates.trial_start_date = null;
+                    trialUpdates.trial_end_date = null;
+                    trialUpdates.trial_notified = false;
+                  }
+
                   linkMutation.mutate({
                     tenantId: selectedTenant.id,
-                    updates: { sale_table_id: newTableId },
+                    updates: { sale_table_id: newTableId, ...trialUpdates },
                   });
-                  setSelectedTenant({ ...selectedTenant, sale_table_id: v });
+                  setSelectedTenant({ ...selectedTenant, sale_table_id: v, ...trialUpdates });
 
                   // Recalculate sale prices in tenant_usage and draft invoices
                   if (newTableId) {
@@ -788,6 +845,12 @@ const Tenants = () => {
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Trial Badge */}
+              <TrialBadge
+                trialStartDate={selectedTenant.trial_start_date}
+                trialEndDate={selectedTenant.trial_end_date}
+              />
 
               {/* Billing & Realtime Toggles */}
               <div className="space-y-3">
