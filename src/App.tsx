@@ -64,6 +64,7 @@ import LgpdConsents from "./pages/admin/lgpd/LgpdConsents";
 import LgpdRequests from "./pages/admin/lgpd/LgpdRequests";
 import LgpdIncidents from "./pages/admin/lgpd/LgpdIncidents";
 import Quotes from "./pages/admin/Quotes";
+import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
             <Route path="/admin/signup" element={<Signup />} />
             <Route path="/admin/forgot-password" element={<ForgotPassword />} />
             <Route path="/admin/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/unauthorized" element={<Unauthorized />} />
 
             {/* Portal admin protegido */}
             <Route
