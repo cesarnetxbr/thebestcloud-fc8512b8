@@ -265,6 +265,7 @@ Deno.serve(async (req) => {
           margin,
           due_date: today,
           status: "draft",
+          synced_at: new Date().toISOString(),
         }).select("id").single();
 
         if (saleErr) {
