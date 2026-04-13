@@ -329,11 +329,16 @@ const Users_Page = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map((u) => (
-                  <TableRow key={u.user_id} className={!u.is_active ? "opacity-60" : ""}>
+                  <TableRow key={u.user_id} className={`${!u.is_active ? "opacity-60" : ""} ${u.role === "pending" ? "bg-orange-50 dark:bg-orange-950/20" : ""}`}>
                     <TableCell>
                       <div>
                         <p className="font-medium">{u.full_name || "Sem nome"}</p>
                         <p className="text-xs text-muted-foreground">{u.email || `${u.user_id.slice(0, 8)}...`}</p>
+                        {u.role === "pending" && (
+                          <Badge variant="outline" className="mt-1 text-xs bg-orange-100 text-orange-800 border-orange-300">
+                            Aguardando atribuição de perfil
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
