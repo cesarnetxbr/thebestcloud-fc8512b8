@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, ShoppingCart, ArrowLeft, Trash2, Pencil } from "lucide-react";
+import { Plus, Search, ShoppingCart, ArrowLeft, Trash2, Pencil, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SaleTableCreateForm from "@/components/admin/SaleTableCreateForm";
 
@@ -41,6 +41,10 @@ const SaleTables = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [newItem, setNewItem] = useState({ item_name: "", sku_code: "", currency: "BRL", unit_value: "" });
+  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+  const [cloneSourceTable, setCloneSourceTable] = useState<PriceTable | null>(null);
+  const [cloneName, setCloneName] = useState("");
+  const [cloning, setCloning] = useState(false);
   const { toast } = useToast();
 
   const fetchTables = async () => {
@@ -99,6 +103,47 @@ const SaleTables = () => {
     } else {
       fetchItems(selectedTable.id);
     }
+  };
+
+  const handleCloneTable = async () => {
+    if (!cloneSourceTable || !cloneName.trim()) return;
+    setCloning(true);
+
+    const { data: newTable, error: tableError } = await supabase
+      .from("price_tables")
+      .insert({ name: cloneName.trim(), type: "sale", version: "v1" })
+      .select("id")
+      .single();
+
+    if (tableError || !newTable) {
+      toast({ title: "Erro", description: tableError?.message || "Erro ao clonar tabela.", variant: "destructive" });
+      setCloning(false);
+      return;
+    }
+
+    const { data: sourceItems } = await supabase
+      .from("price_table_items")
+      .select("*")
+      .eq("price_table_id", cloneSourceTable.id);
+
+    if (sourceItems && sourceItems.length > 0) {
+      const clonedItems = sourceItems.map((item: any) => ({
+        price_table_id: newTable.id,
+        item_name: item.item_name,
+        sku_code: item.sku_code,
+        currency: item.currency,
+        unit_value: item.unit_value,
+        category: item.category,
+      }));
+      await supabase.from("price_table_items").insert(clonedItems);
+    }
+
+    toast({ title: "Sucesso", description: `Tabela "${cloneName}" criada com ${sourceItems?.length || 0} itens clonados.` });
+    setCloneDialogOpen(false);
+    setCloneSourceTable(null);
+    setCloneName("");
+    setCloning(false);
+    fetchTables();
   };
 
   const formatCurrency = (v: number) =>
@@ -270,13 +315,53 @@ const SaleTables = () => {
               <CardContent className="py-4 px-6">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{table.name}</span>
-                  {table.is_default && <Badge variant="secondary">Padrão</Badge>}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-muted-foreground hover:text-primary hover:border-primary"
+                      title="Clonar tabela"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCloneSourceTable(table);
+                        setCloneName(`${table.name} (cópia)`);
+                        setCloneDialogOpen(true);
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-1" /> Clonar
+                    </Button>
+                    {table.is_default && <Badge variant="secondary">Padrão</Badge>}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Clone Dialog */}
+      <Dialog open={cloneDialogOpen} onOpenChange={setCloneDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clonar Tabela de Venda</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Origem: <span className="font-medium text-foreground">{cloneSourceTable?.name}</span>
+            </p>
+            <div>
+              <Label>Nome da nova tabela</Label>
+              <Input value={cloneName} onChange={(e) => setCloneName(e.target.value)} placeholder="Nome da tabela clonada" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCloneDialogOpen(false)} disabled={cloning}>Cancelar</Button>
+            <Button onClick={handleCloneTable} disabled={cloning || !cloneName.trim()}>
+              {cloning ? "Clonando..." : "Clonar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
