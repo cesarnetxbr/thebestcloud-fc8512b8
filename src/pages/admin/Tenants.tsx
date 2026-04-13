@@ -427,8 +427,12 @@ const Tenants = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getCustomerName(tenant.customer_id)}</TableCell>
-                    <TableCell>{getSaleTableName(tenant.sale_table_id)}</TableCell>
                     <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getSaleTableName(tenant.sale_table_id)}
+                        <TrialBadge trialStartDate={tenant.trial_start_date} trialEndDate={tenant.trial_end_date} compact />
+                      </div>
+                    </TableCell>
                       {tenant.customer_id ? (
                         <Badge className="gap-1 bg-green-600/20 text-green-400 border-green-600/30 hover:bg-green-600/30">
                           <LinkIcon className="h-3 w-3" />
