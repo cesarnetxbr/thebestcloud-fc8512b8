@@ -347,7 +347,7 @@ const Users_Page = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                          {Object.entries(ROLE_LABELS).filter(([key]) => key !== "pending").map(([key, label]) => (
                             <SelectItem key={key} value={key}>{label}</SelectItem>
                           ))}
                         </SelectContent>
