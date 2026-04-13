@@ -218,7 +218,7 @@ const Tenants = () => {
     }
   }, [tenants]);
 
-
+  const saveMutation = useMutation({
     mutationFn: async () => {
       const payload: any = {
         name: form.name,
