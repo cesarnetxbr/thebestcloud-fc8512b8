@@ -18,6 +18,7 @@ interface InvoiceRow {
   period_start: string;
   period_end: string;
   created_at: string;
+  synced_at: string | null;
   total_cost: number;
   status: string;
 }
@@ -28,6 +29,8 @@ const formatCurrency = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const formatDate = (d: string | null) =>
   d ? new Date(d).toLocaleDateString("pt-BR") : "—";
+const formatDateTime = (d: string | null) =>
+  d ? new Date(d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
 const InvoiceCost = () => {
   const navigate = useNavigate();
@@ -45,7 +48,7 @@ const InvoiceCost = () => {
     const fetch = async () => {
       const { data: invoices } = await supabase
         .from("invoices")
-        .select("id, invoice_number, period_start, period_end, total_cost, due_date, created_at, status, customers(name)")
+        .select("id, invoice_number, period_start, period_end, total_cost, due_date, created_at, synced_at, status, customers(name)")
         .like("invoice_number", "COST-%")
         .order("created_at", { ascending: false });
 
@@ -59,6 +62,7 @@ const InvoiceCost = () => {
           period_start: inv.period_start,
           period_end: inv.period_end,
           created_at: inv.created_at,
+          synced_at: inv.synced_at || null,
           total_cost: Number(inv.total_cost) || 0,
           status: inv.status || "draft",
         }));
@@ -187,18 +191,19 @@ const InvoiceCost = () => {
                   </div>
                 </TableHead>
                 <TableHead><span className="text-xs font-semibold">Status</span></TableHead>
+                <TableHead><span className="text-xs font-semibold">Sincronizado em</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : paginated.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     Nenhum resultado encontrado.
                   </TableCell>
                 </TableRow>
@@ -217,6 +222,7 @@ const InvoiceCost = () => {
                         {r.status === "closed" ? "Encerrada" : "Rascunho"}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{formatDateTime(r.synced_at)}</TableCell>
                   </TableRow>
                 ))
               )}

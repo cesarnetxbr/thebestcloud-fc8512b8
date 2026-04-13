@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       if (existingCost) {
         // Update existing invoice
         await supabase.from("invoices")
-          .update({ total_cost: totalCost, total_sale: totalSale, margin, due_date: today, updated_at: new Date().toISOString() })
+          .update({ total_cost: totalCost, total_sale: totalSale, margin, due_date: today, synced_at: new Date().toISOString(), updated_at: new Date().toISOString() })
           .eq("id", existingCost.id);
 
         // Delete old items and re-insert
@@ -185,6 +185,7 @@ Deno.serve(async (req) => {
           margin,
           due_date: today,
           status: "draft",
+          synced_at: new Date().toISOString(),
         }).select("id").single();
 
         if (costErr) {
@@ -234,7 +235,7 @@ Deno.serve(async (req) => {
 
       if (existingSale) {
         await supabase.from("invoices")
-          .update({ total_cost: totalCost, total_sale: totalSale, margin, due_date: today, updated_at: new Date().toISOString() })
+          .update({ total_cost: totalCost, total_sale: totalSale, margin, due_date: today, synced_at: new Date().toISOString(), updated_at: new Date().toISOString() })
           .eq("id", existingSale.id);
 
         await supabase.from("invoice_items").delete().eq("invoice_id", existingSale.id);
@@ -264,6 +265,7 @@ Deno.serve(async (req) => {
           margin,
           due_date: today,
           status: "draft",
+          synced_at: new Date().toISOString(),
         }).select("id").single();
 
         if (saleErr) {
