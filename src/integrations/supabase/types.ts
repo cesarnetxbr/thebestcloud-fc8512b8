@@ -574,6 +574,7 @@ export type Database = {
           period_end: string
           period_start: string
           status: string | null
+          synced_at: string | null
           total_cost: number | null
           total_sale: number | null
           updated_at: string
@@ -588,6 +589,7 @@ export type Database = {
           period_end: string
           period_start: string
           status?: string | null
+          synced_at?: string | null
           total_cost?: number | null
           total_sale?: number | null
           updated_at?: string
@@ -602,6 +604,7 @@ export type Database = {
           period_end?: string
           period_start?: string
           status?: string | null
+          synced_at?: string | null
           total_cost?: number | null
           total_sale?: number | null
           updated_at?: string
