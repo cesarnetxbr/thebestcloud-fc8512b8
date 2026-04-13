@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Tag, ArrowLeft, Trash2, Pencil, Star, Check, X } from "lucide-react";
+import { Plus, Search, Tag, ArrowLeft, Trash2, Pencil, Star, Check, X, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PriceTableCreateForm from "@/components/admin/PriceTableCreateForm";
 
@@ -43,6 +43,10 @@ const CostTables = () => {
   const [newItem, setNewItem] = useState({ item_name: "", sku_code: "", currency: "BRL", unit_value: "" });
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{ item_name: string; sku_code: string; currency: string; unit_value: string }>({ item_name: "", sku_code: "", currency: "", unit_value: "" });
+  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+  const [cloneSourceTable, setCloneSourceTable] = useState<PriceTable | null>(null);
+  const [cloneName, setCloneName] = useState("");
+  const [cloning, setCloning] = useState(false);
   const { toast } = useToast();
 
   const fetchTables = async () => {
@@ -182,6 +186,49 @@ const CostTables = () => {
       setEditingItemId(null);
       if (selectedTable) fetchItems(selectedTable.id);
     }
+  };
+
+  const handleCloneTable = async () => {
+    if (!cloneSourceTable || !cloneName.trim()) return;
+    setCloning(true);
+
+    // Create new table
+    const { data: newTable, error: tableError } = await supabase
+      .from("price_tables")
+      .insert({ name: cloneName.trim(), type: "cost", version: "v1" })
+      .select("id")
+      .single();
+
+    if (tableError || !newTable) {
+      toast({ title: "Erro", description: tableError?.message || "Erro ao clonar tabela.", variant: "destructive" });
+      setCloning(false);
+      return;
+    }
+
+    // Copy items from source
+    const { data: sourceItems } = await supabase
+      .from("price_table_items")
+      .select("*")
+      .eq("price_table_id", cloneSourceTable.id);
+
+    if (sourceItems && sourceItems.length > 0) {
+      const clonedItems = sourceItems.map((item: any) => ({
+        price_table_id: newTable.id,
+        item_name: item.item_name,
+        sku_code: item.sku_code,
+        currency: item.currency,
+        unit_value: item.unit_value,
+        category: item.category,
+      }));
+      await supabase.from("price_table_items").insert(clonedItems);
+    }
+
+    toast({ title: "Sucesso", description: `Tabela "${cloneName}" criada com ${sourceItems?.length || 0} itens clonados.` });
+    setCloneDialogOpen(false);
+    setCloneSourceTable(null);
+    setCloneName("");
+    setCloning(false);
+    fetchTables();
   };
 
   const formatCurrency = (v: number) =>
@@ -434,29 +481,69 @@ const CostTables = () => {
                       </Badge>
                     )}
                   </div>
-                  <Button
-                    variant={table.is_default ? "secondary" : "outline"}
-                    size="sm"
-                    className={
-                      table.is_default
-                        ? "bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-300"
-                        : "text-muted-foreground hover:text-amber-600 hover:border-amber-400"
-                    }
-                    title={table.is_default ? "Este é o Tier Padrão" : "Definir como Tier Padrão"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSetDefault(table.id);
-                    }}
-                  >
-                    <Star className={`h-4 w-4 mr-1 ${table.is_default ? "fill-amber-500" : ""}`} />
-                    {table.is_default ? "Padrão" : "Definir Padrão"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-muted-foreground hover:text-primary hover:border-primary"
+                      title="Clonar tabela"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCloneSourceTable(table);
+                        setCloneName(`${table.name} (cópia)`);
+                        setCloneDialogOpen(true);
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-1" /> Clonar
+                    </Button>
+                    <Button
+                      variant={table.is_default ? "secondary" : "outline"}
+                      size="sm"
+                      className={
+                        table.is_default
+                          ? "bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-300"
+                          : "text-muted-foreground hover:text-amber-600 hover:border-amber-400"
+                      }
+                      title={table.is_default ? "Este é o Tier Padrão" : "Definir como Tier Padrão"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSetDefault(table.id);
+                      }}
+                    >
+                      <Star className={`h-4 w-4 mr-1 ${table.is_default ? "fill-amber-500" : ""}`} />
+                      {table.is_default ? "Padrão" : "Definir Padrão"}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Clone Dialog */}
+      <Dialog open={cloneDialogOpen} onOpenChange={setCloneDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clonar Tabela de Custo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Origem: <span className="font-medium text-foreground">{cloneSourceTable?.name}</span>
+            </p>
+            <div>
+              <Label>Nome da nova tabela</Label>
+              <Input value={cloneName} onChange={(e) => setCloneName(e.target.value)} placeholder="Nome da tabela clonada" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCloneDialogOpen(false)} disabled={cloning}>Cancelar</Button>
+            <Button onClick={handleCloneTable} disabled={cloning || !cloneName.trim()}>
+              {cloning ? "Clonando..." : "Clonar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
