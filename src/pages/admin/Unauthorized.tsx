@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldX } from "lucide-react";
@@ -7,6 +7,7 @@ import logo from "@/assets/logo.png";
 
 const Unauthorized = () => {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-secondary p-4">
@@ -35,6 +36,7 @@ const Unauthorized = () => {
             className="w-full"
             onClick={async () => {
               await signOut();
+              navigate("/admin/login", { replace: true });
             }}
           >
             Sair e voltar ao login

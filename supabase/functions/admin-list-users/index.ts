@@ -79,20 +79,27 @@ Deno.serve(async (req) => {
 
     const profileMap = new Map((profiles ?? []).map((profile) => [profile.user_id, profile]));
     const authUserMap = new Map((authUsersResult.data.users ?? []).map((authUser) => [authUser.id, authUser]));
+    const roleMap = new Map((roles ?? []).map((roleRow) => [roleRow.user_id, roleRow]));
 
-    const users = (roles ?? [])
-      .map((roleRow) => {
-        const profile = profileMap.get(roleRow.user_id);
-        const authUser = authUserMap.get(roleRow.user_id);
+    // Collect all unique user IDs from roles AND profiles
+    const allUserIds = new Set<string>();
+    (roles ?? []).forEach((r) => allUserIds.add(r.user_id));
+    (profiles ?? []).forEach((p) => allUserIds.add(p.user_id));
+
+    const users = Array.from(allUserIds)
+      .map((userId) => {
+        const roleRow = roleMap.get(userId);
+        const profile = profileMap.get(userId);
+        const authUser = authUserMap.get(userId);
         const metadataName = typeof authUser?.user_metadata?.full_name === "string"
           ? authUser.user_metadata.full_name
           : null;
         const email = authUser?.email ?? "";
 
         return {
-          user_id: roleRow.user_id,
-          role_id: roleRow.id,
-          role: roleRow.role,
+          user_id: userId,
+          role_id: roleRow?.id ?? null,
+          role: roleRow?.role ?? "pending",
           email,
           full_name: profile?.full_name ?? metadataName ?? email ?? null,
           last_login_at: profile?.last_login_at ?? authUser?.last_sign_in_at ?? null,
@@ -103,6 +110,9 @@ Deno.serve(async (req) => {
         };
       })
       .sort((a, b) => {
+        // Pending users first, then by date
+        if (a.role === "pending" && b.role !== "pending") return -1;
+        if (a.role !== "pending" && b.role === "pending") return 1;
         const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
         const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
         return bTime - aTime;

@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const ROLE_LABELS: Record<string, string> = {
+  pending: "⏳ Pendente",
   admin: "Administrador",
   manager: "Gerente",
   supervisor: "Supervisor",
@@ -24,6 +25,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
+  pending: "bg-orange-100 text-orange-800",
   admin: "bg-red-100 text-red-800",
   manager: "bg-blue-100 text-blue-800",
   supervisor: "bg-purple-100 text-purple-800",
@@ -159,12 +161,22 @@ const Users_Page = () => {
     fetchPresets();
   }, []);
 
-  const changeRole = async (userId: string, newRole: string) => {
-    const { error } = await supabase.from("user_roles").update({ role: newRole as any }).eq("user_id", userId);
+  const changeRole = async (userId: string, currentRole: string, newRole: string) => {
+    if (newRole === "pending") return;
+    let error;
+    if (currentRole === "pending") {
+      // User has no role yet — insert
+      const result = await supabase.from("user_roles").insert({ user_id: userId, role: newRole as any });
+      error = result.error;
+    } else {
+      // Update existing role
+      const result = await supabase.from("user_roles").update({ role: newRole as any }).eq("user_id", userId);
+      error = result.error;
+    }
     if (error) {
       toast({ title: "Erro ao alterar role", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Role atualizada com sucesso" });
+      toast({ title: currentRole === "pending" ? "Perfil atribuído com sucesso! O usuário agora pode acessar o sistema." : "Role atualizada com sucesso" });
       fetchUsers();
     }
   };
@@ -317,20 +329,25 @@ const Users_Page = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map((u) => (
-                  <TableRow key={u.user_id} className={!u.is_active ? "opacity-60" : ""}>
+                  <TableRow key={u.user_id} className={`${!u.is_active ? "opacity-60" : ""} ${u.role === "pending" ? "bg-orange-50 dark:bg-orange-950/20" : ""}`}>
                     <TableCell>
                       <div>
                         <p className="font-medium">{u.full_name || "Sem nome"}</p>
                         <p className="text-xs text-muted-foreground">{u.email || `${u.user_id.slice(0, 8)}...`}</p>
+                        {u.role === "pending" && (
+                          <Badge variant="outline" className="mt-1 text-xs bg-orange-100 text-orange-800 border-orange-300">
+                            Aguardando atribuição de perfil
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Select value={u.role} onValueChange={(val) => changeRole(u.user_id, val)}>
+                      <Select value={u.role} onValueChange={(val) => changeRole(u.user_id, u.role, val)}>
                         <SelectTrigger className="w-[160px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                          {Object.entries(ROLE_LABELS).filter(([key]) => key !== "pending").map(([key, label]) => (
                             <SelectItem key={key} value={key}>{label}</SelectItem>
                           ))}
                         </SelectContent>
