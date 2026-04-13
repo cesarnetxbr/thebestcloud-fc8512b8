@@ -61,7 +61,7 @@ import psaLucratividade from "@/assets/solutions/psa-lucratividade.webp";
 export const solutions: SolutionData[] = [
   {
     slug: "xdr",
-    title: "Extended Detection and Response (XDR)",
+    title: "Detecção e Resposta Estendidas (XDR)",
     subtitle: "Detecção e resposta estendidas",
     category: "seguranca",
     heroDescription: "Proteção completa contra ameaças avançadas com detecção e resposta integradas em toda a sua infraestrutura.",
@@ -97,7 +97,7 @@ export const solutions: SolutionData[] = [
   {
     slug: "edr",
     title: "Detecção e Resposta para Endpoints (EDR)",
-    subtitle: "Endpoint Detection and Response",
+    subtitle: "Detecção e resposta para endpoints",
     category: "seguranca",
     heroDescription: "Detecte e responda a ameaças avançadas nos endpoints da sua empresa com inteligência artificial.",
     image: edrHero,
@@ -122,7 +122,7 @@ export const solutions: SolutionData[] = [
   {
     slug: "mdr",
     title: "Detecção e Resposta Gerenciadas (MDR)",
-    subtitle: "Managed Detection and Response",
+    subtitle: "Detecção e resposta gerenciadas",
     category: "seguranca",
     heroDescription: "Segurança de nível empresarial com monitoramento 24/7 por especialistas, sem precisar de uma equipe interna.",
     image: mdrHero,
@@ -142,7 +142,7 @@ export const solutions: SolutionData[] = [
   {
     slug: "dlp",
     title: "Prevenção de Perda de Dados (DLP)",
-    subtitle: "Data Loss Prevention",
+    subtitle: "Prevenção de perda de dados",
     category: "seguranca",
     heroDescription: "Proteja dados sensíveis da sua empresa contra vazamentos e garanta conformidade com a LGPD.",
     image: dlpHero,
@@ -166,8 +166,8 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "security-posture",
-    title: "Security Posture Management",
-    subtitle: "Gerenciamento de Postura de Segurança",
+    title: "Gerenciamento de Postura de Segurança",
+    subtitle: "Gerenciamento de postura de segurança",
     category: "seguranca",
     heroDescription: "Avalie e melhore continuamente a postura de segurança do seu ambiente Microsoft 365.",
     image: securityPostureHero,
@@ -186,8 +186,8 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "email-security",
-    title: "Email Security",
-    subtitle: "Segurança de E-mail",
+    title: "Segurança de E-mail",
+    subtitle: "Segurança de e-mail",
     category: "seguranca",
     heroDescription: "Bloqueie ataques por e-mail em segundos — phishing, malware e ameaças avançadas.",
     image: emailSecurityHero,
@@ -206,8 +206,8 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "email-archiving",
-    title: "Email Archiving para Microsoft 365",
-    subtitle: "Arquivamento de E-mail",
+    title: "Arquivamento de E-mail para Microsoft 365",
+    subtitle: "Arquivamento de e-mail",
     category: "seguranca",
     heroDescription: "Arquive e-mails do Microsoft 365 para atender normas regulatórias e manter conformidade.",
     image: emailArchivingHero,
@@ -231,8 +231,8 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "sat",
-    title: "Security Awareness Training (SAT)",
-    subtitle: "Treinamento de Conscientização em Segurança",
+    title: "Treinamento de Conscientização em Segurança (SAT)",
+    subtitle: "Treinamento de conscientização em segurança",
     category: "seguranca",
     heroDescription: "Capacite seus colaboradores para reconhecer e evitar ameaças cibernéticas.",
     image: satHero,
@@ -316,8 +316,8 @@ export const solutions: SolutionData[] = [
   },
   {
     slug: "disaster-recovery",
-    title: "Disaster Recovery",
-    subtitle: "Recuperação de Desastres",
+    title: "Recuperação de Desastres",
+    subtitle: "Recuperação de desastres",
     category: "protecao",
     heroDescription: "Recupere-se rapidamente de ataques cibernéticos e outras paralisações inesperadas.",
     image: drHero,
@@ -367,7 +367,7 @@ export const solutions: SolutionData[] = [
   {
     slug: "rmm",
     title: "RMM – Monitoramento e Gerenciamento Remoto",
-    subtitle: "Remote Monitoring and Management",
+    subtitle: "Monitoramento e gerenciamento remoto",
     category: "operacoes",
     heroDescription: "Monitore e gerencie toda a infraestrutura de TI da sua empresa de forma remota e proativa.",
     image: rmmHero,
@@ -398,7 +398,7 @@ export const solutions: SolutionData[] = [
   {
     slug: "psa",
     title: "PSA – Automação de Serviços Profissionais",
-    subtitle: "Professional Services Automation",
+    subtitle: "Automação de serviços profissionais",
     category: "operacoes",
     heroDescription: "Automatize a gestão de serviços de TI da sua empresa com tickets, SLA e relatórios integrados.",
     image: psaHero,
