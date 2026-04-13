@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Users,
   Package,
-  FileText,
+  Gift,
   Settings,
   LogOut,
   Menu,
