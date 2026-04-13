@@ -807,6 +807,12 @@ const Tenants = () => {
                 </SelectContent>
               </Select>
 
+              {/* Trial Badge */}
+              <TrialBadge
+                trialStartDate={selectedTenant.trial_start_date}
+                trialEndDate={selectedTenant.trial_end_date}
+              />
+
               {/* Billing & Realtime Toggles */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
