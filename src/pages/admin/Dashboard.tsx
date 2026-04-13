@@ -30,6 +30,7 @@ const Dashboard = () => {
         const customers = customersRes.data || [];
         const trialClients = trialRes.data || [];
         const activeTrials = trialClients.filter((t: any) => t.status === "active" || t.status === "pending").length;
+        const invoices = invoicesRes.data || [];
 
         const active = customers.filter((c) => c.status === "active").length;
         const revenue = customers.reduce((sum, c) => sum + (c.monthly_revenue || 0), 0);
