@@ -93,6 +93,7 @@ const App = () => (
             <Route path="/admin/signup" element={<Signup />} />
             <Route path="/admin/forgot-password" element={<ForgotPassword />} />
             <Route path="/admin/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/unauthorized" element={<Unauthorized />} />
 
             {/* Portal admin protegido */}
             <Route
