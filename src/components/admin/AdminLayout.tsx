@@ -63,6 +63,7 @@ const navSections: NavSection[] = [
     title: "CADASTROS",
     items: [
       { label: "Clientes", icon: Users, path: "/admin/customers" },
+      { label: "Clientes Trial", icon: Gift, path: "/admin/trial-clients" },
     ],
   },
   {
