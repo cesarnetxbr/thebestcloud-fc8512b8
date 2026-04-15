@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MessageSquare, Users, Send, CheckCircle, Clock, TrendingUp, Phone, BarChart3 } from "lucide-react";
+import { Mail, MessageSquare, Users, Send, CheckCircle, Clock, TrendingUp, Phone, BarChart3, Download, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const CRMMarketingDashboard = () => {
   const { data: emailCampaigns } = useQuery({

@@ -34,6 +34,7 @@ const CRMChat = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("todas");
   const [openNew, setOpenNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newChannel, setNewChannel] = useState("chat");
