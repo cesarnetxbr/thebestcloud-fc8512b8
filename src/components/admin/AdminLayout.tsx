@@ -99,6 +99,7 @@ const navSections: NavSection[] = [
       ],
     },
   },
+  {
     title: "SUPORTE",
     items: [
       { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
