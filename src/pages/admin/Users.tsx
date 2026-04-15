@@ -72,7 +72,7 @@ const formatDate = (date: string | null) => {
 };
 
 const Users_Page = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, loading: isAuthLoading } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -159,9 +159,17 @@ const Users_Page = () => {
   };
 
   useEffect(() => {
+    if (isAuthLoading) return;
+
+    if (!currentUser) {
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+
     fetchUsers();
     fetchPresets();
-  }, []);
+  }, [currentUser?.id, isAuthLoading]);
 
   const changeRole = async (userId: string, currentRole: string, newRole: string) => {
     if (newRole === "pending") return;
