@@ -77,8 +77,11 @@ import SmsContacts from "./pages/admin/sms/SmsContacts";
 import SmsTemplates from "./pages/admin/sms/SmsTemplates";
 import AnalyticsDashboard from "./pages/admin/analytics/AnalyticsDashboard";
 import Unauthorized from "./pages/admin/Unauthorized";
+import { useAnalyticsTracker } from "./hooks/useAnalyticsTracker";
 
 const queryClient = new QueryClient();
+
+const AnalyticsTracker = () => { useAnalyticsTracker(); return null; };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -87,6 +90,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <AnalyticsTracker />
         <AuthProvider>
           <CookieConsentBanner />
           <Routes>
