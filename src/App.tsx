@@ -67,6 +67,7 @@ import Quotes from "./pages/admin/Quotes";
 import CRMDashboard from "./pages/admin/crm/CRMDashboard";
 import CRMPipeline from "./pages/admin/crm/CRMPipeline";
 import CRMLeads from "./pages/admin/crm/CRMLeads";
+import CRMAgenda from "./pages/admin/crm/CRMAgenda";
 import MarketingDashboard from "./pages/admin/marketing/MarketingDashboard";
 import EmailCampaigns from "./pages/admin/marketing/EmailCampaigns";
 import EmailLists from "./pages/admin/marketing/EmailLists";
@@ -143,6 +144,7 @@ const App = () => (
               <Route path="crm" element={<CRMDashboard />} />
               <Route path="crm/pipeline" element={<CRMPipeline />} />
               <Route path="crm/leads" element={<CRMLeads />} />
+              <Route path="crm/agenda" element={<CRMAgenda />} />
               <Route path="crm/requests" element={<CommercialRequests />} />
               <Route path="crm/quotes" element={<Quotes />} />
               <Route path="marketing" element={<MarketingDashboard />} />
