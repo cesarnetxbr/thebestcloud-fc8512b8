@@ -8,8 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Phone, Search } from "lucide-react";
+import { Plus, Phone, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
+import CsvImportDialog, { type CsvColumn } from "@/components/admin/CsvImportDialog";
+
+const smsCsvColumns: CsvColumn[] = [
+  { key: "name", label: "Nome" },
+  { key: "phone", label: "Telefone", required: true },
+  { key: "email", label: "E-mail" },
+];
 
 const SmsContacts = () => {
   const [open, setOpen] = useState(false);
