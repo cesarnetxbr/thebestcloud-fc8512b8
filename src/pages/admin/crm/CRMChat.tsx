@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, MessageCircle, Archive, User, Building2, Search } from "lucide-react";
+import { Plus, Send, MessageCircle, Archive, User, Building2, Search, XCircle, RotateCcw, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
