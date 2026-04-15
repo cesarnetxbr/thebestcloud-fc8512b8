@@ -64,6 +64,9 @@ import LgpdConsents from "./pages/admin/lgpd/LgpdConsents";
 import LgpdRequests from "./pages/admin/lgpd/LgpdRequests";
 import LgpdIncidents from "./pages/admin/lgpd/LgpdIncidents";
 import Quotes from "./pages/admin/Quotes";
+import CRMDashboard from "./pages/admin/crm/CRMDashboard";
+import CRMPipeline from "./pages/admin/crm/CRMPipeline";
+import CRMLeads from "./pages/admin/crm/CRMLeads";
 import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
@@ -124,6 +127,11 @@ const App = () => (
               <Route path="tickets" element={<Tickets />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
               <Route path="quotes" element={<Quotes />} />
+              <Route path="crm" element={<CRMDashboard />} />
+              <Route path="crm/pipeline" element={<CRMPipeline />} />
+              <Route path="crm/leads" element={<CRMLeads />} />
+              <Route path="crm/requests" element={<CommercialRequests />} />
+              <Route path="crm/quotes" element={<Quotes />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="lgpd" element={<LgpdDashboard />} />
