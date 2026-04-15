@@ -83,6 +83,128 @@ const CRMMarketingDashboard = () => {
   const avgOpenRate = totalEmailsSent > 0 ? ((totalEmailsOpened / totalEmailsSent) * 100).toFixed(1) : "0";
   const smsDeliveryRate = totalSmsSent > 0 ? ((totalSmsDelivered / totalSmsSent) * 100).toFixed(1) : "0";
 
+  const exportCSV = () => {
+    const rows = [
+      ["Relatório de Marketing - The Best Cloud"],
+      ["Gerado em", new Date().toLocaleString("pt-BR")],
+      [],
+      ["RESUMO GERAL"],
+      ["Métrica", "Valor"],
+      ["Total de Contatos", String(emailContacts + smsContactsActive)],
+      ["Campanhas Criadas", String(emailTotal + smsTotal)],
+      ["Campanhas Enviadas", String(emailSent + smsSent)],
+      ["Campanhas Agendadas", String(emailScheduled + smsScheduled)],
+      [],
+      ["E-MAIL MARKETING"],
+      ["Campanhas", String(emailTotal)],
+      ["Contatos", String(emailContacts)],
+      ["E-mails Enviados", String(totalEmailsSent)],
+      ["Taxa de Abertura", avgOpenRate + "%"],
+      ["Enviadas", String(emailSent)],
+      ["Agendadas", String(emailScheduled)],
+      [],
+      ["SMS MARKETING"],
+      ["Campanhas", String(smsTotal)],
+      ["Contatos Ativos", String(smsContactsActive)],
+      ["SMS Enviados", String(totalSmsSent)],
+      ["Taxa de Entrega", smsDeliveryRate + "%"],
+      ["Enviadas", String(smsSent)],
+      ["Agendadas", String(smsScheduled)],
+    ];
+    const csv = rows.map(r => r.join(";")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `relatorio-marketing-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Relatório CSV exportado!");
+  };
+
+  const exportPDF = () => {
+    const content = `
+RELATÓRIO DE MARKETING - THE BEST CLOUD
+Gerado em: ${new Date().toLocaleString("pt-BR")}
+${"=".repeat(50)}
+
+RESUMO GERAL
+• Total de Contatos: ${emailContacts + smsContactsActive}
+• Campanhas Criadas: ${emailTotal + smsTotal}
+• Campanhas Enviadas: ${emailSent + smsSent}
+• Campanhas Agendadas: ${emailScheduled + smsScheduled}
+
+${"─".repeat(50)}
+
+E-MAIL MARKETING
+• Campanhas: ${emailTotal}
+• Contatos: ${emailContacts}
+• E-mails Enviados: ${totalEmailsSent}
+• Taxa de Abertura: ${avgOpenRate}%
+• Enviadas: ${emailSent}
+• Agendadas: ${emailScheduled}
+
+${"─".repeat(50)}
+
+SMS MARKETING
+• Campanhas: ${smsTotal}
+• Contatos Ativos: ${smsContactsActive}
+• SMS Enviados: ${totalSmsSent}
+• Taxa de Entrega: ${smsDeliveryRate}%
+• Enviadas: ${smsSent}
+• Agendadas: ${smsScheduled}
+    `.trim();
+
+    // Generate printable HTML as PDF
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html><head><title>Relatório Marketing</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; color: #1a1a2e; }
+          h1 { color: #0f3460; font-size: 20px; border-bottom: 2px solid #0f3460; padding-bottom: 10px; }
+          .section { margin: 20px 0; }
+          .section h2 { color: #16213e; font-size: 16px; margin-bottom: 8px; }
+          .metric { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; }
+          .metric-label { color: #555; }
+          .metric-value { font-weight: bold; }
+          .date { color: #888; font-size: 12px; }
+          @media print { body { padding: 20px; } }
+        </style></head><body>
+        <h1>Relatório de Marketing — The Best Cloud</h1>
+        <p class="date">Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
+
+        <div class="section">
+          <h2>Resumo Geral</h2>
+          <div class="metric"><span class="metric-label">Total de Contatos</span><span class="metric-value">${emailContacts + smsContactsActive}</span></div>
+          <div class="metric"><span class="metric-label">Campanhas Criadas</span><span class="metric-value">${emailTotal + smsTotal}</span></div>
+          <div class="metric"><span class="metric-label">Campanhas Enviadas</span><span class="metric-value">${emailSent + smsSent}</span></div>
+          <div class="metric"><span class="metric-label">Campanhas Agendadas</span><span class="metric-value">${emailScheduled + smsScheduled}</span></div>
+        </div>
+
+        <div class="section">
+          <h2>📧 E-mail Marketing</h2>
+          <div class="metric"><span class="metric-label">Campanhas</span><span class="metric-value">${emailTotal}</span></div>
+          <div class="metric"><span class="metric-label">Contatos</span><span class="metric-value">${emailContacts}</span></div>
+          <div class="metric"><span class="metric-label">E-mails Enviados</span><span class="metric-value">${totalEmailsSent}</span></div>
+          <div class="metric"><span class="metric-label">Taxa de Abertura</span><span class="metric-value">${avgOpenRate}%</span></div>
+        </div>
+
+        <div class="section">
+          <h2>📱 SMS Marketing</h2>
+          <div class="metric"><span class="metric-label">Campanhas</span><span class="metric-value">${smsTotal}</span></div>
+          <div class="metric"><span class="metric-label">Contatos Ativos</span><span class="metric-value">${smsContactsActive}</span></div>
+          <div class="metric"><span class="metric-label">SMS Enviados</span><span class="metric-value">${totalSmsSent}</span></div>
+          <div class="metric"><span class="metric-label">Taxa de Entrega</span><span class="metric-value">${smsDeliveryRate}%</span></div>
+        </div>
+        </body></html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    toast.success("Relatório PDF gerado!");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -91,6 +213,8 @@ const CRMMarketingDashboard = () => {
           <p className="text-muted-foreground">Visão consolidada de E-mail e SMS Marketing</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="h-4 w-4 mr-1" /> CSV</Button>
+          <Button variant="outline" size="sm" onClick={exportPDF}><FileText className="h-4 w-4 mr-1" /> PDF</Button>
           <Link to="/admin/marketing/campaigns"><Button variant="outline" size="sm"><Mail className="h-4 w-4 mr-1" /> E-mail</Button></Link>
           <Link to="/admin/sms/campaigns"><Button variant="outline" size="sm"><MessageSquare className="h-4 w-4 mr-1" /> SMS</Button></Link>
         </div>
