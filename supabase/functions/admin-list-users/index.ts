@@ -81,10 +81,11 @@ Deno.serve(async (req) => {
     const authUserMap = new Map((authUsersResult.data.users ?? []).map((authUser) => [authUser.id, authUser]));
     const roleMap = new Map((roles ?? []).map((roleRow) => [roleRow.user_id, roleRow]));
 
-    // Collect all unique user IDs from roles AND profiles
+    // Collect all unique user IDs from auth, roles and profiles
     const allUserIds = new Set<string>();
     (roles ?? []).forEach((r) => allUserIds.add(r.user_id));
     (profiles ?? []).forEach((p) => allUserIds.add(p.user_id));
+    (authUsersResult.data.users ?? []).forEach((authUser) => allUserIds.add(authUser.id));
 
     const users = Array.from(allUserIds)
       .map((userId) => {
