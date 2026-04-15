@@ -85,6 +85,22 @@ const SmsContacts = () => {
     return s;
   };
 
+  const handleCsvImport = async (rows: Record<string, string>[]) => {
+    let success = 0;
+    let errors = 0;
+    for (const r of rows) {
+      if (!r.phone) { errors++; continue; }
+      const { error } = await supabase.from("sms_marketing_contacts").insert({
+        name: r.name || null,
+        phone: r.phone,
+        email: r.email || null,
+      });
+      if (error) errors++; else success++;
+    }
+    queryClient.invalidateQueries({ queryKey: ["sms-contacts"] });
+    return { success, errors };
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -92,21 +108,35 @@ const SmsContacts = () => {
           <h2 className="text-2xl font-bold text-foreground">Contatos SMS</h2>
           <p className="text-muted-foreground">Gerencie os contatos para campanhas SMS</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> Novo Contato</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Adicionar Contato</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div><Label>Nome</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Nome do contato" /></div>
-              <div><Label>Telefone *</Label><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+5511999999999" /></div>
-              <div><Label>E-mail (opcional)</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
-              <Button onClick={() => createContact.mutate()} disabled={!phone} className="w-full">Adicionar</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setCsvOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" /> Importar CSV
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-2" /> Novo Contato</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Adicionar Contato</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nome</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Nome do contato" /></div>
+                <div><Label>Telefone *</Label><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+5511999999999" /></div>
+                <div><Label>E-mail (opcional)</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+                <Button onClick={() => createContact.mutate()} disabled={!phone} className="w-full">Adicionar</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      <CsvImportDialog
+        open={csvOpen}
+        onOpenChange={setCsvOpen}
+        columns={smsCsvColumns}
+        templateFileName="modelo_contatos_sms.csv"
+        onImport={handleCsvImport}
+        title="Importar Contatos SMS via CSV"
+      />
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
