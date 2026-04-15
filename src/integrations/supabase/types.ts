@@ -2769,33 +2769,39 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          evolution_instance_id: string | null
           id: string
           instance_name: string
           phone_number: string | null
           qr_code_data: string | null
           session_data: Json | null
+          session_status: string | null
           status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          evolution_instance_id?: string | null
           id?: string
           instance_name: string
           phone_number?: string | null
           qr_code_data?: string | null
           session_data?: Json | null
+          session_status?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          evolution_instance_id?: string | null
           id?: string
           instance_name?: string
           phone_number?: string | null
           qr_code_data?: string | null
           session_data?: Json | null
+          session_status?: string | null
           status?: string
           updated_at?: string
         }
