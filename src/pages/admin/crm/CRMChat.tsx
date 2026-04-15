@@ -11,7 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, MessageCircle, Archive, User, Building2, Search, XCircle, RotateCcw, Bell } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Plus, Send, MessageCircle, Archive, User, Building2, Search,
+  XCircle, RotateCcw, ArrowRightLeft, Zap, Users, Phone,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -35,13 +39,17 @@ const CRMChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todas");
+  const [channelFilter, setChannelFilter] = useState<string>("todos");
   const [openNew, setOpenNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newChannel, setNewChannel] = useState("chat");
+  const [newChannel, setNewChannel] = useState("whatsapp");
   const [newCustomerId, setNewCustomerId] = useState("");
   const [newLeadId, setNewLeadId] = useState("");
+  const [newDepartmentId, setNewDepartmentId] = useState("");
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // ── Queries ──
   const { data: conversations } = useQuery({
     queryKey: ["chat-conversations"],
     queryFn: async () => {
@@ -87,7 +95,49 @@ const CRMChat = () => {
     },
   });
 
-  // Realtime subscription
+  const { data: departments } = useQuery({
+    queryKey: ["chat-departments"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("chat_departments").select("*").eq("is_active", true).order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: profiles } = useQuery({
+    queryKey: ["profiles-for-chat"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name").eq("is_active", true);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: quickReplies } = useQuery({
+    queryKey: ["chat-quick-replies"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("chat_quick_replies").select("*").eq("is_active", true).order("title");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: unreadCounts } = useQuery({
+    queryKey: ["chat-unread-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .select("conversation_id")
+        .eq("is_read", false)
+        .neq("sender_type", "agent");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data?.forEach(m => { counts[m.conversation_id] = (counts[m.conversation_id] || 0) + 1; });
+      return counts;
+    },
+  });
+
+  // ── Realtime ──
   useEffect(() => {
     if (!selectedId) return;
     const channel = supabase
@@ -104,6 +154,36 @@ const CRMChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Mark as read
+  useEffect(() => {
+    if (!selectedId) return;
+    supabase.from("chat_messages")
+      .update({ is_read: true })
+      .eq("conversation_id", selectedId)
+      .eq("is_read", false)
+      .neq("sender_type", "agent")
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["chat-unread-counts"] });
+      });
+  }, [selectedId, queryClient]);
+
+  // Global notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel("chat-global-notifications")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, (payload) => {
+        const msg = payload.new as any;
+        if (msg.sender_type !== "agent" && msg.conversation_id !== selectedId) {
+          toast.info(`Nova mensagem: ${msg.content?.substring(0, 50)}...`, { duration: 4000 });
+        }
+        queryClient.invalidateQueries({ queryKey: ["chat-unread-counts"] });
+        queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedId, queryClient]);
+
+  // ── Mutations ──
   const createConversation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.from("chat_conversations").insert({
@@ -111,6 +191,8 @@ const CRMChat = () => {
         channel: newChannel,
         customer_id: newCustomerId || null,
         lead_id: newLeadId || null,
+        department_id: newDepartmentId || null,
+        assigned_to: user?.id,
         created_by: user?.id,
       }).select().single();
       if (error) throw error;
@@ -120,10 +202,7 @@ const CRMChat = () => {
       queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
       setSelectedId(data.id);
       setOpenNew(false);
-      setNewTitle("");
-      setNewChannel("chat");
-      setNewCustomerId("");
-      setNewLeadId("");
+      setNewTitle(""); setNewChannel("whatsapp"); setNewCustomerId(""); setNewLeadId(""); setNewDepartmentId("");
       toast.success("Conversa criada!");
     },
     onError: () => toast.error("Erro ao criar conversa"),
@@ -131,10 +210,11 @@ const CRMChat = () => {
 
   const sendMessage = useMutation({
     mutationFn: async () => {
+      const agentName = profiles?.find(p => p.user_id === user?.id)?.full_name || user?.email?.split("@")[0] || "Agente";
       const { error } = await supabase.from("chat_messages").insert({
         conversation_id: selectedId!,
         sender_type: "agent",
-        sender_name: user?.email?.split("@")[0] || "Agente",
+        sender_name: agentName,
         content: newMessage,
       });
       if (error) throw error;
@@ -152,7 +232,6 @@ const CRMChat = () => {
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase.from("chat_conversations").update({ status }).eq("id", id);
       if (error) throw error;
-      // Add system message
       await supabase.from("chat_messages").insert({
         conversation_id: id,
         sender_type: "system",
@@ -169,50 +248,44 @@ const CRMChat = () => {
     onError: () => toast.error("Erro ao atualizar conversa"),
   });
 
-  // Unread count per conversation
-  const { data: unreadCounts } = useQuery({
-    queryKey: ["chat-unread-counts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("chat_messages")
-        .select("conversation_id")
-        .eq("is_read", false)
-        .neq("sender_type", "agent");
+  const transferConversation = useMutation({
+    mutationFn: async ({ id, agentId, agentName }: { id: string; agentId: string; agentName: string }) => {
+      const { error } = await supabase.from("chat_conversations").update({ assigned_to: agentId }).eq("id", id);
       if (error) throw error;
-      const counts: Record<string, number> = {};
-      data?.forEach(m => { counts[m.conversation_id] = (counts[m.conversation_id] || 0) + 1; });
-      return counts;
+      const myName = profiles?.find(p => p.user_id === user?.id)?.full_name || "Agente";
+      await supabase.from("chat_messages").insert({
+        conversation_id: id,
+        sender_type: "system",
+        sender_name: "Sistema",
+        content: `Conversa transferida de ${myName} para ${agentName}`,
+      });
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["chat-messages", selectedId] });
+      toast.success("Conversa transferida!");
+    },
+    onError: () => toast.error("Erro ao transferir conversa"),
   });
 
-  // Mark messages as read when selecting a conversation
-  useEffect(() => {
-    if (!selectedId) return;
-    supabase.from("chat_messages")
-      .update({ is_read: true })
-      .eq("conversation_id", selectedId)
-      .eq("is_read", false)
-      .neq("sender_type", "agent")
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ["chat-unread-counts"] });
+  const assignDepartment = useMutation({
+    mutationFn: async ({ id, departmentId, departmentName }: { id: string; departmentId: string; departmentName: string }) => {
+      const { error } = await supabase.from("chat_conversations").update({ department_id: departmentId }).eq("id", id);
+      if (error) throw error;
+      await supabase.from("chat_messages").insert({
+        conversation_id: id,
+        sender_type: "system",
+        sender_name: "Sistema",
+        content: `Conversa movida para o departamento: ${departmentName}`,
       });
-  }, [selectedId, queryClient]);
-
-  // Global realtime for unread notifications
-  useEffect(() => {
-    const channel = supabase
-      .channel("chat-global-notifications")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, (payload) => {
-        const msg = payload.new as any;
-        if (msg.sender_type !== "agent" && msg.conversation_id !== selectedId) {
-          toast.info(`Nova mensagem: ${msg.content?.substring(0, 50)}...`, { duration: 4000 });
-        }
-        queryClient.invalidateQueries({ queryKey: ["chat-unread-counts"] });
-        queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [selectedId, queryClient]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["chat-messages", selectedId] });
+      toast.success("Departamento atualizado!");
+    },
+    onError: () => toast.error("Erro ao mover conversa"),
+  });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && newMessage.trim()) {
@@ -221,22 +294,40 @@ const CRMChat = () => {
     }
   };
 
+  const useQuickReply = (content: string) => {
+    setNewMessage(content);
+    setShowQuickReplies(false);
+  };
+
+  // ── Filters ──
   const filtered = conversations?.filter(c => {
     const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c as any).customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c as any).crm_leads?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "todas" || c.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesChannel = channelFilter === "todos" || c.channel === channelFilter;
+    return matchesSearch && matchesStatus && matchesChannel;
   });
 
   const selected = conversations?.find(c => c.id === selectedId);
+  const assignedAgent = profiles?.find(p => p.user_id === selected?.assigned_to);
+  const assignedDept = departments?.find(d => d.id === (selected as any)?.department_id);
+
+  // Counts
+  const myConversations = conversations?.filter(c => c.assigned_to === user?.id && c.status === "ativa").length || 0;
+  const whatsappConversations = conversations?.filter(c => c.channel === "whatsapp" && c.status === "ativa").length || 0;
+  const waitingConversations = conversations?.filter(c => !c.assigned_to && c.status === "ativa").length || 0;
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Central de Chat</h2>
-          <p className="text-muted-foreground">Conversas centralizadas com leads e clientes</p>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Phone className="h-6 w-6 text-green-500" />
+            Multi-atendimento WhatsApp
+          </h2>
+          <p className="text-muted-foreground">Central de conversas com múltiplos atendentes</p>
         </div>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
           <DialogTrigger asChild>
@@ -245,16 +336,25 @@ const CRMChat = () => {
           <DialogContent>
             <DialogHeader><DialogTitle>Nova Conversa</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div><Label>Título</Label><Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: Negociação Projeto X" /></div>
+              <div><Label>Título</Label><Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Ex: Atendimento João Silva" /></div>
               <div>
                 <Label>Canal</Label>
                 <Select value={newChannel} onValueChange={setNewChannel}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="chat">Chat</SelectItem>
                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="chat">Chat</SelectItem>
                     <SelectItem value="email">E-mail</SelectItem>
                     <SelectItem value="telefone">Telefone</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Departamento (opcional)</Label>
+                <Select value={newDepartmentId} onValueChange={setNewDepartmentId}>
+                  <SelectTrigger><SelectValue placeholder="Selecionar departamento" /></SelectTrigger>
+                  <SelectContent>
+                    {departments?.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -282,7 +382,27 @@ const CRMChat = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="p-3">
+          <div className="text-xs text-muted-foreground">Meus atendimentos</div>
+          <div className="text-2xl font-bold">{myConversations}</div>
+        </Card>
+        <Card className="p-3">
+          <div className="text-xs text-muted-foreground">WhatsApp ativos</div>
+          <div className="text-2xl font-bold text-green-500">{whatsappConversations}</div>
+        </Card>
+        <Card className="p-3">
+          <div className="text-xs text-muted-foreground">Aguardando agente</div>
+          <div className="text-2xl font-bold text-amber-500">{waitingConversations}</div>
+        </Card>
+        <Card className="p-3">
+          <div className="text-xs text-muted-foreground">Total conversas</div>
+          <div className="text-2xl font-bold">{conversations?.filter(c => c.status === "ativa").length || 0}</div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-340px)]">
         {/* Conversation list */}
         <Card className="lg:col-span-1 flex flex-col">
           <CardHeader className="pb-2 space-y-2">
@@ -290,20 +410,26 @@ const CRMChat = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9" />
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {[
                 { value: "todas", label: "Todas" },
                 { value: "ativa", label: "Ativas" },
                 { value: "arquivada", label: "Arquivadas" },
                 { value: "encerrada", label: "Encerradas" },
               ].map(f => (
-                <Button
-                  key={f.value}
-                  variant={statusFilter === f.value ? "default" : "ghost"}
-                  size="sm"
-                  className="text-xs h-7 px-2"
-                  onClick={() => setStatusFilter(f.value)}
-                >
+                <Button key={f.value} variant={statusFilter === f.value ? "default" : "ghost"} size="sm" className="text-xs h-7 px-2" onClick={() => setStatusFilter(f.value)}>
+                  {f.label}
+                </Button>
+              ))}
+            </div>
+            <div className="flex gap-1 flex-wrap">
+              {[
+                { value: "todos", label: "Todos" },
+                { value: "whatsapp", label: "WhatsApp" },
+                { value: "chat", label: "Chat" },
+                { value: "email", label: "E-mail" },
+              ].map(f => (
+                <Button key={f.value} variant={channelFilter === f.value ? "secondary" : "ghost"} size="sm" className="text-xs h-6 px-2" onClick={() => setChannelFilter(f.value)}>
                   {f.label}
                 </Button>
               ))}
@@ -315,6 +441,7 @@ const CRMChat = () => {
                 <div className="p-6 text-center text-muted-foreground text-sm">Nenhuma conversa encontrada</div>
               ) : filtered.map(conv => {
                 const st = statusLabels[conv.status] || statusLabels.ativa;
+                const agent = profiles?.find(p => p.user_id === conv.assigned_to);
                 return (
                   <button
                     key={conv.id}
@@ -336,7 +463,9 @@ const CRMChat = () => {
                       <Badge variant={st.variant} className="text-[10px] shrink-0 ml-2">{st.label}</Badge>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{channelLabels[conv.channel] || conv.channel}</span>
+                      <span className={cn("px-1.5 py-0.5 rounded text-[10px]", conv.channel === "whatsapp" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-muted")}>
+                        {channelLabels[conv.channel] || conv.channel}
+                      </span>
                       {(conv as any).customers?.name && (
                         <span className="flex items-center gap-1 truncate"><Building2 className="h-3 w-3" />{(conv as any).customers.name}</span>
                       )}
@@ -344,8 +473,15 @@ const CRMChat = () => {
                         <span className="flex items-center gap-1 truncate"><User className="h-3 w-3" />{(conv as any).crm_leads.name}</span>
                       )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground mt-1">
-                      {conv.last_message_at ? new Date(conv.last_message_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : ""}
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[10px] text-muted-foreground">
+                        {conv.last_message_at ? new Date(conv.last_message_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : ""}
+                      </span>
+                      {agent && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <User className="h-3 w-3" />{agent.full_name?.split(" ")[0]}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
@@ -369,16 +505,71 @@ const CRMChat = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-base">{selected?.title}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs bg-muted px-2 py-0.5 rounded">{channelLabels[selected?.channel || "chat"]}</span>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className={cn("text-xs px-2 py-0.5 rounded", selected?.channel === "whatsapp" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-muted")}>
+                        {channelLabels[selected?.channel || "chat"]}
+                      </span>
                       {(selected as any)?.customers?.name && <span className="text-xs text-muted-foreground">{(selected as any).customers.name}</span>}
                       {(selected as any)?.crm_leads?.name && <span className="text-xs text-muted-foreground">{(selected as any).crm_leads.name}</span>}
+                      {assignedAgent && (
+                        <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded flex items-center gap-1">
+                          <User className="h-3 w-3" /> {assignedAgent.full_name}
+                        </span>
+                      )}
+                      {assignedDept && (
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: `${assignedDept.color}20`, color: assignedDept.color }}>
+                          {assignedDept.name}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <Badge variant={statusLabels[selected?.status || "ativa"].variant}>
-                    {statusLabels[selected?.status || "ativa"].label}
-                  </Badge>
-                  <div className="flex gap-1 ml-2">
+                  <div className="flex gap-1 items-center">
+                    <Badge variant={statusLabels[selected?.status || "ativa"].variant}>
+                      {statusLabels[selected?.status || "ativa"].label}
+                    </Badge>
+
+                    {/* Transfer agent */}
+                    {selected?.status === "ativa" && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Transferir atendente">
+                            <ArrowRightLeft className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56 p-2" align="end">
+                          <p className="text-xs font-medium mb-2 text-muted-foreground">Transferir para:</p>
+                          {profiles?.filter(p => p.user_id !== selected.assigned_to).map(p => (
+                            <Button
+                              key={p.user_id}
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start text-xs h-8"
+                              onClick={() => transferConversation.mutate({ id: selected.id, agentId: p.user_id, agentName: p.full_name || "Agente" })}
+                            >
+                              <User className="h-3 w-3 mr-2" />{p.full_name}
+                            </Button>
+                          ))}
+                          {departments && departments.length > 0 && (
+                            <>
+                              <div className="border-t border-border my-1" />
+                              <p className="text-xs font-medium mb-1 text-muted-foreground">Mover para departamento:</p>
+                              {departments.map(d => (
+                                <Button
+                                  key={d.id}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start text-xs h-8"
+                                  onClick={() => assignDepartment.mutate({ id: selected.id, departmentId: d.id, departmentName: d.name })}
+                                >
+                                  <Users className="h-3 w-3 mr-2" />{d.name}
+                                </Button>
+                              ))}
+                            </>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    )}
+
                     {selected?.status === "ativa" && (
                       <>
                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Arquivar" onClick={() => updateConversationStatus.mutate({ id: selected.id, status: "arquivada" })}>
@@ -428,18 +619,35 @@ const CRMChat = () => {
                   </div>
                 </ScrollArea>
                 {selected?.status === "ativa" && (
-                  <div className="p-3 border-t border-border flex gap-2">
-                    <Textarea
-                      value={newMessage}
-                      onChange={e => setNewMessage(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Digite sua mensagem... (Enter para enviar)"
-                      rows={1}
-                      className="resize-none min-h-[40px]"
-                    />
-                    <Button size="icon" onClick={() => newMessage.trim() && sendMessage.mutate()} disabled={!newMessage.trim()}>
-                      <Send className="h-4 w-4" />
-                    </Button>
+                  <div className="border-t border-border">
+                    {/* Quick replies */}
+                    {showQuickReplies && quickReplies && quickReplies.length > 0 && (
+                      <div className="p-2 border-b border-border bg-muted/30 max-h-32 overflow-y-auto">
+                        <div className="flex flex-wrap gap-1">
+                          {quickReplies.map(qr => (
+                            <Button key={qr.id} variant="outline" size="sm" className="text-xs h-7" onClick={() => useQuickReply(qr.content)} title={qr.content}>
+                              {qr.title}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-3 flex gap-2 items-end">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" title="Respostas rápidas" onClick={() => setShowQuickReplies(!showQuickReplies)}>
+                        <Zap className="h-4 w-4" />
+                      </Button>
+                      <Textarea
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Digite sua mensagem... (Enter para enviar)"
+                        rows={1}
+                        className="resize-none min-h-[40px]"
+                      />
+                      <Button size="icon" className="h-9 w-9 shrink-0" onClick={() => newMessage.trim() && sendMessage.mutate()} disabled={!newMessage.trim()}>
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>

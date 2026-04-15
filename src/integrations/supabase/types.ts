@@ -166,6 +166,7 @@ export type Database = {
           created_by: string | null
           customer_id: string | null
           deal_id: string | null
+          department_id: string | null
           id: string
           last_message_at: string | null
           lead_id: string | null
@@ -180,6 +181,7 @@ export type Database = {
           created_by?: string | null
           customer_id?: string | null
           deal_id?: string | null
+          department_id?: string | null
           id?: string
           last_message_at?: string | null
           lead_id?: string | null
@@ -194,6 +196,7 @@ export type Database = {
           created_by?: string | null
           customer_id?: string | null
           deal_id?: string | null
+          department_id?: string | null
           id?: string
           last_message_at?: string | null
           lead_id?: string | null
@@ -217,6 +220,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "chat_conversations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "chat_departments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "chat_conversations_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
@@ -224,6 +234,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chat_departments: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       chat_messages: {
         Row: {
@@ -259,6 +299,50 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_quick_replies: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_quick_replies_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "chat_departments"
             referencedColumns: ["id"]
           },
         ]
