@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Plus, Send, MessageCircle, Archive, User, Building2, Search,
-  XCircle, RotateCcw, ArrowRightLeft, Zap, Users, Phone,
+  XCircle, RotateCcw, ArrowRightLeft, Zap, Users, Phone, Kanban,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -285,6 +285,38 @@ const CRMChat = () => {
       toast.success("Departamento atualizado!");
     },
     onError: () => toast.error("Erro ao mover conversa"),
+  });
+
+  const convertToPipeline = useMutation({
+    mutationFn: async (conv: any) => {
+      // Fetch default first stage
+      const { data: stages } = await supabase
+        .from("crm_pipeline_stages")
+        .select("id")
+        .eq("is_active", true)
+        .order("position", { ascending: true })
+        .limit(1);
+      const stageId = stages?.[0]?.id || null;
+      const title = conv.title || "Deal do Chat";
+      const { data, error } = await supabase.from("crm_deals").insert({
+        title,
+        lead_id: conv.lead_id || null,
+        stage_id: stageId,
+        created_by: user?.id,
+        notes: `Convertido da conversa: ${conv.title}`,
+      }).select().single();
+      if (error) throw error;
+      // Link conversation to deal
+      await supabase.from("chat_conversations").update({ deal_id: data.id }).eq("id", conv.id);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      toast.success("Conversa convertida em deal no Pipeline!", {
+        action: { label: "Ver Pipeline", onClick: () => window.location.href = "/admin/crm/pipeline" },
+      });
+    },
+    onError: () => toast.error("Erro ao converter para Pipeline"),
   });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
