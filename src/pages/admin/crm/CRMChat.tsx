@@ -147,6 +147,72 @@ const CRMChat = () => {
     onError: () => toast.error("Erro ao enviar mensagem"),
   });
 
+  const updateConversationStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase.from("chat_conversations").update({ status }).eq("id", id);
+      if (error) throw error;
+      // Add system message
+      await supabase.from("chat_messages").insert({
+        conversation_id: id,
+        sender_type: "system",
+        sender_name: "Sistema",
+        content: status === "arquivada" ? "Conversa arquivada" : status === "encerrada" ? "Conversa encerrada" : "Conversa reaberta",
+      });
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["chat-messages", selectedId] });
+      const labels: Record<string, string> = { arquivada: "Conversa arquivada", encerrada: "Conversa encerrada", ativa: "Conversa reaberta" };
+      toast.success(labels[status] || "Status atualizado");
+    },
+    onError: () => toast.error("Erro ao atualizar conversa"),
+  });
+
+  // Unread count per conversation
+  const { data: unreadCounts } = useQuery({
+    queryKey: ["chat-unread-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .select("conversation_id")
+        .eq("is_read", false)
+        .neq("sender_type", "agent");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data?.forEach(m => { counts[m.conversation_id] = (counts[m.conversation_id] || 0) + 1; });
+      return counts;
+    },
+  });
+
+  // Mark messages as read when selecting a conversation
+  useEffect(() => {
+    if (!selectedId) return;
+    supabase.from("chat_messages")
+      .update({ is_read: true })
+      .eq("conversation_id", selectedId)
+      .eq("is_read", false)
+      .neq("sender_type", "agent")
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["chat-unread-counts"] });
+      });
+  }, [selectedId, queryClient]);
+
+  // Global realtime for unread notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel("chat-global-notifications")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, (payload) => {
+        const msg = payload.new as any;
+        if (msg.sender_type !== "agent" && msg.conversation_id !== selectedId) {
+          toast.info(`Nova mensagem: ${msg.content?.substring(0, 50)}...`, { duration: 4000 });
+        }
+        queryClient.invalidateQueries({ queryKey: ["chat-unread-counts"] });
+        queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedId, queryClient]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && newMessage.trim()) {
       e.preventDefault();
