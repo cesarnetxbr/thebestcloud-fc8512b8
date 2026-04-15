@@ -604,6 +604,11 @@ const CRMChat = () => {
 
                     {selected?.status === "ativa" && (
                       <>
+                        {!selected?.deal_id && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Converter em Pipeline" onClick={() => convertToPipeline.mutate(selected)}>
+                            <Kanban className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="icon" className="h-8 w-8" title="Arquivar" onClick={() => updateConversationStatus.mutate({ id: selected.id, status: "arquivada" })}>
                           <Archive className="h-4 w-4" />
                         </Button>
