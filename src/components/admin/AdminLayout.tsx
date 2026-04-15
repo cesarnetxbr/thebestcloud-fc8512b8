@@ -33,6 +33,8 @@ import {
   Briefcase,
   Headphones,
   Kanban,
+  Target,
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
