@@ -47,7 +47,7 @@ const AnalyticsDashboard = () => {
       acc[p.page_path] = (acc[p.page_path] || 0) + 1;
       return acc;
     }, {})
-  ).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  ).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 10);
 
   const deviceBreakdown = pageviews.reduce((acc: Record<string, number>, p) => {
     acc[p.device_type || "desktop"] = (acc[p.device_type || "desktop"] || 0) + 1;
@@ -59,7 +59,7 @@ const AnalyticsDashboard = () => {
       acc[e.category || "general"] = (acc[e.category || "general"] || 0) + 1;
       return acc;
     }, {})
-  ).sort((a, b) => b[1] - a[1]);
+  ).sort((a, b) => (b[1] as number) - (a[1] as number));
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
