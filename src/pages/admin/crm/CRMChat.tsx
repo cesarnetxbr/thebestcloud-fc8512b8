@@ -34,6 +34,7 @@ const CRMChat = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("todas");
   const [openNew, setOpenNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newChannel, setNewChannel] = useState("chat");
@@ -220,11 +221,13 @@ const CRMChat = () => {
     }
   };
 
-  const filtered = conversations?.filter(c =>
-    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c as any).customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c as any).crm_leads?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = conversations?.filter(c => {
+    const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c as any).customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c as any).crm_leads?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "todas" || c.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const selected = conversations?.find(c => c.id === selectedId);
 
@@ -282,10 +285,28 @@ const CRMChat = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
         {/* Conversation list */}
         <Card className="lg:col-span-1 flex flex-col">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9" />
+            </div>
+            <div className="flex gap-1">
+              {[
+                { value: "todas", label: "Todas" },
+                { value: "ativa", label: "Ativas" },
+                { value: "arquivada", label: "Arquivadas" },
+                { value: "encerrada", label: "Encerradas" },
+              ].map(f => (
+                <Button
+                  key={f.value}
+                  variant={statusFilter === f.value ? "default" : "ghost"}
+                  size="sm"
+                  className="text-xs h-7 px-2"
+                  onClick={() => setStatusFilter(f.value)}
+                >
+                  {f.label}
+                </Button>
+              ))}
             </div>
           </CardHeader>
           <CardContent className="flex-1 p-0 overflow-hidden">
