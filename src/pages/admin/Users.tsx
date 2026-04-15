@@ -62,6 +62,8 @@ interface UserWithRole {
   updated_at: string | null;
   created_by_name: string | null;
   is_active: boolean;
+  provider?: string;
+  providers?: string[];
 }
 
 const formatDate = (date: string | null) => {
@@ -321,6 +323,7 @@ const Users_Page = () => {
                 <TableRow>
                   <TableHead>Usuário</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Origem</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Último Login</TableHead>
                   <TableHead>Cadastrado em</TableHead>
@@ -352,6 +355,11 @@ const Users_Page = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {u.provider === "google" ? "🔵 Google" : u.provider === "apple" ? "🍎 Apple" : "✉️ Email"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={u.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
