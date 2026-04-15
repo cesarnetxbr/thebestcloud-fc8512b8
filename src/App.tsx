@@ -75,6 +75,7 @@ import SmsDashboard from "./pages/admin/sms/SmsDashboard";
 import SmsCampaigns from "./pages/admin/sms/SmsCampaigns";
 import SmsContacts from "./pages/admin/sms/SmsContacts";
 import SmsTemplates from "./pages/admin/sms/SmsTemplates";
+import AnalyticsDashboard from "./pages/admin/analytics/AnalyticsDashboard";
 import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
@@ -148,6 +149,7 @@ const App = () => (
               <Route path="sms/campaigns" element={<SmsCampaigns />} />
               <Route path="sms/contacts" element={<SmsContacts />} />
               <Route path="sms/templates" element={<SmsTemplates />} />
+              <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="lgpd" element={<LgpdDashboard />} />
