@@ -71,6 +71,10 @@ import MarketingDashboard from "./pages/admin/marketing/MarketingDashboard";
 import EmailCampaigns from "./pages/admin/marketing/EmailCampaigns";
 import EmailLists from "./pages/admin/marketing/EmailLists";
 import EmailTemplates from "./pages/admin/marketing/EmailTemplates";
+import SmsDashboard from "./pages/admin/sms/SmsDashboard";
+import SmsCampaigns from "./pages/admin/sms/SmsCampaigns";
+import SmsContacts from "./pages/admin/sms/SmsContacts";
+import SmsTemplates from "./pages/admin/sms/SmsTemplates";
 import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
