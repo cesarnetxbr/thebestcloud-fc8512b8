@@ -98,6 +98,28 @@ const EmailLists = () => {
     onError: () => toast.error("Erro ao adicionar contato"),
   });
 
+  const handleCsvImport = async (rows: Record<string, string>[]) => {
+    if (!selectedList) return { success: 0, errors: 0 };
+    let success = 0;
+    let errors = 0;
+    for (const r of rows) {
+      if (!r.email) { errors++; continue; }
+      const { error } = await supabase.from("email_marketing_contacts").insert({
+        list_id: selectedList.id,
+        name: r.name || null,
+        email: r.email,
+        phone: r.phone || null,
+      });
+      if (error) errors++; else success++;
+    }
+    await supabase.from("email_marketing_lists").update({
+      contact_count: (selectedList.contact_count || 0) + success,
+    }).eq("id", selectedList.id);
+    queryClient.invalidateQueries({ queryKey: ["email-contacts", selectedList.id] });
+    queryClient.invalidateQueries({ queryKey: ["email-lists"] });
+    return { success, errors };
+  };
+
   const statusColor = (s: string) => {
     if (s === "active") return "default" as const;
     if (s === "unsubscribed") return "secondary" as const;
