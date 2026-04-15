@@ -96,6 +96,9 @@ Deno.serve(async (req) => {
           : null;
         const email = authUser?.email ?? "";
 
+        const provider = authUser?.app_metadata?.provider ?? "email";
+        const providers: string[] = authUser?.app_metadata?.providers ?? [provider];
+
         return {
           user_id: userId,
           role_id: roleRow?.id ?? null,
@@ -107,6 +110,8 @@ Deno.serve(async (req) => {
           updated_at: profile?.updated_at ?? null,
           created_by_name: profile?.created_by_name ?? null,
           is_active: profile?.is_active ?? true,
+          provider,
+          providers,
         };
       })
       .sort((a, b) => {
