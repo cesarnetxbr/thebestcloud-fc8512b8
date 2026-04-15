@@ -70,11 +70,19 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "COMERCIAL",
-    items: [
-      { label: "Solicitações", icon: Kanban, path: "/admin/commercial-requests" },
-      { label: "Orçamentos", icon: FileText, path: "/admin/quotes" },
-    ],
+    title: "CRM",
+    items: [],
+    expandable: {
+      label: "CRM & Pipeline",
+      icon: Target,
+      items: [
+        { label: "Dashboard CRM", icon: BarChart3, path: "/admin/crm" },
+        { label: "Pipeline", icon: Kanban, path: "/admin/crm/pipeline" },
+        { label: "Leads", icon: UserPlus, path: "/admin/crm/leads" },
+        { label: "Solicitações", icon: ClipboardList, path: "/admin/crm/requests" },
+        { label: "Orçamentos", icon: FileText, path: "/admin/crm/quotes" },
+      ],
+    },
   },
   {
     title: "SUPORTE",
