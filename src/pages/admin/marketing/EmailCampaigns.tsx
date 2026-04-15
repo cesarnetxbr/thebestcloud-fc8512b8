@@ -27,6 +27,7 @@ const EmailCampaigns = () => {
   const [subject, setSubject] = useState("");
   const [templateId, setTemplateId] = useState("");
   const [listId, setListId] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
   const queryClient = useQueryClient();
 
   const { data: campaigns, isLoading } = useQuery({
@@ -66,6 +67,8 @@ const EmailCampaigns = () => {
         subject,
         template_id: templateId || null,
         list_id: listId || null,
+        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        status: scheduledAt ? "scheduled" : "draft",
       });
       if (error) throw error;
     },
@@ -77,6 +80,7 @@ const EmailCampaigns = () => {
       setSubject("");
       setTemplateId("");
       setListId("");
+      setScheduledAt("");
     },
     onError: () => toast.error("Erro ao criar campanha"),
   });
@@ -134,8 +138,13 @@ const EmailCampaigns = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label>Agendar Disparo (opcional)</Label>
+                <Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} />
+                {scheduledAt && <p className="text-xs text-muted-foreground mt-1">A campanha será marcada como "Agendada"</p>}
+              </div>
               <Button onClick={() => createCampaign.mutate()} disabled={!name || !subject} className="w-full">
-                Criar Campanha
+                {scheduledAt ? "Agendar Campanha" : "Criar Campanha"}
               </Button>
             </div>
           </DialogContent>

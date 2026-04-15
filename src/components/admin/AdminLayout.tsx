@@ -76,7 +76,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "CRM",
+    title: "CRM & MARKETING",
     items: [],
     expandable: {
       label: "CRM & Pipeline",
@@ -92,30 +92,28 @@ const navSections: NavSection[] = [
     },
   },
   {
-    title: "MARKETING",
     items: [],
     expandable: {
       label: "E-mail Marketing",
       icon: Mail,
       items: [
-        { label: "Dashboard", icon: BarChart3, path: "/admin/marketing" },
-        { label: "Campanhas", icon: Send, path: "/admin/marketing/campaigns" },
+        { label: "Dashboard E-mail", icon: BarChart3, path: "/admin/marketing" },
+        { label: "Campanhas E-mail", icon: Send, path: "/admin/marketing/campaigns" },
         { label: "Listas", icon: Users, path: "/admin/marketing/lists" },
-        { label: "Templates", icon: FileText, path: "/admin/marketing/templates" },
+        { label: "Templates E-mail", icon: FileText, path: "/admin/marketing/templates" },
       ],
     },
   },
   {
-    title: "SMS",
     items: [],
     expandable: {
       label: "SMS Marketing",
       icon: MessageSquare,
       items: [
-        { label: "Dashboard", icon: BarChart3, path: "/admin/sms" },
-        { label: "Campanhas", icon: Send, path: "/admin/sms/campaigns" },
-        { label: "Contatos", icon: Phone, path: "/admin/sms/contacts" },
-        { label: "Templates", icon: FileText, path: "/admin/sms/templates" },
+        { label: "Dashboard SMS", icon: BarChart3, path: "/admin/sms" },
+        { label: "Campanhas SMS", icon: Send, path: "/admin/sms/campaigns" },
+        { label: "Contatos SMS", icon: Phone, path: "/admin/sms/contacts" },
+        { label: "Templates SMS", icon: FileText, path: "/admin/sms/templates" },
       ],
     },
   },
