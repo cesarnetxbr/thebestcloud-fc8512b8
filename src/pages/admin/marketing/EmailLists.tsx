@@ -202,7 +202,16 @@ const EmailLists = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
+              <CsvImportDialog
+                open={csvOpen}
+                onOpenChange={setCsvOpen}
+                columns={emailCsvColumns}
+                templateFileName="modelo_contatos_email.csv"
+                onImport={handleCsvImport}
+                title="Importar Contatos de E-mail via CSV"
+              />
               <Card>
                 <CardContent className="p-0">
                   <Table>
