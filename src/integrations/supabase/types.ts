@@ -44,6 +44,84 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          category: string | null
+          created_at: string
+          event_name: string
+          id: string
+          label: string | null
+          metadata: Json | null
+          page_path: string | null
+          session_id: string | null
+          user_id: string | null
+          value: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          event_name: string
+          id?: string
+          label?: string | null
+          metadata?: Json | null
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          value?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          event_name?: string
+          id?: string
+          label?: string | null
+          metadata?: Json | null
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          value?: number | null
+        }
+        Relationships: []
+      }
+      analytics_pageviews: {
+        Row: {
+          country: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          ip_hash: string | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_hash?: string | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_hash?: string | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           created_at: string

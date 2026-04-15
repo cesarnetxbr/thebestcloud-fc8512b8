@@ -39,6 +39,7 @@ import {
   Send,
   MessageSquare,
   Phone,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -115,6 +116,12 @@ const navSections: NavSection[] = [
         { label: "Templates", icon: FileText, path: "/admin/sms/templates" },
       ],
     },
+  },
+  {
+    title: "ANALYTICS",
+    items: [
+      { label: "Tracking & Analytics", icon: Activity, path: "/admin/analytics" },
+    ],
   },
   {
     title: "SUPORTE",
