@@ -127,6 +127,11 @@ const App = () => (
               <Route path="tickets" element={<Tickets />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
               <Route path="quotes" element={<Quotes />} />
+              <Route path="crm" element={<CRMDashboard />} />
+              <Route path="crm/pipeline" element={<CRMPipeline />} />
+              <Route path="crm/leads" element={<CRMLeads />} />
+              <Route path="crm/requests" element={<CommercialRequests />} />
+              <Route path="crm/quotes" element={<Quotes />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="lgpd" element={<LgpdDashboard />} />
