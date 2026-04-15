@@ -64,6 +64,9 @@ import LgpdConsents from "./pages/admin/lgpd/LgpdConsents";
 import LgpdRequests from "./pages/admin/lgpd/LgpdRequests";
 import LgpdIncidents from "./pages/admin/lgpd/LgpdIncidents";
 import Quotes from "./pages/admin/Quotes";
+import CRMDashboard from "./pages/admin/crm/CRMDashboard";
+import CRMPipeline from "./pages/admin/crm/CRMPipeline";
+import CRMLeads from "./pages/admin/crm/CRMLeads";
 import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
