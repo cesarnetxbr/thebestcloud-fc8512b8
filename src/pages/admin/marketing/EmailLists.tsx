@@ -184,10 +184,14 @@ const EmailLists = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">Contatos: {selectedList.name}</h3>
-                <Dialog open={contactOpen} onOpenChange={setContactOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Adicionar Contato</Button>
-                  </DialogTrigger>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setCsvOpen(true)}>
+                    <Upload className="h-4 w-4 mr-1" /> Importar CSV
+                  </Button>
+                  <Dialog open={contactOpen} onOpenChange={setContactOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Adicionar Contato</Button>
+                    </DialogTrigger>
                   <DialogContent>
                     <DialogHeader><DialogTitle>Adicionar Contato</DialogTitle></DialogHeader>
                     <div className="space-y-4">
