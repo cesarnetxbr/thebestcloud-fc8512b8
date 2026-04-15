@@ -26,6 +26,7 @@ const SmsCampaigns = () => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [templateId, setTemplateId] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
   const queryClient = useQueryClient();
 
   const { data: campaigns, isLoading } = useQuery({
@@ -55,6 +56,8 @@ const SmsCampaigns = () => {
         name,
         message,
         template_id: templateId || null,
+        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        status: scheduledAt ? "scheduled" : "draft",
       });
       if (error) throw error;
     },
@@ -65,6 +68,7 @@ const SmsCampaigns = () => {
       setName("");
       setMessage("");
       setTemplateId("");
+      setScheduledAt("");
     },
     onError: () => toast.error("Erro ao criar campanha"),
   });
@@ -113,7 +117,14 @@ const SmsCampaigns = () => {
                 </div>
                 <Textarea value={message} onChange={e => setMessage(e.target.value)} rows={4} placeholder="Digite a mensagem SMS..." />
               </div>
-              <Button onClick={() => createCampaign.mutate()} disabled={!name || !message} className="w-full">Criar Campanha</Button>
+              <div>
+                <Label>Agendar Disparo (opcional)</Label>
+                <Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} />
+                {scheduledAt && <p className="text-xs text-muted-foreground mt-1">A campanha será marcada como "Agendada"</p>}
+              </div>
+              <Button onClick={() => createCampaign.mutate()} disabled={!name || !message} className="w-full">
+                {scheduledAt ? "Agendar Campanha" : "Criar Campanha"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
