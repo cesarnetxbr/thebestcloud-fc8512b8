@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,8 +9,35 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, QrCode, Smartphone, Wifi, WifiOff, RefreshCw, Trash2 } from "lucide-react";
+import { Plus, QrCode, Smartphone, Wifi, WifiOff, RefreshCw, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+const FUNCTIONS_URL = `https://${PROJECT_ID}.supabase.co/functions/v1`;
+
+async function callEvolution(action: string, instance?: string, body?: Record<string, unknown>) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  const params = new URLSearchParams({ action });
+  if (instance) params.set("instance", instance);
+
+  const res = await fetch(`${FUNCTIONS_URL}/whatsapp-evolution?${params}`, {
+    method: body ? "POST" : "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      ...(body ? { "Content-Type": "application/json" } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Erro na Evolution API");
+  return data;
+}
+
+type SessionStatus = "INITIALIZING" | "QRCODE" | "CONNECTED" | "DISCONNECTED" | "pending";
 
 const CRMWhatsAppConnect = () => {
   const { user } = useAuth();
@@ -19,6 +46,10 @@ const CRMWhatsAppConnect = () => {
   const [instanceName, setInstanceName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showQr, setShowQr] = useState<string | null>(null);
+  const [qrBase64, setQrBase64] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: instances } = useQuery({
     queryKey: ["whatsapp-instances"],
@@ -32,8 +63,59 @@ const CRMWhatsAppConnect = () => {
     },
   });
 
+  // Polling for QR + status
+  const startPolling = useCallback((instName: string) => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    const poll = async () => {
+      try {
+        const statusRes = await callEvolution("status", instName);
+        const state = statusRes?.instance?.state || statusRes?.state;
+
+        if (state === "open" || state === "connected") {
+          setSessionStatus("CONNECTED");
+          setQrBase64(null);
+          if (pollingRef.current) clearInterval(pollingRef.current);
+
+          await supabase
+            .from("whatsapp_instances")
+            .update({ status: "connected" })
+            .eq("instance_name", instName);
+          queryClient.invalidateQueries({ queryKey: ["whatsapp-instances"] });
+          toast.success("WhatsApp conectado com sucesso!");
+          return;
+        }
+
+        // Try to get QR code
+        const connectRes = await callEvolution("connect", instName);
+        const base64 = connectRes?.base64 || connectRes?.qrcode?.base64;
+        if (base64) {
+          setQrBase64(base64);
+          setSessionStatus("QRCODE");
+        } else {
+          setSessionStatus("INITIALIZING");
+        }
+      } catch {
+        // Silently retry
+      }
+    };
+
+    poll();
+    pollingRef.current = setInterval(poll, 5000);
+  }, [queryClient]);
+
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
+
   const createInstance = useMutation({
     mutationFn: async () => {
+      // Create on Evolution API
+      await callEvolution("create", undefined, { instanceName });
+
+      // Save to DB
       const { error } = await supabase.from("whatsapp_instances").insert({
         instance_name: instanceName,
         phone_number: phoneNumber || null,
@@ -45,16 +127,26 @@ const CRMWhatsAppConnect = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whatsapp-instances"] });
       setOpenNew(false);
-      setInstanceName("");
       setPhoneNumber("");
+      // Open QR dialog immediately
+      setShowQr(instanceName);
+      setQrLoading(true);
+      setSessionStatus("INITIALIZING");
+      startPolling(instanceName);
+      setInstanceName("");
       toast.success("Instância criada! Escaneie o QR Code para conectar.");
     },
-    onError: () => toast.error("Erro ao criar instância"),
+    onError: (err: Error) => toast.error(err.message || "Erro ao criar instância"),
   });
 
   const deleteInstance = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("whatsapp_instances").delete().eq("id", id);
+    mutationFn: async (inst: { id: string; instance_name: string }) => {
+      try {
+        await callEvolution("delete", inst.instance_name);
+      } catch {
+        // Instance may not exist on Evolution, continue
+      }
+      const { error } = await supabase.from("whatsapp_instances").delete().eq("id", inst.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -64,13 +156,30 @@ const CRMWhatsAppConnect = () => {
     onError: () => toast.error("Erro ao remover instância"),
   });
 
+  const handleShowQr = (instName: string) => {
+    setShowQr(instName);
+    setQrBase64(null);
+    setQrLoading(true);
+    setSessionStatus("INITIALIZING");
+    startPolling(instName);
+  };
+
+  const handleCloseQr = () => {
+    setShowQr(null);
+    setQrBase64(null);
+    setQrLoading(false);
+    setSessionStatus(null);
+    if (pollingRef.current) clearInterval(pollingRef.current);
+  };
+
   const reconnectInstance = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (inst: { id: string; instance_name: string }) => {
       const { error } = await supabase
         .from("whatsapp_instances")
         .update({ status: "pending" })
-        .eq("id", id);
+        .eq("id", inst.id);
       if (error) throw error;
+      handleShowQr(inst.instance_name);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whatsapp-instances"] });
@@ -83,6 +192,11 @@ const CRMWhatsAppConnect = () => {
     disconnected: { label: "Desconectado", variant: "destructive", icon: WifiOff },
     pending: { label: "Aguardando QR", variant: "secondary", icon: QrCode },
   };
+
+  const statusLabel = sessionStatus === "CONNECTED" ? "Conectado ✓" :
+    sessionStatus === "QRCODE" ? "QR Code disponível" :
+    sessionStatus === "INITIALIZING" ? "Inicializando..." :
+    "Aguardando...";
 
   return (
     <div className="space-y-6">
@@ -103,13 +217,15 @@ const CRMWhatsAppConnect = () => {
             <div className="space-y-4">
               <div>
                 <Label>Nome da Instância</Label>
-                <Input value={instanceName} onChange={e => setInstanceName(e.target.value)} placeholder="Ex: Atendimento Principal" />
+                <Input value={instanceName} onChange={e => setInstanceName(e.target.value.replace(/\s/g, '-').toLowerCase())} placeholder="Ex: atendimento-principal" />
+                <p className="text-xs text-muted-foreground mt-1">Sem espaços, apenas letras minúsculas e hífens</p>
               </div>
               <div>
                 <Label>Número do WhatsApp (opcional)</Label>
-                <Input value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="Ex: +55 11 99999-9999" />
+                <Input value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="Ex: 5511999999999" />
               </div>
-              <Button onClick={() => createInstance.mutate()} disabled={!instanceName} className="w-full">
+              <Button onClick={() => createInstance.mutate()} disabled={!instanceName || createInstance.isPending} className="w-full">
+                {createInstance.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                 Criar e Gerar QR Code
               </Button>
             </div>
@@ -190,16 +306,16 @@ const CRMWhatsAppConnect = () => {
                     <TableCell>
                       <div className="flex gap-1">
                         {inst.status === "pending" && (
-                          <Button variant="outline" size="sm" onClick={() => setShowQr(inst.id)}>
+                          <Button variant="outline" size="sm" onClick={() => handleShowQr(inst.instance_name)}>
                             <QrCode className="h-4 w-4 mr-1" /> QR Code
                           </Button>
                         )}
                         {inst.status === "disconnected" && (
-                          <Button variant="outline" size="sm" onClick={() => reconnectInstance.mutate(inst.id)}>
+                          <Button variant="outline" size="sm" onClick={() => reconnectInstance.mutate({ id: inst.id, instance_name: inst.instance_name })}>
                             <RefreshCw className="h-4 w-4 mr-1" /> Reconectar
                           </Button>
                         )}
-                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteInstance.mutate(inst.id)}>
+                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteInstance.mutate({ id: inst.id, instance_name: inst.instance_name })}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -220,23 +336,48 @@ const CRMWhatsAppConnect = () => {
       </Card>
 
       {/* QR Code Dialog */}
-      <Dialog open={!!showQr} onOpenChange={() => setShowQr(null)}>
+      <Dialog open={!!showQr} onOpenChange={(open) => !open && handleCloseQr()}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Escaneie o QR Code</DialogTitle></DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
-            <div className="w-64 h-64 border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20">
+            <Badge variant={sessionStatus === "CONNECTED" ? "default" : "secondary"} className="text-xs">
+              {statusLabel}
+            </Badge>
+
+            <div className="w-64 h-64 border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 overflow-hidden">
+              {sessionStatus === "CONNECTED" ? (
+                <div className="text-center">
+                  <Wifi className="h-16 w-16 mx-auto text-green-500 mb-2" />
+                  <p className="text-sm font-medium text-green-600">Conectado!</p>
+                </div>
+              ) : qrBase64 ? (
+                <img
+                  src={qrBase64.startsWith("data:") ? qrBase64 : `data:image/png;base64,${qrBase64}`}
+                  alt="QR Code WhatsApp"
+                  className="w-full h-full object-contain p-2"
+                />
+              ) : (
+                <div className="text-center">
+                  <Loader2 className="h-10 w-10 mx-auto text-muted-foreground/40 mb-2 animate-spin" />
+                  <p className="text-sm text-muted-foreground">Gerando QR Code...</p>
+                  <p className="text-xs text-muted-foreground mt-1">Aguarde alguns segundos</p>
+                </div>
+              )}
+            </div>
+
+            {sessionStatus !== "CONNECTED" && (
               <div className="text-center">
-                <QrCode className="h-16 w-16 mx-auto text-muted-foreground/40 mb-2" />
-                <p className="text-sm text-muted-foreground">QR Code será exibido aqui</p>
-                <p className="text-xs text-muted-foreground mt-1">Aguardando integração com API</p>
+                <p className="text-sm font-medium">Abra o WhatsApp no seu celular</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Vá em Configurações → Dispositivos Conectados → Conectar um dispositivo
+                </p>
+                {qrBase64 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    O QR Code atualiza automaticamente a cada 5 segundos
+                  </p>
+                )}
               </div>
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium">Abra o WhatsApp no seu celular</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Vá em Configurações → Dispositivos Conectados → Conectar um dispositivo
-              </p>
-            </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
