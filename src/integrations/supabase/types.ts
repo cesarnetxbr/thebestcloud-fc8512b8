@@ -1671,6 +1671,190 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_marketing_campaign_metrics: {
+        Row: {
+          campaign_id: string
+          delivery_rate: number | null
+          id: string
+          reply_rate: number | null
+          total_delivered: number | null
+          total_failed: number | null
+          total_replied: number | null
+          total_sent: number | null
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          delivery_rate?: number | null
+          id?: string
+          reply_rate?: number | null
+          total_delivered?: number | null
+          total_failed?: number | null
+          total_replied?: number | null
+          total_sent?: number | null
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          delivery_rate?: number | null
+          id?: string
+          reply_rate?: number | null
+          total_delivered?: number | null
+          total_failed?: number | null
+          total_replied?: number | null
+          total_sent?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_marketing_campaign_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "sms_marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_marketing_campaigns: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+          name: string
+          provider: string | null
+          provider_campaign_id: string | null
+          scheduled_at: string | null
+          sender_number: string | null
+          sent_at: string | null
+          status: string
+          target_tags: string[] | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+          name: string
+          provider?: string | null
+          provider_campaign_id?: string | null
+          scheduled_at?: string | null
+          sender_number?: string | null
+          sent_at?: string | null
+          status?: string
+          target_tags?: string[] | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+          name?: string
+          provider?: string | null
+          provider_campaign_id?: string | null
+          scheduled_at?: string | null
+          sender_number?: string | null
+          sent_at?: string | null
+          status?: string
+          target_tags?: string[] | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_marketing_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "sms_marketing_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_marketing_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          metadata: Json | null
+          name: string | null
+          opted_in_at: string | null
+          opted_out_at: string | null
+          phone: string
+          status: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          opted_in_at?: string | null
+          opted_out_at?: string | null
+          phone: string
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          opted_in_at?: string | null
+          opted_out_at?: string | null
+          phone?: string
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sms_marketing_templates: {
+        Row: {
+          category: string | null
+          char_count: number | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          char_count?: number | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          char_count?: number | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_usage: {
         Row: {
           connection_id: string | null

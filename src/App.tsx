@@ -71,6 +71,10 @@ import MarketingDashboard from "./pages/admin/marketing/MarketingDashboard";
 import EmailCampaigns from "./pages/admin/marketing/EmailCampaigns";
 import EmailLists from "./pages/admin/marketing/EmailLists";
 import EmailTemplates from "./pages/admin/marketing/EmailTemplates";
+import SmsDashboard from "./pages/admin/sms/SmsDashboard";
+import SmsCampaigns from "./pages/admin/sms/SmsCampaigns";
+import SmsContacts from "./pages/admin/sms/SmsContacts";
+import SmsTemplates from "./pages/admin/sms/SmsTemplates";
 import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
@@ -140,6 +144,10 @@ const App = () => (
               <Route path="marketing/campaigns" element={<EmailCampaigns />} />
               <Route path="marketing/lists" element={<EmailLists />} />
               <Route path="marketing/templates" element={<EmailTemplates />} />
+              <Route path="sms" element={<SmsDashboard />} />
+              <Route path="sms/campaigns" element={<SmsCampaigns />} />
+              <Route path="sms/contacts" element={<SmsContacts />} />
+              <Route path="sms/templates" element={<SmsTemplates />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="lgpd" element={<LgpdDashboard />} />

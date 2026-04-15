@@ -30,3 +30,4 @@ Tech: Supabase Edge Functions with Service Role Key for external APIs. Automated
 - [Trial Management](mem://features/admin/trial-management) — Temporary lead tracking for 30-day free trials
 - [CRM Module](mem://features/crm-module) — CRM with leads, deals, pipeline, activities
 - [Email Marketing](mem://features/email-marketing) — Campaigns, lists, templates, metrics — ready for external providers
+- [SMS Marketing](mem://features/sms-marketing) — SMS campaigns, contacts, templates — ready for Twilio/Vonage

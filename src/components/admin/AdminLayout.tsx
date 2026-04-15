@@ -37,6 +37,8 @@ import {
   UserPlus,
   Mail,
   Send,
+  MessageSquare,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -97,6 +99,20 @@ const navSections: NavSection[] = [
         { label: "Campanhas", icon: Send, path: "/admin/marketing/campaigns" },
         { label: "Listas", icon: Users, path: "/admin/marketing/lists" },
         { label: "Templates", icon: FileText, path: "/admin/marketing/templates" },
+      ],
+    },
+  },
+  {
+    title: "SMS",
+    items: [],
+    expandable: {
+      label: "SMS Marketing",
+      icon: MessageSquare,
+      items: [
+        { label: "Dashboard", icon: BarChart3, path: "/admin/sms" },
+        { label: "Campanhas", icon: Send, path: "/admin/sms/campaigns" },
+        { label: "Contatos", icon: Phone, path: "/admin/sms/contacts" },
+        { label: "Templates", icon: FileText, path: "/admin/sms/templates" },
       ],
     },
   },
