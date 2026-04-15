@@ -11,10 +11,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Users, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import CsvImportDialog, { type CsvColumn } from "@/components/admin/CsvImportDialog";
+
+const emailCsvColumns: CsvColumn[] = [
+  { key: "name", label: "Nome" },
+  { key: "email", label: "E-mail", required: true },
+  { key: "phone", label: "Telefone" },
+];
 
 const EmailLists = () => {
   const [open, setOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [selectedList, setSelectedList] = useState<any>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -90,6 +98,28 @@ const EmailLists = () => {
     onError: () => toast.error("Erro ao adicionar contato"),
   });
 
+  const handleCsvImport = async (rows: Record<string, string>[]) => {
+    if (!selectedList) return { success: 0, errors: 0 };
+    let success = 0;
+    let errors = 0;
+    for (const r of rows) {
+      if (!r.email) { errors++; continue; }
+      const { error } = await supabase.from("email_marketing_contacts").insert({
+        list_id: selectedList.id,
+        name: r.name || null,
+        email: r.email,
+        phone: r.phone || null,
+      });
+      if (error) errors++; else success++;
+    }
+    await supabase.from("email_marketing_lists").update({
+      contact_count: (selectedList.contact_count || 0) + success,
+    }).eq("id", selectedList.id);
+    queryClient.invalidateQueries({ queryKey: ["email-contacts", selectedList.id] });
+    queryClient.invalidateQueries({ queryKey: ["email-lists"] });
+    return { success, errors };
+  };
+
   const statusColor = (s: string) => {
     if (s === "active") return "default" as const;
     if (s === "unsubscribed") return "secondary" as const;
@@ -154,10 +184,14 @@ const EmailLists = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">Contatos: {selectedList.name}</h3>
-                <Dialog open={contactOpen} onOpenChange={setContactOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Adicionar Contato</Button>
-                  </DialogTrigger>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setCsvOpen(true)}>
+                    <Upload className="h-4 w-4 mr-1" /> Importar CSV
+                  </Button>
+                  <Dialog open={contactOpen} onOpenChange={setContactOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Adicionar Contato</Button>
+                    </DialogTrigger>
                   <DialogContent>
                     <DialogHeader><DialogTitle>Adicionar Contato</DialogTitle></DialogHeader>
                     <div className="space-y-4">
@@ -168,7 +202,16 @@ const EmailLists = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
+              <CsvImportDialog
+                open={csvOpen}
+                onOpenChange={setCsvOpen}
+                columns={emailCsvColumns}
+                templateFileName="modelo_contatos_email.csv"
+                onImport={handleCsvImport}
+                title="Importar Contatos de E-mail via CSV"
+              />
               <Card>
                 <CardContent className="p-0">
                   <Table>
