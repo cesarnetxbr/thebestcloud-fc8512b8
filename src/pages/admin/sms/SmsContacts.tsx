@@ -20,6 +20,7 @@ const smsCsvColumns: CsvColumn[] = [
 
 const SmsContacts = () => {
   const [open, setOpen] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
