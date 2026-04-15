@@ -85,6 +85,7 @@ const navSections: NavSection[] = [
         { label: "Dashboard CRM", icon: BarChart3, path: "/admin/crm" },
         { label: "Pipeline", icon: Kanban, path: "/admin/crm/pipeline" },
         { label: "Leads", icon: UserPlus, path: "/admin/crm/leads" },
+        { label: "Chat", icon: MessageSquare, path: "/admin/crm/chat" },
         { label: "Agenda", icon: CalendarDays, path: "/admin/crm/agenda" },
         { label: "Solicitações", icon: ClipboardList, path: "/admin/crm/requests" },
         { label: "Orçamentos", icon: FileText, path: "/admin/crm/quotes" },
