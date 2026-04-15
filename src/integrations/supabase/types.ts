@@ -675,6 +675,111 @@ export type Database = {
           },
         ]
       }
+      crm_deal_items: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          item_name: string
+          notes: string | null
+          quantity: number
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          item_name: string
+          notes?: string | null
+          quantity?: number
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          item_name?: string
+          notes?: string | null
+          quantity?: number
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deal_items_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_deal_notes: {
+        Row: {
+          author_id: string
+          author_name: string | null
+          content: string
+          created_at: string
+          deal_id: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          author_name?: string | null
+          content: string
+          created_at?: string
+          deal_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          deal_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deal_notes_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_deal_tags: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          tag_color: string | null
+          tag_name: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          tag_color?: string | null
+          tag_name: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          tag_color?: string | null
+          tag_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deal_tags_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_deals: {
         Row: {
           assigned_to: string | null
