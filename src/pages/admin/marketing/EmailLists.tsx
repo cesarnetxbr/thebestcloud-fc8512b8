@@ -11,10 +11,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Users, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import CsvImportDialog, { type CsvColumn } from "@/components/admin/CsvImportDialog";
+
+const emailCsvColumns: CsvColumn[] = [
+  { key: "name", label: "Nome" },
+  { key: "email", label: "E-mail", required: true },
+  { key: "phone", label: "Telefone" },
+];
 
 const EmailLists = () => {
   const [open, setOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [selectedList, setSelectedList] = useState<any>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
