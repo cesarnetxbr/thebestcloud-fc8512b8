@@ -304,7 +304,14 @@ const CRMChat = () => {
                     )}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-sm text-foreground truncate">{conv.title}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-medium text-sm text-foreground truncate">{conv.title}</span>
+                        {(unreadCounts?.[conv.id] || 0) > 0 && (
+                          <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1 shrink-0">
+                            {unreadCounts![conv.id]}
+                          </span>
+                        )}
+                      </div>
                       <Badge variant={st.variant} className="text-[10px] shrink-0 ml-2">{st.label}</Badge>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -350,6 +357,23 @@ const CRMChat = () => {
                   <Badge variant={statusLabels[selected?.status || "ativa"].variant}>
                     {statusLabels[selected?.status || "ativa"].label}
                   </Badge>
+                  <div className="flex gap-1 ml-2">
+                    {selected?.status === "ativa" && (
+                      <>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Arquivar" onClick={() => updateConversationStatus.mutate({ id: selected.id, status: "arquivada" })}>
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Encerrar" onClick={() => updateConversationStatus.mutate({ id: selected.id, status: "encerrada" })}>
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    {(selected?.status === "arquivada" || selected?.status === "encerrada") && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" title="Reabrir" onClick={() => updateConversationStatus.mutate({ id: selected.id, status: "ativa" })}>
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
