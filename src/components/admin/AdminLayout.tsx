@@ -35,6 +35,7 @@ import {
   Kanban,
   Target,
   UserPlus,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
