@@ -76,17 +76,16 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "CRM & MARKETING",
+    title: "CRM",
     items: [],
     expandable: {
-      label: "CRM & Pipeline",
+      label: "Pipeline & Vendas",
       icon: Target,
       items: [
         { label: "Dashboard CRM", icon: BarChart3, path: "/admin/crm" },
         { label: "Pipeline", icon: Kanban, path: "/admin/crm/pipeline" },
         { label: "Leads", icon: UserPlus, path: "/admin/crm/leads" },
         { label: "Agenda", icon: CalendarDays, path: "/admin/crm/agenda" },
-        { label: "Marketing", icon: TrendingUp, path: "/admin/crm/marketing" },
         { label: "Solicitações", icon: ClipboardList, path: "/admin/crm/requests" },
         { label: "Orçamentos", icon: FileText, path: "/admin/crm/quotes" },
       ],
@@ -95,13 +94,25 @@ const navSections: NavSection[] = [
   {
     items: [],
     expandable: {
-      label: "Chat Marketing",
+      label: "Chat & Atendimento",
       icon: Phone,
       items: [
         { label: "Multi-atendimento", icon: MessageSquare, path: "/admin/crm/chat" },
         { label: "WhatsApp Connect", icon: Phone, path: "/admin/crm/whatsapp-connect" },
         { label: "Chatbot & IA", icon: Zap, path: "/admin/crm/chatbot" },
         { label: "Config. Chat", icon: Settings, path: "/admin/crm/chat/settings" },
+      ],
+    },
+  },
+  {
+    title: "MARKETING",
+    items: [],
+    expandable: {
+      label: "Visão Geral",
+      icon: TrendingUp,
+      items: [
+        { label: "Dashboard Marketing", icon: BarChart3, path: "/admin/crm/marketing" },
+        { label: "Analytics & Tracking", icon: Activity, path: "/admin/analytics" },
       ],
     },
   },
@@ -130,12 +141,6 @@ const navSections: NavSection[] = [
         { label: "Templates SMS", icon: FileText, path: "/admin/sms/templates" },
       ],
     },
-  },
-  {
-    title: "ANALYTICS",
-    items: [
-      { label: "Tracking & Analytics", icon: Activity, path: "/admin/analytics" },
-    ],
   },
   {
     title: "SUPORTE",
