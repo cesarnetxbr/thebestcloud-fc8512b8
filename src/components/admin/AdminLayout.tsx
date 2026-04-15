@@ -86,6 +86,19 @@ const navSections: NavSection[] = [
     },
   },
   {
+    title: "MARKETING",
+    items: [],
+    expandable: {
+      label: "E-mail Marketing",
+      icon: Mail,
+      items: [
+        { label: "Dashboard", icon: BarChart3, path: "/admin/marketing" },
+        { label: "Campanhas", icon: Send, path: "/admin/marketing/campaigns" },
+        { label: "Listas", icon: Users, path: "/admin/marketing/lists" },
+        { label: "Templates", icon: FileText, path: "/admin/marketing/templates" },
+      ],
+    },
+  },
     title: "SUPORTE",
     items: [
       { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
