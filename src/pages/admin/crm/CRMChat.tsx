@@ -221,11 +221,13 @@ const CRMChat = () => {
     }
   };
 
-  const filtered = conversations?.filter(c =>
-    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c as any).customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c as any).crm_leads?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = conversations?.filter(c => {
+    const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c as any).customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c as any).crm_leads?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "todas" || c.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const selected = conversations?.find(c => c.id === selectedId);
 
