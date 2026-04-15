@@ -413,6 +413,79 @@ export type Database = {
           },
         ]
       }
+      crm_appointments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          deal_id: string | null
+          description: string | null
+          end_at: string
+          id: string
+          lead_id: string | null
+          location: string | null
+          start_at: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          deal_id?: string | null
+          description?: string | null
+          end_at: string
+          id?: string
+          lead_id?: string | null
+          location?: string | null
+          start_at: string
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          deal_id?: string | null
+          description?: string | null
+          end_at?: string
+          id?: string
+          lead_id?: string | null
+          location?: string | null
+          start_at?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_appointments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_appointments_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_deals: {
         Row: {
           assigned_to: string | null
