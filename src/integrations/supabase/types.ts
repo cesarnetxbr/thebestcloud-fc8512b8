@@ -588,6 +588,262 @@ export type Database = {
         }
         Relationships: []
       }
+      email_marketing_campaign_metrics: {
+        Row: {
+          bounce_rate: number | null
+          campaign_id: string
+          click_rate: number | null
+          id: string
+          open_rate: number | null
+          total_bounced: number | null
+          total_clicked: number | null
+          total_complained: number | null
+          total_delivered: number | null
+          total_opened: number | null
+          total_sent: number | null
+          total_unsubscribed: number | null
+          updated_at: string
+        }
+        Insert: {
+          bounce_rate?: number | null
+          campaign_id: string
+          click_rate?: number | null
+          id?: string
+          open_rate?: number | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_complained?: number | null
+          total_delivered?: number | null
+          total_opened?: number | null
+          total_sent?: number | null
+          total_unsubscribed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bounce_rate?: number | null
+          campaign_id?: string
+          click_rate?: number | null
+          id?: string
+          open_rate?: number | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_complained?: number | null
+          total_delivered?: number | null
+          total_opened?: number | null
+          total_sent?: number | null
+          total_unsubscribed?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_marketing_campaign_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "email_marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_marketing_campaigns: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          list_id: string | null
+          name: string
+          provider: string | null
+          provider_campaign_id: string | null
+          reply_to: string | null
+          scheduled_at: string | null
+          sender_email: string | null
+          sender_name: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          list_id?: string | null
+          name: string
+          provider?: string | null
+          provider_campaign_id?: string | null
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          list_id?: string | null
+          name?: string
+          provider?: string | null
+          provider_campaign_id?: string | null
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_marketing_campaigns_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "email_marketing_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_marketing_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_marketing_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_marketing_contacts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          list_id: string
+          metadata: Json | null
+          name: string | null
+          phone: string | null
+          status: string
+          subscribed_at: string | null
+          tags: string[] | null
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          list_id: string
+          metadata?: Json | null
+          name?: string | null
+          phone?: string | null
+          status?: string
+          subscribed_at?: string | null
+          tags?: string[] | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          list_id?: string
+          metadata?: Json | null
+          name?: string | null
+          phone?: string | null
+          status?: string
+          subscribed_at?: string | null
+          tags?: string[] | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_marketing_contacts_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "email_marketing_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_marketing_lists: {
+        Row: {
+          contact_count: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_marketing_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          html_content: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          text_content: string | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          html_content?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          text_content?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          html_content?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          text_content?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       financial_categories: {
         Row: {
           color: string | null

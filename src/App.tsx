@@ -67,6 +67,10 @@ import Quotes from "./pages/admin/Quotes";
 import CRMDashboard from "./pages/admin/crm/CRMDashboard";
 import CRMPipeline from "./pages/admin/crm/CRMPipeline";
 import CRMLeads from "./pages/admin/crm/CRMLeads";
+import MarketingDashboard from "./pages/admin/marketing/MarketingDashboard";
+import EmailCampaigns from "./pages/admin/marketing/EmailCampaigns";
+import EmailLists from "./pages/admin/marketing/EmailLists";
+import EmailTemplates from "./pages/admin/marketing/EmailTemplates";
 import Unauthorized from "./pages/admin/Unauthorized";
 
 const queryClient = new QueryClient();
@@ -132,6 +136,10 @@ const App = () => (
               <Route path="crm/leads" element={<CRMLeads />} />
               <Route path="crm/requests" element={<CommercialRequests />} />
               <Route path="crm/quotes" element={<Quotes />} />
+              <Route path="marketing" element={<MarketingDashboard />} />
+              <Route path="marketing/campaigns" element={<EmailCampaigns />} />
+              <Route path="marketing/lists" element={<EmailLists />} />
+              <Route path="marketing/templates" element={<EmailTemplates />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="ouvidoria" element={<AdminOmbudsman />} />
               <Route path="lgpd" element={<LgpdDashboard />} />

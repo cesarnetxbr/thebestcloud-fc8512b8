@@ -35,6 +35,8 @@ import {
   Kanban,
   Target,
   UserPlus,
+  Mail,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +83,20 @@ const navSections: NavSection[] = [
         { label: "Leads", icon: UserPlus, path: "/admin/crm/leads" },
         { label: "Solicitações", icon: ClipboardList, path: "/admin/crm/requests" },
         { label: "Orçamentos", icon: FileText, path: "/admin/crm/quotes" },
+      ],
+    },
+  },
+  {
+    title: "MARKETING",
+    items: [],
+    expandable: {
+      label: "E-mail Marketing",
+      icon: Mail,
+      items: [
+        { label: "Dashboard", icon: BarChart3, path: "/admin/marketing" },
+        { label: "Campanhas", icon: Send, path: "/admin/marketing/campaigns" },
+        { label: "Listas", icon: Users, path: "/admin/marketing/lists" },
+        { label: "Templates", icon: FileText, path: "/admin/marketing/templates" },
       ],
     },
   },
