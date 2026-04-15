@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, GripVertical, DollarSign, Calendar, User, Eye } from "lucide-react";
+import { Plus, DollarSign, Calendar, User } from "lucide-react";
+import DealDetailDialog from "@/components/admin/crm/DealDetailDialog";
 
 const CRMPipeline = () => {
   const { user } = useAuth();
@@ -48,6 +49,15 @@ const CRMPipeline = () => {
     queryKey: ["crm_leads_select"],
     queryFn: async () => {
       const { data } = await supabase.from("crm_leads").select("id, name, company").order("name");
+      return data || [];
+    },
+  });
+
+  // Fetch tags for all deals to show on kanban cards
+  const { data: allTags = [] } = useQuery({
+    queryKey: ["crm_deal_tags_all"],
+    queryFn: async () => {
+      const { data } = await supabase.from("crm_deal_tags").select("*");
       return data || [];
     },
   });
@@ -129,38 +139,53 @@ const CRMPipeline = () => {
                 <Badge variant="secondary" className="ml-auto text-xs">{stageDeals.length}</Badge>
               </div>
               <div className="space-y-2 min-h-[200px] bg-muted/30 rounded-lg p-2">
-                {stageDeals.map((deal: any) => (
-                  <Card
-                    key={deal.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setDetailDeal(deal)}
-                  >
-                    <CardContent className="p-3 space-y-2">
-                      <div className="font-medium text-sm">{deal.title}</div>
-                      {deal.crm_leads && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <User className="h-3 w-3" />
-                          {deal.crm_leads.name}
-                          {deal.crm_leads.company && ` • ${deal.crm_leads.company}`}
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-primary">
-                          {Number(deal.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                        </span>
-                        {deal.probability != null && (
-                          <Badge variant="outline" className="text-xs">{deal.probability}%</Badge>
+                {stageDeals.map((deal: any) => {
+                  const dealTags = allTags.filter((t: any) => t.deal_id === deal.id);
+                  return (
+                    <Card
+                      key={deal.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setDetailDeal(deal)}
+                    >
+                      <CardContent className="p-3 space-y-2">
+                        <div className="font-medium text-sm">{deal.title}</div>
+                        {dealTags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {dealTags.slice(0, 3).map((t: any) => (
+                              <Badge key={t.id} className="text-[10px] px-1.5 py-0" style={{ backgroundColor: t.tag_color, color: "#fff" }}>
+                                {t.tag_name}
+                              </Badge>
+                            ))}
+                            {dealTags.length > 3 && (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">+{dealTags.length - 3}</Badge>
+                            )}
+                          </div>
                         )}
-                      </div>
-                      {deal.expected_close_date && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(deal.expected_close_date).toLocaleDateString("pt-BR")}
+                        {deal.crm_leads && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <User className="h-3 w-3" />
+                            {deal.crm_leads.name}
+                            {deal.crm_leads.company && ` • ${deal.crm_leads.company}`}
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-primary">
+                            {Number(deal.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                          </span>
+                          {deal.probability != null && (
+                            <Badge variant="outline" className="text-xs">{deal.probability}%</Badge>
+                          )}
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                        {deal.expected_close_date && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(deal.expected_close_date).toLocaleDateString("pt-BR")}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
                 {stageDeals.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-8">Nenhum negócio</p>
                 )}
@@ -228,82 +253,17 @@ const CRMPipeline = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Detail dialog */}
-      <Dialog open={!!detailDeal} onOpenChange={() => setDetailDeal(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{detailDeal?.title}</DialogTitle>
-          </DialogHeader>
-          {detailDeal && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Valor:</span>
-                  <p className="font-semibold">{Number(detailDeal.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Probabilidade:</span>
-                  <p className="font-semibold">{detailDeal.probability}%</p>
-                </div>
-                {detailDeal.crm_leads && (
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">Lead:</span>
-                    <p className="font-semibold">{detailDeal.crm_leads.name} {detailDeal.crm_leads.company && `• ${detailDeal.crm_leads.company}`}</p>
-                  </div>
-                )}
-                {detailDeal.expected_close_date && (
-                  <div>
-                    <span className="text-muted-foreground">Previsão:</span>
-                    <p className="font-semibold">{new Date(detailDeal.expected_close_date).toLocaleDateString("pt-BR")}</p>
-                  </div>
-                )}
-              </div>
-              {detailDeal.notes && (
-                <div>
-                  <span className="text-sm text-muted-foreground">Notas:</span>
-                  <p className="text-sm">{detailDeal.notes}</p>
-                </div>
-              )}
-
-              {/* Move stage */}
-              <div>
-                <Label>Mover para etapa</Label>
-                <Select
-                  value={detailDeal.stage_id}
-                  onValueChange={(v) => {
-                    moveToStage.mutate({ dealId: detailDeal.id, stageId: v });
-                    setDetailDeal({ ...detailDeal, stage_id: v });
-                  }}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {stages.map((s: any) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="default"
-                  className="flex-1"
-                  onClick={() => updateDealStatus.mutate({ dealId: detailDeal.id, status: "ganho" })}
-                >
-                  ✅ Marcar como Ganho
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1"
-                  onClick={() => updateDealStatus.mutate({ dealId: detailDeal.id, status: "perdido" })}
-                >
-                  ❌ Marcar como Perdido
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Detail dialog with notes, tags, items */}
+      <DealDetailDialog
+        deal={detailDeal}
+        stages={stages}
+        onClose={() => setDetailDeal(null)}
+        onMoveStage={(dealId, stageId) => {
+          moveToStage.mutate({ dealId, stageId });
+          setDetailDeal((prev: any) => prev ? { ...prev, stage_id: stageId } : null);
+        }}
+        onUpdateStatus={(dealId, status) => updateDealStatus.mutate({ dealId, status })}
+      />
     </div>
   );
 };
