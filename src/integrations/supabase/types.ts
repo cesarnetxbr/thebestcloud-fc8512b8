@@ -347,6 +347,48 @@ export type Database = {
           },
         ]
       }
+      chatbot_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          priority: number
+          response_content: string
+          response_type: string
+          trigger_type: string
+          trigger_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number
+          response_content: string
+          response_type?: string
+          trigger_type?: string
+          trigger_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          priority?: number
+          response_content?: string
+          response_type?: string
+          trigger_type?: string
+          trigger_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       commercial_request_items: {
         Row: {
           created_at: string
@@ -2720,6 +2762,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_instances: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          instance_name: string
+          phone_number: string | null
+          qr_code_data: string | null
+          session_data: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instance_name: string
+          phone_number?: string | null
+          qr_code_data?: string | null
+          session_data?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instance_name?: string
+          phone_number?: string | null
+          qr_code_data?: string | null
+          session_data?: Json | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }

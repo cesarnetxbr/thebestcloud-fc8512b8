@@ -32,3 +32,4 @@ Tech: Supabase Edge Functions with Service Role Key for external APIs. Automated
 - [Email Marketing](mem://features/email-marketing) — Campaigns, lists, templates, metrics — ready for external providers
 - [SMS Marketing](mem://features/sms-marketing) — SMS campaigns, contacts, templates — ready for Twilio/Vonage
 - [Analytics & Tracking](mem://features/analytics-tracking) — Pageviews, events, marketing metrics, internal usage dashboard
+- [Chat Marketing](mem://features/chat-marketing) — WhatsApp Connect (QR Code), Chatbot/IA, chat-to-pipeline conversion

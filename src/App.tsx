@@ -70,6 +70,8 @@ import CRMLeads from "./pages/admin/crm/CRMLeads";
 import CRMAgenda from "./pages/admin/crm/CRMAgenda";
 import CRMChat from "./pages/admin/crm/CRMChat";
 import CRMChatSettings from "./pages/admin/crm/CRMChatSettings";
+import CRMWhatsAppConnect from "./pages/admin/crm/CRMWhatsAppConnect";
+import CRMChatbot from "./pages/admin/crm/CRMChatbot";
 import CRMMarketingDashboard from "./pages/admin/crm/CRMMarketingDashboard";
 import MarketingDashboard from "./pages/admin/marketing/MarketingDashboard";
 import EmailCampaigns from "./pages/admin/marketing/EmailCampaigns";
@@ -150,6 +152,8 @@ const App = () => (
               <Route path="crm/agenda" element={<CRMAgenda />} />
               <Route path="crm/chat" element={<CRMChat />} />
               <Route path="crm/chat/settings" element={<CRMChatSettings />} />
+              <Route path="crm/whatsapp-connect" element={<CRMWhatsAppConnect />} />
+              <Route path="crm/chatbot" element={<CRMChatbot />} />
               <Route path="crm/requests" element={<CommercialRequests />} />
               <Route path="crm/quotes" element={<Quotes />} />
               <Route path="crm/marketing" element={<CRMMarketingDashboard />} />
