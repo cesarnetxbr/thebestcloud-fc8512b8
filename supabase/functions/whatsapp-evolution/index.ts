@@ -23,14 +23,13 @@ serve(async (req) => {
     );
   }
 
-  if (!EVOLUTION_API_URL.startsWith("http")) {
-    return new Response(
-      JSON.stringify({ error: "EVOLUTION_API_URL must be a valid URL starting with http:// or https://. Current value does not start with http." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+  // Auto-fix URL if missing protocol
+  let apiUrl = EVOLUTION_API_URL.trim();
+  if (!apiUrl.startsWith("http://") && !apiUrl.startsWith("https://")) {
+    apiUrl = `https://${apiUrl}`;
   }
-
-  const baseUrl = EVOLUTION_API_URL.replace(/\/$/, "");
+  const baseUrl = apiUrl.replace(/\/$/, "");
+  console.log("Using Evolution API baseUrl:", baseUrl);
 
   try {
     const url = new URL(req.url);
