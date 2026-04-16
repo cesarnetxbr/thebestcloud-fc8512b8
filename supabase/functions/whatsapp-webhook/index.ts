@@ -33,29 +33,11 @@ async function sendZapiMessage(phone: string, message: string) {
   } catch (e) { console.error("Z-API send error:", e); return false; }
 }
 
-async function sendZapiButtonList(phone: string, message: string, buttons: { id: string; label: string }[]) {
-  const config = getZapiConfig();
-  if (!config) return sendZapiMessage(phone, message);
-  try {
-    const res = await fetch(`${config.baseUrl}/send-button-list`, {
-      method: "POST", headers: config.headers,
-      body: JSON.stringify({
-        phone, message,
-        buttonList: { buttons: buttons.map(b => ({ id: b.id, label: b.label })) },
-      }),
-    });
-    if (!res.ok) {
-      console.warn("Z-API button-list failed, falling back to text:", res.status);
-      const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
-      return sendZapiMessage(phone, fallbackText);
-    }
-    console.log("Button list sent to:", phone);
-    return true;
-  } catch (e) {
-    console.error("Z-API button error:", e);
-    const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
-    return sendZapiMessage(phone, fallbackText);
-  }
+// Send text message with numbered menu options appended
+async function sendZapiMenu(phone: string, message: string, options: { id: string; label: string }[]) {
+  const menuText = options.map((o, i) => `${i + 1}️⃣ ${o.label}`).join("\n");
+  const fullMessage = message + "\n\n" + menuText + "\n\n_Responda com o número da opção desejada._";
+  return sendZapiMessage(phone, fullMessage);
 }
 
 // Normalize accented characters for matching
@@ -63,8 +45,8 @@ function normalizeText(text: string): string {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-// Button ID → keyword mapping so button clicks route correctly
-const buttonIdKeywords: Record<string, string[]> = {
+// Action ID → keyword mapping for matching chatbot rules
+const actionKeywords: Record<string, string[]> = {
   "backup": ["backup", "ciberprotecao", "nuvem", "cloud"],
   "ransomware": ["ransomware", "virus", "malware", "seguranca", "antivirus", "protecao"],
   "disaster": ["disaster recovery", "recuperacao", "desastre", "continuidade"],
@@ -76,6 +58,81 @@ const buttonIdKeywords: Record<string, string[]> = {
   "operacoes_cat": ["operacoes_cat"],
   "encerrar": ["encerrar"],
 };
+
+// Menu definitions: each context maps to ordered option IDs + labels
+const menuDefinitions: Record<string, { id: string; label: string }[]> = {
+  greeting: [
+    { id: "servicos", label: "📋 Nossos Serviços" },
+    { id: "cotacao", label: "💰 Cotação" },
+    { id: "suporte", label: "🎧 Suporte" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  reopen: [
+    { id: "servicos", label: "📋 Nossos Serviços" },
+    { id: "cotacao", label: "💰 Cotação" },
+    { id: "suporte", label: "🎧 Suporte Técnico" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  servicos: [
+    { id: "seguranca_cat", label: "🔐 Segurança" },
+    { id: "protecao_cat", label: "🛡️ Proteção" },
+    { id: "operacoes_cat", label: "⚙️ Operações" },
+    { id: "cotacao", label: "💰 Cotação" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  category: [
+    { id: "cotacao", label: "💰 Solicitar Cotação" },
+    { id: "servicos", label: "📋 Ver Outros Serviços" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  cotacao: [
+    { id: "suporte", label: "🎧 Falar com Consultor" },
+    { id: "servicos", label: "📋 Ver Serviços" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  keyword: [
+    { id: "cotacao", label: "💰 Solicitar Cotação" },
+    { id: "servicos", label: "📋 Nossos Serviços" },
+    { id: "suporte", label: "🎧 Falar com Consultor" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+};
+
+// Detect which menu context the last bot message used by checking content markers
+function detectMenuContext(lastBotMessage: string): string | null {
+  if (!lastBotMessage) return null;
+  if (lastBotMessage.includes("Solicitar Cotação") && lastBotMessage.includes("volume de dados")) return "cotacao";
+  if (lastBotMessage.includes("3 pilares") || lastBotMessage.includes("Nossos Serviços")) return "servicos";
+  if (lastBotMessage.includes("Segurança –") || lastBotMessage.includes("Proteção –") || lastBotMessage.includes("Operações –")) return "category";
+  if (lastBotMessage.includes("Conversa reaberta")) return "reopen";
+  if (lastBotMessage.includes("Bem-vindo") || lastBotMessage.includes("Como posso ajud")) return "greeting";
+  if (lastBotMessage.includes("Responda com o número")) return "keyword";
+  return null;
+}
+
+// Resolve numeric input (1, 2, 3...) to action ID using last bot message context
+async function resolveNumericInput(supabase: any, conversationId: string, numStr: string): Promise<string | null> {
+  const num = parseInt(numStr.trim(), 10);
+  if (isNaN(num) || num < 1) return null;
+
+  // Get last bot message
+  const { data: lastBot } = await supabase
+    .from("chat_messages").select("content")
+    .eq("conversation_id", conversationId)
+    .eq("sender_type", "agent")
+    .eq("sender_name", "🤖 Chatbot")
+    .order("created_at", { ascending: false })
+    .limit(1).maybeSingle();
+
+  if (!lastBot?.content) return null;
+  const context = detectMenuContext(lastBot.content);
+  if (!context) return null;
+
+  const menu = menuDefinitions[context];
+  if (!menu || num > menu.length) return null;
+
+  return menu[num - 1].id;
+}
 
 async function matchChatbotRule(
   supabase: any, messageContent: string, conversationId: string, greetingSent: boolean
@@ -139,9 +196,9 @@ function isReopenRequest(msg: string): boolean {
   return ["reabrir", "voltar", "reabrir conversa", "novo atendimento"].some(kw => n.includes(kw));
 }
 
-// Resolve button click ID into a searchable message
-function resolveButtonId(buttonId: string): string | null {
-  const mapped = buttonIdKeywords[buttonId];
+// Resolve button click ID or action ID into a searchable keyword
+function resolveActionId(actionId: string): string | null {
+  const mapped = actionKeywords[actionId];
   if (mapped && mapped.length > 0) return mapped[0];
   return null;
 }
@@ -168,12 +225,13 @@ serve(async (req) => {
     // Extract message text — handle button responses first
     let messageContent = "";
     let isButtonClick = false;
+    let resolvedActionId: string | null = null;
 
     if (payload.buttonsResponseMessage?.selectedButtonId) {
       const btnId = payload.buttonsResponseMessage.selectedButtonId;
       isButtonClick = true;
-      // Resolve button ID to keyword for matching
-      const resolved = resolveButtonId(btnId);
+      resolvedActionId = btnId;
+      const resolved = resolveActionId(btnId);
       messageContent = resolved || btnId;
       console.log("Button click resolved:", btnId, "→", messageContent);
     } else if (payload.listResponseMessage?.title) {
@@ -311,6 +369,18 @@ serve(async (req) => {
     if (msgError) throw msgError;
     console.log("Message saved for conversation:", conversationId, "greetingSent:", greetingSent);
 
+    // --- Resolve numeric input (1, 2, 3...) to action ID ---
+    const trimmedMsg = messageContent.trim();
+    if (/^[1-9]$/.test(trimmedMsg) && !resolvedActionId) {
+      const resolved = await resolveNumericInput(supabase, conversationId, trimmedMsg);
+      if (resolved) {
+        resolvedActionId = resolved;
+        const keyword = resolveActionId(resolved);
+        if (keyword) messageContent = keyword;
+        console.log("Numeric input resolved:", trimmedMsg, "→", resolved, "→", messageContent);
+      }
+    }
+
     // --- Handle close request ---
     if (isCloseRequest(messageContent)) {
       const closeMsg = "Atendimento encerrado. ✅\n\nObrigado por entrar em contato com a The Best Cloud! Se precisar de algo, envie *reabrir* para retomar o atendimento.\n\nAté logo! 👋";
@@ -331,12 +401,7 @@ serve(async (req) => {
     // --- Handle reopen request ---
     if (isReopenRequest(messageContent) && conversationStatus === "ativa") {
       const reopenMsg = "Conversa reaberta! 🔄\n\nComo posso ajudá-lo?";
-      const sent = await sendZapiButtonList(normalizedPhone, reopenMsg, [
-        { id: "servicos", label: "📋 Nossos Serviços" },
-        { id: "cotacao", label: "💰 Cotação" },
-        { id: "suporte", label: "🎧 Suporte Técnico" },
-        { id: "encerrar", label: "❌ Encerrar" },
-      ]);
+      const sent = await sendZapiMenu(normalizedPhone, reopenMsg, menuDefinitions.reopen);
       if (sent) {
         await supabase.from("chat_messages").insert({
           conversation_id: conversationId, sender_type: "agent",
@@ -351,15 +416,9 @@ serve(async (req) => {
     // --- Handle "servicos" / services request ---
     const normalizedForSpecial = normalizeText(messageContent);
     const isServicosRequest = ["servicos", "solucoes", "produtos", "catalogo", "o que voces fazem", "quais servicos", "servico"].some(kw => normalizedForSpecial.includes(kw));
-    if (isServicosRequest || (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "servicos")) {
+    if (isServicosRequest || resolvedActionId === "servicos") {
       const servicosMsg = "📋 *Nossos Serviços – The Best Cloud*\n\nOferecemos soluções completas de ciberproteção organizadas em 3 pilares:\n\n🔐 *Segurança*\n• Detecção e Resposta (XDR, EDR, MDR)\n• Prevenção de Perda de Dados (DLP)\n• Segurança e Arquivamento de E-mail\n• Treinamento de Conscientização (SAT)\n\n🛡️ *Proteção*\n• Backup em Nuvem com IA\n• Anti-Ransomware\n• Antivírus Gerenciado\n• Disaster Recovery\n\n⚙️ *Operações*\n• Gerenciamento Remoto (RMM)\n• Monitoramento 24/7\n• Automação de TI\n• Gestão de Patches\n\n🌐 Saiba mais: thebestcloud.com.br";
-      const sent = await sendZapiButtonList(normalizedPhone, servicosMsg, [
-        { id: "seguranca_cat", label: "🔐 Segurança" },
-        { id: "protecao_cat", label: "🛡️ Proteção" },
-        { id: "operacoes_cat", label: "⚙️ Operações" },
-        { id: "cotacao", label: "💰 Cotação" },
-        { id: "encerrar", label: "❌ Encerrar" },
-      ]);
+      const sent = await sendZapiMenu(normalizedPhone, servicosMsg, menuDefinitions.servicos);
       if (sent) {
         await supabase.from("chat_messages").insert({
           conversation_id: conversationId, sender_type: "agent",
@@ -371,47 +430,35 @@ serve(async (req) => {
       });
     }
 
-    // --- Handle category detail buttons ---
-    if (isButtonClick) {
-      const btnId = payload.buttonsResponseMessage?.selectedButtonId;
-      let categoryMsg: string | null = null;
-
-      if (btnId === "seguranca_cat") {
+    // --- Handle category detail ---
+    if (resolvedActionId === "seguranca_cat" || resolvedActionId === "protecao_cat" || resolvedActionId === "operacoes_cat") {
+      let categoryMsg = "";
+      if (resolvedActionId === "seguranca_cat") {
         categoryMsg = "🔐 *Segurança – The Best Cloud*\n\nNossas soluções de segurança:\n\n• *XDR* – Detecção e resposta estendidas em toda a infraestrutura\n• *EDR* – Proteção avançada de endpoints com IA\n• *MDR* – Monitoramento 24/7 por especialistas\n• *DLP* – Prevenção contra vazamento de dados (LGPD)\n• *Segurança de E-mail* – Bloqueio de phishing e malware\n• *Arquivamento de E-mail* – Conformidade regulatória\n• *SAT* – Treinamento de conscientização em segurança\n\n🌐 thebestcloud.com.br";
-      } else if (btnId === "protecao_cat") {
+      } else if (resolvedActionId === "protecao_cat") {
         categoryMsg = "🛡️ *Proteção – The Best Cloud*\n\nNossas soluções de proteção:\n\n• *Backup em Nuvem* – Automático, contínuo, criptografia AES-256\n• *Anti-Ransomware* – Detecção e reversão em tempo real com IA\n• *Antivírus Gerenciado* – Atualizações contínuas e relatórios\n• *Disaster Recovery* – Failover automático, RTO/RPO configuráveis\n• *Proteção contra Ransomware* – Integrada à plataforma\n\n🌐 thebestcloud.com.br";
-      } else if (btnId === "operacoes_cat") {
+      } else {
         categoryMsg = "⚙️ *Operações – The Best Cloud*\n\nNossas soluções de operações:\n\n• *RMM* – Gerenciamento e monitoramento remoto\n• *Monitoramento 24/7* – Alertas em tempo real\n• *Automação de TI* – Scripts e tarefas automatizadas\n• *Gestão de Patches* – Atualizações de segurança centralizadas\n• *Inventário de Hardware/Software* – Visibilidade completa\n\n🌐 thebestcloud.com.br";
       }
 
-      if (categoryMsg) {
-        const sent = await sendZapiButtonList(normalizedPhone, categoryMsg, [
-          { id: "cotacao", label: "💰 Solicitar Cotação" },
-          { id: "servicos", label: "📋 Ver Outros Serviços" },
-          { id: "encerrar", label: "❌ Encerrar" },
-        ]);
-        if (sent) {
-          await supabase.from("chat_messages").insert({
-            conversation_id: conversationId, sender_type: "agent",
-            sender_name: "🤖 Chatbot", content: categoryMsg, is_read: true,
-          });
-        }
-        return new Response(JSON.stringify({ ok: true, conversationId, action: "category_detail" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const sent = await sendZapiMenu(normalizedPhone, categoryMsg, menuDefinitions.category);
+      if (sent) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: conversationId, sender_type: "agent",
+          sender_name: "🤖 Chatbot", content: categoryMsg, is_read: true,
         });
       }
+      return new Response(JSON.stringify({ ok: true, conversationId, action: "category_detail" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // --- Handle "cotacao" specifically - ask qualifying questions ---
-    const isCotacaoRequest = (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "cotacao") || 
+    const isCotacaoRequest = resolvedActionId === "cotacao" || 
       ["cotacao", "orcamento", "quanto custa", "preco", "valor", "plano"].some(kw => normalizedForSpecial.includes(kw));
     if (isCotacaoRequest) {
       const cotacaoMsg = "💰 *Solicitar Cotação – The Best Cloud*\n\nPara elaborar uma proposta personalizada, preciso de algumas informações:\n\n1️⃣ *Qual o volume de dados aproximado?* (em GB ou TB)\n2️⃣ *Quantos dispositivos deseja proteger?* (servidores, estações, notebooks)\n3️⃣ *Quais serviços tem interesse?*\n   • Backup em Nuvem\n   • Anti-Ransomware\n   • Disaster Recovery\n   • Segurança de E-mail\n   • Outros\n\nPor favor, responda com essas informações e um consultor preparará sua proposta! 📋";
-      const sent = await sendZapiButtonList(normalizedPhone, cotacaoMsg, [
-        { id: "suporte", label: "🎧 Falar com Consultor" },
-        { id: "servicos", label: "📋 Ver Serviços" },
-        { id: "encerrar", label: "❌ Encerrar" },
-      ]);
+      const sent = await sendZapiMenu(normalizedPhone, cotacaoMsg, menuDefinitions.cotacao);
       if (sent) {
         await supabase.from("chat_messages").insert({
           conversation_id: conversationId, sender_type: "agent",
@@ -439,19 +486,9 @@ serve(async (req) => {
         let sent: boolean;
 
         if (matchedRule.trigger_type === "greeting") {
-          sent = await sendZapiButtonList(normalizedPhone, replyContent, [
-            { id: "servicos", label: "📋 Nossos Serviços" },
-            { id: "cotacao", label: "💰 Cotação" },
-            { id: "suporte", label: "🎧 Suporte" },
-            { id: "encerrar", label: "❌ Encerrar" },
-          ]);
+          sent = await sendZapiMenu(normalizedPhone, replyContent, menuDefinitions.greeting);
         } else if (matchedRule.trigger_type === "keyword") {
-          sent = await sendZapiButtonList(normalizedPhone, replyContent, [
-            { id: "cotacao", label: "💰 Solicitar Cotação" },
-            { id: "servicos", label: "📋 Nossos Serviços" },
-            { id: "suporte", label: "🎧 Falar com Consultor" },
-            { id: "encerrar", label: "❌ Encerrar" },
-          ]);
+          sent = await sendZapiMenu(normalizedPhone, replyContent, menuDefinitions.keyword);
         } else {
           sent = await sendZapiMessage(normalizedPhone, replyContent);
         }
