@@ -45,8 +45,8 @@ function normalizeText(text: string): string {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-// Button ID → keyword mapping so button clicks route correctly
-const buttonIdKeywords: Record<string, string[]> = {
+// Action ID → keyword mapping for matching chatbot rules
+const actionKeywords: Record<string, string[]> = {
   "backup": ["backup", "ciberprotecao", "nuvem", "cloud"],
   "ransomware": ["ransomware", "virus", "malware", "seguranca", "antivirus", "protecao"],
   "disaster": ["disaster recovery", "recuperacao", "desastre", "continuidade"],
@@ -58,6 +58,81 @@ const buttonIdKeywords: Record<string, string[]> = {
   "operacoes_cat": ["operacoes_cat"],
   "encerrar": ["encerrar"],
 };
+
+// Menu definitions: each context maps to ordered option IDs + labels
+const menuDefinitions: Record<string, { id: string; label: string }[]> = {
+  greeting: [
+    { id: "servicos", label: "📋 Nossos Serviços" },
+    { id: "cotacao", label: "💰 Cotação" },
+    { id: "suporte", label: "🎧 Suporte" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  reopen: [
+    { id: "servicos", label: "📋 Nossos Serviços" },
+    { id: "cotacao", label: "💰 Cotação" },
+    { id: "suporte", label: "🎧 Suporte Técnico" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  servicos: [
+    { id: "seguranca_cat", label: "🔐 Segurança" },
+    { id: "protecao_cat", label: "🛡️ Proteção" },
+    { id: "operacoes_cat", label: "⚙️ Operações" },
+    { id: "cotacao", label: "💰 Cotação" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  category: [
+    { id: "cotacao", label: "💰 Solicitar Cotação" },
+    { id: "servicos", label: "📋 Ver Outros Serviços" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  cotacao: [
+    { id: "suporte", label: "🎧 Falar com Consultor" },
+    { id: "servicos", label: "📋 Ver Serviços" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+  keyword: [
+    { id: "cotacao", label: "💰 Solicitar Cotação" },
+    { id: "servicos", label: "📋 Nossos Serviços" },
+    { id: "suporte", label: "🎧 Falar com Consultor" },
+    { id: "encerrar", label: "❌ Encerrar" },
+  ],
+};
+
+// Detect which menu context the last bot message used by checking content markers
+function detectMenuContext(lastBotMessage: string): string | null {
+  if (!lastBotMessage) return null;
+  if (lastBotMessage.includes("Solicitar Cotação") && lastBotMessage.includes("volume de dados")) return "cotacao";
+  if (lastBotMessage.includes("3 pilares") || lastBotMessage.includes("Nossos Serviços")) return "servicos";
+  if (lastBotMessage.includes("Segurança –") || lastBotMessage.includes("Proteção –") || lastBotMessage.includes("Operações –")) return "category";
+  if (lastBotMessage.includes("Conversa reaberta")) return "reopen";
+  if (lastBotMessage.includes("Bem-vindo") || lastBotMessage.includes("Como posso ajud")) return "greeting";
+  if (lastBotMessage.includes("Responda com o número")) return "keyword";
+  return null;
+}
+
+// Resolve numeric input (1, 2, 3...) to action ID using last bot message context
+async function resolveNumericInput(supabase: any, conversationId: string, numStr: string): Promise<string | null> {
+  const num = parseInt(numStr.trim(), 10);
+  if (isNaN(num) || num < 1) return null;
+
+  // Get last bot message
+  const { data: lastBot } = await supabase
+    .from("chat_messages").select("content")
+    .eq("conversation_id", conversationId)
+    .eq("sender_type", "agent")
+    .eq("sender_name", "🤖 Chatbot")
+    .order("created_at", { ascending: false })
+    .limit(1).maybeSingle();
+
+  if (!lastBot?.content) return null;
+  const context = detectMenuContext(lastBot.content);
+  if (!context) return null;
+
+  const menu = menuDefinitions[context];
+  if (!menu || num > menu.length) return null;
+
+  return menu[num - 1].id;
+}
 
 async function matchChatbotRule(
   supabase: any, messageContent: string, conversationId: string, greetingSent: boolean
