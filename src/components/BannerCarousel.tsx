@@ -77,7 +77,7 @@ const BannerCarousel = () => {
   }, [next]);
 
   const handleTrial = () => navigate("/teste-gratis");
-  const handleContact = () => navigate("/portal");
+  const handleContact = () => window.open("https://api.whatsapp.com/send/?phone=5591981317645&text=Ol%C3%A1%21+Gostaria+de+falar+com+um+especialista+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank");
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-[hsl(215,60%,30%)] to-[hsl(25,60%,40%)]">
