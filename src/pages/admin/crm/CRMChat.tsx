@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Plus, Send, MessageCircle, Archive, User, Building2, Search,
   XCircle, RotateCcw, ArrowRightLeft, Zap, Users, Phone, Kanban,
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -377,20 +378,23 @@ const CRMChat = () => {
   const whatsappConversations = conversations?.filter(c => c.channel === "whatsapp" && c.status === "ativa").length || 0;
   const waitingConversations = conversations?.filter(c => !c.assigned_to && c.status === "ativa").length || 0;
 
+  // Mobile: show chat area when a conversation is selected
+  const showChatOnMobile = !!selectedId;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Phone className="h-6 w-6 text-green-500" />
-            Multi-atendimento WhatsApp
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />
+            <span className="truncate">Multi-atendimento WhatsApp</span>
           </h2>
-          <p className="text-muted-foreground">Central de conversas com múltiplos atendentes</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Central de conversas com múltiplos atendentes</p>
         </div>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> Nova Conversa</Button>
+            <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" /> Nova Conversa</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Nova Conversa</DialogTitle></DialogHeader>
@@ -442,39 +446,39 @@ const CRMChat = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">Meus atendimentos</div>
-          <div className="text-2xl font-bold">{myConversations}</div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">Meus atendimentos</div>
+          <div className="text-xl sm:text-2xl font-bold">{myConversations}</div>
         </Card>
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">WhatsApp ativos</div>
-          <div className="text-2xl font-bold text-green-500">{whatsappConversations}</div>
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">WhatsApp ativos</div>
+          <div className="text-xl sm:text-2xl font-bold text-green-500">{whatsappConversations}</div>
         </Card>
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">Aguardando agente</div>
-          <div className="text-2xl font-bold text-amber-500">{waitingConversations}</div>
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">Aguardando agente</div>
+          <div className="text-xl sm:text-2xl font-bold text-amber-500">{waitingConversations}</div>
         </Card>
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">Total conversas</div>
-          <div className="text-2xl font-bold">{conversations?.filter(c => c.status === "ativa").length || 0}</div>
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">Total conversas</div>
+          <div className="text-xl sm:text-2xl font-bold">{conversations?.filter(c => c.status === "ativa").length || 0}</div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-340px)]">
-        {/* Conversation list */}
-        <Card className="lg:col-span-1 flex flex-col">
-          <CardHeader className="pb-2 space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 h-[calc(100vh-380px)] sm:h-[calc(100vh-340px)]">
+        {/* Conversation list — hidden on mobile when a chat is open */}
+        <Card className={cn("lg:col-span-1 flex flex-col", showChatOnMobile ? "hidden lg:flex" : "flex")}>
+          <CardHeader className="pb-2 space-y-2 px-3 sm:px-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9" />
+              <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 h-9" />
             </div>
             <div className="flex gap-1 flex-wrap">
               {[
                 { value: "todas", label: "Todas" },
                 { value: "ativa", label: "Ativas" },
-                { value: "arquivada", label: "Arquivadas" },
-                { value: "encerrada", label: "Encerradas" },
+                { value: "arquivada", label: "Arquiv." },
+                { value: "encerrada", label: "Encerr." },
               ].map(f => (
                 <Button key={f.value} variant={statusFilter === f.value ? "default" : "ghost"} size="sm" className="text-xs h-7 px-2" onClick={() => setStatusFilter(f.value)}>
                   {f.label}
@@ -506,7 +510,7 @@ const CRMChat = () => {
                     key={conv.id}
                     onClick={() => setSelectedId(conv.id)}
                     className={cn(
-                      "w-full text-left px-4 py-3 border-b border-border hover:bg-muted/50 transition-colors",
+                      "w-full text-left px-3 sm:px-4 py-3 border-b border-border hover:bg-muted/50 transition-colors",
                       selectedId === conv.id && "bg-muted"
                     )}
                   >
@@ -549,8 +553,8 @@ const CRMChat = () => {
           </CardContent>
         </Card>
 
-        {/* Chat area */}
-        <Card className="lg:col-span-2 flex flex-col">
+        {/* Chat area — full width on mobile when open */}
+        <Card className={cn("lg:col-span-2 flex flex-col", showChatOnMobile ? "flex" : "hidden lg:flex")}>
           {!selectedId ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
@@ -560,30 +564,33 @@ const CRMChat = () => {
             </div>
           ) : (
             <>
-              <CardHeader className="pb-2 border-b border-border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">{selected?.title}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className={cn("text-xs px-2 py-0.5 rounded", selected?.channel === "whatsapp" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-muted")}>
+              <CardHeader className="pb-2 border-b border-border px-3 sm:px-6">
+                <div className="flex items-center gap-2">
+                  {/* Back button — mobile only */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 lg:hidden"
+                    onClick={() => setSelectedId(null)}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-sm sm:text-base truncate">{selected?.title}</CardTitle>
+                    <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+                      <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded", selected?.channel === "whatsapp" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-muted")}>
                         {channelLabels[selected?.channel || "chat"]}
                       </span>
-                      {(selected as any)?.customers?.name && <span className="text-xs text-muted-foreground">{(selected as any).customers.name}</span>}
-                      {(selected as any)?.crm_leads?.name && <span className="text-xs text-muted-foreground">{(selected as any).crm_leads.name}</span>}
+                      {(selected as any)?.customers?.name && <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">{(selected as any).customers.name}</span>}
                       {assignedAgent && (
-                        <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded flex items-center gap-1">
-                          <User className="h-3 w-3" /> {assignedAgent.full_name}
-                        </span>
-                      )}
-                      {assignedDept && (
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: `${assignedDept.color}20`, color: assignedDept.color }}>
-                          {assignedDept.name}
+                        <span className="text-[10px] sm:text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-1.5 sm:px-2 py-0.5 rounded flex items-center gap-1">
+                          <User className="h-3 w-3" /> <span className="hidden sm:inline">{assignedAgent.full_name}</span><span className="sm:hidden">{assignedAgent.full_name?.split(" ")[0]}</span>
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-1 items-center">
-                    <Badge variant={statusLabels[selected?.status || "ativa"].variant}>
+                  <div className="flex gap-0.5 sm:gap-1 items-center shrink-0">
+                    <Badge variant={statusLabels[selected?.status || "ativa"].variant} className="text-[10px] hidden sm:inline-flex">
                       {statusLabels[selected?.status || "ativa"].label}
                     </Badge>
 
@@ -652,15 +659,15 @@ const CRMChat = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-                <ScrollArea className="flex-1 p-4">
+              <CardContent className="flex-1 p-0 overflow-hidden flex flex-col min-h-0">
+                <ScrollArea className="flex-1 p-3 sm:p-4">
                   <div className="space-y-3">
                     {!messages?.length ? (
                       <div className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda. Inicie a conversa!</div>
                     ) : messages.map(msg => (
                       <div key={msg.id} className={cn("flex", msg.sender_type === "agent" ? "justify-end" : "justify-start")}>
                         <div className={cn(
-                          "max-w-[70%] rounded-lg px-3 py-2 text-sm",
+                          "max-w-[85%] sm:max-w-[70%] rounded-lg px-3 py-2 text-sm",
                           msg.sender_type === "agent"
                             ? "bg-primary text-primary-foreground"
                             : msg.sender_type === "system"
@@ -696,19 +703,19 @@ const CRMChat = () => {
                         </div>
                       </div>
                     )}
-                    <div className="p-3 flex gap-2 items-end">
-                      <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" title="Respostas rápidas" onClick={() => setShowQuickReplies(!showQuickReplies)}>
+                    <div className="p-2 sm:p-3 flex gap-1.5 sm:gap-2 items-end">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" title="Respostas rápidas" onClick={() => setShowQuickReplies(!showQuickReplies)}>
                         <Zap className="h-4 w-4" />
                       </Button>
                       <Textarea
                         value={newMessage}
                         onChange={e => setNewMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Digite sua mensagem... (Enter para enviar)"
+                        placeholder="Digite sua mensagem..."
                         rows={1}
-                        className="resize-none min-h-[40px]"
+                        className="resize-none min-h-[36px] sm:min-h-[40px] text-sm"
                       />
-                      <Button size="icon" className="h-9 w-9 shrink-0" onClick={() => newMessage.trim() && sendMessage.mutate()} disabled={!newMessage.trim()}>
+                      <Button size="icon" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" onClick={() => newMessage.trim() && sendMessage.mutate()} disabled={!newMessage.trim()}>
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
