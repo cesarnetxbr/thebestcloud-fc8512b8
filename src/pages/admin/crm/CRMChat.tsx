@@ -211,6 +211,33 @@ const CRMChat = () => {
   const sendMessage = useMutation({
     mutationFn: async () => {
       const agentName = profiles?.find(p => p.user_id === user?.id)?.full_name || user?.email?.split("@")[0] || "Agente";
+      
+      // If WhatsApp conversation with phone, send via Z-API
+      const conv = conversations?.find(c => c.id === selectedId);
+      if (conv?.channel === "whatsapp" && (conv as any)?.phone) {
+        try {
+          const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+          const FUNCTIONS_URL = `https://${PROJECT_ID}.supabase.co/functions/v1`;
+          const { data: { session } } = await supabase.auth.getSession();
+          const res = await fetch(`${FUNCTIONS_URL}/whatsapp-evolution?action=send-text`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${session?.access_token}`,
+              "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ phone: (conv as any).phone, message: newMessage }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            console.error("Z-API send error:", err);
+            // Still save to DB even if Z-API fails
+          }
+        } catch (err) {
+          console.error("Z-API send failed:", err);
+        }
+      }
+
       const { error } = await supabase.from("chat_messages").insert({
         conversation_id: selectedId!,
         sender_type: "agent",
