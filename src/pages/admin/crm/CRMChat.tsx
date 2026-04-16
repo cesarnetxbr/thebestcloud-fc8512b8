@@ -659,7 +659,7 @@ const CRMChat = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
+              <CardContent className="flex-1 p-0 overflow-hidden flex flex-col min-h-0">
                 <ScrollArea className="flex-1 p-4">
                   <div className="space-y-3">
                     {!messages?.length ? (
