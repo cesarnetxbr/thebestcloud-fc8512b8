@@ -6,6 +6,117 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function sendZapiMessage(phone: string, message: string) {
+  const ZAPI_INSTANCE_ID = Deno.env.get("ZAPI_INSTANCE_ID");
+  const ZAPI_TOKEN = Deno.env.get("ZAPI_TOKEN");
+  const ZAPI_CLIENT_TOKEN = Deno.env.get("ZAPI_CLIENT_TOKEN");
+
+  if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
+    console.error("Z-API not configured for auto-reply");
+    return false;
+  }
+
+  const baseUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(ZAPI_CLIENT_TOKEN ? { "Client-Token": ZAPI_CLIENT_TOKEN } : {}),
+  };
+
+  try {
+    const res = await fetch(`${baseUrl}/send-text`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ phone, message }),
+    });
+    if (!res.ok) {
+      console.error("Z-API send failed:", res.status, await res.text());
+      return false;
+    }
+    console.log("Auto-reply sent to:", phone);
+    return true;
+  } catch (e) {
+    console.error("Z-API send error:", e);
+    return false;
+  }
+}
+
+async function matchChatbotRule(
+  supabase: any,
+  messageContent: string,
+  conversationId: string,
+  isFirstMessage: boolean
+) {
+  // Fetch all active rules ordered by priority desc
+  const { data: rules, error } = await supabase
+    .from("chatbot_rules")
+    .select("*")
+    .eq("is_active", true)
+    .order("priority", { ascending: false });
+
+  if (error || !rules?.length) return null;
+
+  const lowerMsg = messageContent.toLowerCase().trim();
+
+  // 1. Check greeting rules (only for first message in conversation)
+  if (isFirstMessage) {
+    const greetingRule = rules.find((r: any) => r.trigger_type === "greeting");
+    if (greetingRule) return greetingRule;
+  }
+
+  // 2. Check keyword rules
+  for (const rule of rules) {
+    if (rule.trigger_type !== "keyword" || !rule.trigger_value) continue;
+    const keywords = rule.trigger_value.split(",").map((k: string) => k.trim().toLowerCase());
+    if (keywords.some((kw: string) => kw && lowerMsg.includes(kw))) {
+      return rule;
+    }
+  }
+
+  // 3. Check AI rules
+  const aiRule = rules.find((r: any) => r.trigger_type === "ai");
+  if (aiRule) return aiRule;
+
+  // 4. Fallback
+  const fallbackRule = rules.find((r: any) => r.trigger_type === "fallback");
+  return fallbackRule || null;
+}
+
+async function generateAIResponse(systemPrompt: string, userMessage: string): Promise<string | null> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    console.error("LOVABLE_API_KEY not configured for AI responses");
+    return null;
+  }
+
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("AI gateway error:", res.status);
+      return null;
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch (e) {
+    console.error("AI call error:", e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -19,17 +130,13 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Webhook received:", JSON.stringify(payload).substring(0, 500));
 
-    // Z-API webhook events: on-message-received, on-message-send, on-whatsapp-disconnected, etc.
-    // Main payload fields for incoming messages:
-    // phone, isGroup, messageId, body (or text.message), fromMe, senderName, timestamp, type
-
     const isFromMe = payload.fromMe === true;
     const phone = payload.phone;
     const messageId = payload.messageId;
     const senderName = payload.senderName || payload.chatName || phone;
     const isGroup = payload.isGroup === true;
 
-    // Extract message text based on type
+    // Extract message text
     let messageContent = "";
     if (payload.text?.message) {
       messageContent = payload.text.message;
@@ -56,32 +163,26 @@ serve(async (req) => {
     }
 
     if (!phone || !messageContent) {
-      console.log("Ignoring event - no phone or content:", { phone, messageContent, type: payload.type });
       return new Response(JSON.stringify({ ok: true, skipped: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Skip group messages for now
     if (isGroup) {
-      console.log("Skipping group message from:", phone);
       return new Response(JSON.stringify({ ok: true, skipped: true, reason: "group" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Skip messages sent by us (fromMe)
     if (isFromMe) {
-      console.log("Skipping fromMe message to:", phone);
       return new Response(JSON.stringify({ ok: true, skipped: true, reason: "fromMe" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Normalize phone (remove @c.us suffix if present)
     const normalizedPhone = phone.replace(/@c\.us$/, "").replace(/@s\.whatsapp\.net$/, "");
 
-    // Check for duplicate message
+    // Deduplicate
     if (messageId) {
       const { data: existing } = await supabase
         .from("chat_messages")
@@ -90,15 +191,16 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
-        console.log("Duplicate message ignored:", messageId);
         return new Response(JSON.stringify({ ok: true, skipped: true, reason: "duplicate" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
-    // Find or create conversation by phone
+    // Find or create conversation
     let conversationId: string;
+    let isFirstMessage = false;
+
     const { data: existingConv } = await supabase
       .from("chat_conversations")
       .select("id")
@@ -111,14 +213,20 @@ serve(async (req) => {
 
     if (existingConv) {
       conversationId = existingConv.id;
-      // Reopen if archived
       await supabase
         .from("chat_conversations")
         .update({ status: "ativa", last_message_at: new Date().toISOString() })
         .eq("id", conversationId);
-      console.log("Existing conversation found:", conversationId);
+
+      // Check if this is the first customer message in this conversation
+      const { count } = await supabase
+        .from("chat_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("conversation_id", conversationId)
+        .eq("sender_type", "customer");
+      isFirstMessage = (count || 0) === 0;
     } else {
-      // Try to match customer by phone
+      isFirstMessage = true;
       const { data: customer } = await supabase
         .from("customers")
         .select("id, name")
@@ -140,15 +248,11 @@ serve(async (req) => {
         .select("id")
         .single();
 
-      if (convError) {
-        console.error("Error creating conversation:", convError);
-        throw convError;
-      }
+      if (convError) throw convError;
       conversationId = newConv.id;
-      console.log("New conversation created:", conversationId, "for phone:", normalizedPhone);
     }
 
-    // Insert message
+    // Insert customer message
     const { error: msgError } = await supabase.from("chat_messages").insert({
       conversation_id: conversationId,
       sender_type: "customer",
@@ -158,14 +262,40 @@ serve(async (req) => {
       is_read: false,
     });
 
-    if (msgError) {
-      console.error("Error inserting message:", msgError);
-      throw msgError;
+    if (msgError) throw msgError;
+    console.log("Message saved for conversation:", conversationId);
+
+    // --- Chatbot auto-reply ---
+    const matchedRule = await matchChatbotRule(supabase, messageContent, conversationId, isFirstMessage);
+
+    if (matchedRule) {
+      let replyContent: string | null = null;
+
+      if (matchedRule.response_type === "ai") {
+        replyContent = await generateAIResponse(matchedRule.response_content, messageContent);
+      } else {
+        replyContent = matchedRule.response_content;
+      }
+
+      if (replyContent) {
+        // Send via Z-API
+        const sent = await sendZapiMessage(normalizedPhone, replyContent);
+
+        if (sent) {
+          // Save bot reply in chat_messages
+          await supabase.from("chat_messages").insert({
+            conversation_id: conversationId,
+            sender_type: "agent",
+            sender_name: "🤖 Chatbot",
+            content: replyContent,
+            is_read: true,
+          });
+          console.log("Chatbot auto-reply sent, rule:", matchedRule.name);
+        }
+      }
     }
 
-    console.log("Message saved successfully for conversation:", conversationId);
-
-    return new Response(JSON.stringify({ ok: true, conversationId }), {
+    return new Response(JSON.stringify({ ok: true, conversationId, autoReply: !!matchedRule }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
