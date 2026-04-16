@@ -167,9 +167,11 @@ export type Database = {
           customer_id: string | null
           deal_id: string | null
           department_id: string | null
+          external_id: string | null
           id: string
           last_message_at: string | null
           lead_id: string | null
+          phone: string | null
           status: string
           title: string
           updated_at: string
@@ -182,9 +184,11 @@ export type Database = {
           customer_id?: string | null
           deal_id?: string | null
           department_id?: string | null
+          external_id?: string | null
           id?: string
           last_message_at?: string | null
           lead_id?: string | null
+          phone?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -197,9 +201,11 @@ export type Database = {
           customer_id?: string | null
           deal_id?: string | null
           department_id?: string | null
+          external_id?: string | null
           id?: string
           last_message_at?: string | null
           lead_id?: string | null
+          phone?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -270,6 +276,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          external_message_id: string | null
           id: string
           is_read: boolean
           sender_name: string | null
@@ -279,6 +286,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          external_message_id?: string | null
           id?: string
           is_read?: boolean
           sender_name?: string | null
@@ -288,6 +296,7 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          external_message_id?: string | null
           id?: string
           is_read?: boolean
           sender_name?: string | null
