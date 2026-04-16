@@ -41,7 +41,7 @@ serve(async (req) => {
     switch (action) {
       case "qrcode": {
         console.log("Fetching QR code from Z-API...");
-        const res = await fetch(`${baseUrl}/qr-code`, { method: "GET", headers: zapiHeaders });
+        const res = await fetch(`${baseUrl}/qr-code`, { method: "GET", headers: zapiGetHeaders });
         if (!res.ok) {
           const errorText = await res.text();
           console.error("QR code fetch failed:", res.status, errorText);
@@ -57,7 +57,7 @@ serve(async (req) => {
 
       case "qrcode-image": {
         console.log("Fetching QR code image from Z-API...");
-        const res = await fetch(`${baseUrl}/qr-code/image`, { method: "GET", headers: zapiHeaders });
+        const res = await fetch(`${baseUrl}/qr-code/image`, { method: "GET", headers: zapiGetHeaders });
         if (!res.ok) {
           const errorText = await res.text();
           console.error("QR code image fetch failed:", res.status, errorText);
@@ -72,7 +72,7 @@ serve(async (req) => {
 
       case "status": {
         console.log("Checking Z-API status...");
-        const res = await fetch(`${baseUrl}/status`, { method: "GET", headers: zapiHeaders });
+        const res = await fetch(`${baseUrl}/status`, { method: "GET", headers: zapiGetHeaders });
         if (!res.ok) {
           const errorText = await res.text();
           console.error("Status check failed:", res.status, errorText);
@@ -88,14 +88,14 @@ serve(async (req) => {
 
       case "disconnect": {
         console.log("Disconnecting Z-API...");
-        const res = await fetch(`${baseUrl}/disconnect`, { method: "GET", headers: zapiHeaders });
+        const res = await fetch(`${baseUrl}/disconnect`, { method: "GET", headers: zapiGetHeaders });
         result = await res.json();
         break;
       }
 
       case "restart": {
         console.log("Restarting Z-API...");
-        const res = await fetch(`${baseUrl}/restart`, { method: "GET", headers: zapiHeaders });
+        const res = await fetch(`${baseUrl}/restart`, { method: "GET", headers: zapiGetHeaders });
         result = await res.json();
         break;
       }
@@ -105,7 +105,7 @@ serve(async (req) => {
         console.log("Sending text message via Z-API to:", body.phone);
         const res = await fetch(`${baseUrl}/send-text`, {
           method: "POST",
-          headers: zapiHeaders,
+          headers: zapiGetHeaders,
           body: JSON.stringify({
             phone: body.phone,
             message: body.message,
@@ -125,7 +125,7 @@ serve(async (req) => {
 
       case "connected": {
         console.log("Checking if connected...");
-        const res = await fetch(`${baseUrl}/connected`, { method: "GET", headers: zapiHeaders });
+        const res = await fetch(`${baseUrl}/connected`, { method: "GET", headers: zapiGetHeaders });
         result = await res.json();
         console.log("Connected response:", JSON.stringify(result));
         break;
