@@ -369,6 +369,18 @@ serve(async (req) => {
     if (msgError) throw msgError;
     console.log("Message saved for conversation:", conversationId, "greetingSent:", greetingSent);
 
+    // --- Resolve numeric input (1, 2, 3...) to action ID ---
+    const trimmedMsg = messageContent.trim();
+    if (/^[1-9]$/.test(trimmedMsg) && !resolvedActionId) {
+      const resolved = await resolveNumericInput(supabase, conversationId, trimmedMsg);
+      if (resolved) {
+        resolvedActionId = resolved;
+        const keyword = resolveActionId(resolved);
+        if (keyword) messageContent = keyword;
+        console.log("Numeric input resolved:", trimmedMsg, "→", resolved, "→", messageContent);
+      }
+    }
+
     // --- Handle close request ---
     if (isCloseRequest(messageContent)) {
       const closeMsg = "Atendimento encerrado. ✅\n\nObrigado por entrar em contato com a The Best Cloud! Se precisar de algo, envie *reabrir* para retomar o atendimento.\n\nAté logo! 👋";
