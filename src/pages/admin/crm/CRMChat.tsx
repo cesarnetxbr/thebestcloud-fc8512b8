@@ -564,30 +564,33 @@ const CRMChat = () => {
             </div>
           ) : (
             <>
-              <CardHeader className="pb-2 border-b border-border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">{selected?.title}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className={cn("text-xs px-2 py-0.5 rounded", selected?.channel === "whatsapp" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-muted")}>
+              <CardHeader className="pb-2 border-b border-border px-3 sm:px-6">
+                <div className="flex items-center gap-2">
+                  {/* Back button — mobile only */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 lg:hidden"
+                    onClick={() => setSelectedId(null)}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-sm sm:text-base truncate">{selected?.title}</CardTitle>
+                    <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+                      <span className={cn("text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded", selected?.channel === "whatsapp" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-muted")}>
                         {channelLabels[selected?.channel || "chat"]}
                       </span>
-                      {(selected as any)?.customers?.name && <span className="text-xs text-muted-foreground">{(selected as any).customers.name}</span>}
-                      {(selected as any)?.crm_leads?.name && <span className="text-xs text-muted-foreground">{(selected as any).crm_leads.name}</span>}
+                      {(selected as any)?.customers?.name && <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">{(selected as any).customers.name}</span>}
                       {assignedAgent && (
-                        <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded flex items-center gap-1">
-                          <User className="h-3 w-3" /> {assignedAgent.full_name}
-                        </span>
-                      )}
-                      {assignedDept && (
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: `${assignedDept.color}20`, color: assignedDept.color }}>
-                          {assignedDept.name}
+                        <span className="text-[10px] sm:text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-1.5 sm:px-2 py-0.5 rounded flex items-center gap-1">
+                          <User className="h-3 w-3" /> <span className="hidden sm:inline">{assignedAgent.full_name}</span><span className="sm:hidden">{assignedAgent.full_name?.split(" ")[0]}</span>
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-1 items-center">
-                    <Badge variant={statusLabels[selected?.status || "ativa"].variant}>
+                  <div className="flex gap-0.5 sm:gap-1 items-center shrink-0">
+                    <Badge variant={statusLabels[selected?.status || "ativa"].variant} className="text-[10px] hidden sm:inline-flex">
                       {statusLabels[selected?.status || "ativa"].label}
                     </Badge>
 
