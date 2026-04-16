@@ -35,22 +35,17 @@ async function sendZapiMessage(phone: string, message: string) {
 
 async function sendZapiButtonList(phone: string, message: string, buttons: { id: string; label: string }[]) {
   const config = getZapiConfig();
-  if (!config) { console.error("Z-API not configured for buttons"); return sendZapiMessage(phone, message); }
+  if (!config) return sendZapiMessage(phone, message);
   try {
-    // Z-API button list endpoint
     const res = await fetch(`${config.baseUrl}/send-button-list`, {
       method: "POST", headers: config.headers,
       body: JSON.stringify({
-        phone,
-        message,
-        buttonList: {
-          buttons: buttons.map(b => ({ id: b.id, label: b.label })),
-        },
+        phone, message,
+        buttonList: { buttons: buttons.map(b => ({ id: b.id, label: b.label })) },
       }),
     });
     if (!res.ok) {
       console.warn("Z-API button-list failed, falling back to text:", res.status);
-      // Fallback: send as numbered text
       const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
       return sendZapiMessage(phone, fallbackText);
     }
@@ -63,34 +58,49 @@ async function sendZapiButtonList(phone: string, message: string, buttons: { id:
   }
 }
 
+// Normalize accented characters for matching
+function normalizeText(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+// Button ID → keyword mapping so button clicks route correctly
+const buttonIdKeywords: Record<string, string[]> = {
+  "backup": ["backup", "ciberprotecao", "nuvem", "cloud"],
+  "ransomware": ["ransomware", "virus", "malware", "seguranca", "antivirus", "protecao"],
+  "disaster": ["disaster recovery", "recuperacao", "desastre", "continuidade"],
+  "cotacao": ["preco", "valor", "cotacao", "custo", "plano", "orcamento"],
+  "suporte": ["suporte", "ajuda", "problema", "erro", "ticket"],
+  "encerrar": ["encerrar"],
+};
+
 async function matchChatbotRule(
-  supabase: any, messageContent: string, conversationId: string, isFirstMessage: boolean
+  supabase: any, messageContent: string, conversationId: string, greetingSent: boolean
 ) {
   const { data: rules, error } = await supabase
     .from("chatbot_rules").select("*").eq("is_active", true)
     .order("priority", { ascending: false });
   if (error || !rules?.length) return null;
 
-  const lowerMsg = messageContent.toLowerCase().trim();
+  const normalizedMsg = normalizeText(messageContent);
 
-  // Only send greeting for truly first message in conversation
-  if (isFirstMessage) {
+  // 1. Greeting ONLY if never sent before in this conversation
+  if (!greetingSent) {
     const greetingRule = rules.find((r: any) => r.trigger_type === "greeting");
     if (greetingRule) return greetingRule;
   }
 
-  // Keyword rules
+  // 2. Keyword rules (with accent-normalized matching)
   for (const rule of rules) {
     if (rule.trigger_type !== "keyword" || !rule.trigger_value) continue;
-    const keywords = rule.trigger_value.split(",").map((k: string) => k.trim().toLowerCase());
-    if (keywords.some((kw: string) => kw && lowerMsg.includes(kw))) return rule;
+    const keywords = rule.trigger_value.split(",").map((k: string) => normalizeText(k));
+    if (keywords.some((kw: string) => kw && normalizedMsg.includes(kw))) return rule;
   }
 
-  // AI rules
+  // 3. AI rules
   const aiRule = rules.find((r: any) => r.trigger_type === "ai");
   if (aiRule) return aiRule;
 
-  // Fallback
+  // 4. Fallback
   return rules.find((r: any) => r.trigger_type === "fallback") || null;
 }
 
@@ -115,16 +125,21 @@ async function generateAIResponse(systemPrompt: string, userMessage: string): Pr
   } catch (e) { console.error("AI call error:", e); return null; }
 }
 
-// Check if user wants to close conversation
 function isCloseRequest(msg: string): boolean {
-  const closeKeywords = ["encerrar", "finalizar", "fechar conversa", "encerrar conversa", "finalizar atendimento", "0"];
-  return closeKeywords.some(kw => msg.toLowerCase().trim().includes(kw));
+  const n = normalizeText(msg);
+  return ["encerrar", "finalizar", "fechar conversa", "encerrar conversa", "finalizar atendimento", "0"].some(kw => n.includes(kw));
 }
 
-// Check if user wants to reopen
 function isReopenRequest(msg: string): boolean {
-  const reopenKeywords = ["reabrir", "voltar", "reabrir conversa", "novo atendimento"];
-  return reopenKeywords.some(kw => msg.toLowerCase().trim().includes(kw));
+  const n = normalizeText(msg);
+  return ["reabrir", "voltar", "reabrir conversa", "novo atendimento"].some(kw => n.includes(kw));
+}
+
+// Resolve button click ID into a searchable message
+function resolveButtonId(buttonId: string): string | null {
+  const mapped = buttonIdKeywords[buttonId];
+  if (mapped && mapped.length > 0) return mapped[0];
+  return null;
 }
 
 serve(async (req) => {
@@ -146,11 +161,19 @@ serve(async (req) => {
     const senderName = payload.senderName || payload.chatName || phone;
     const isGroup = payload.isGroup === true;
 
-    // Extract message text (including button response)
+    // Extract message text — handle button responses first
     let messageContent = "";
+    let isButtonClick = false;
+
     if (payload.buttonsResponseMessage?.selectedButtonId) {
-      messageContent = payload.buttonsResponseMessage.selectedButtonId;
+      const btnId = payload.buttonsResponseMessage.selectedButtonId;
+      isButtonClick = true;
+      // Resolve button ID to keyword for matching
+      const resolved = resolveButtonId(btnId);
+      messageContent = resolved || btnId;
+      console.log("Button click resolved:", btnId, "→", messageContent);
     } else if (payload.listResponseMessage?.title) {
+      isButtonClick = true;
       messageContent = payload.listResponseMessage.title;
     } else if (payload.text?.message) {
       messageContent = payload.text.message;
@@ -203,7 +226,7 @@ serve(async (req) => {
 
     // Find or create conversation
     let conversationId: string;
-    let isFirstMessage = false;
+    let greetingSent = false;
     let conversationStatus = "ativa";
 
     const { data: existingConv } = await supabase
@@ -216,16 +239,15 @@ serve(async (req) => {
       conversationId = existingConv.id;
       conversationStatus = existingConv.status;
 
-      // If conversation was closed and user sends "reabrir" → reopen it
       if (existingConv.status === "encerrada") {
         if (isReopenRequest(messageContent)) {
           await supabase.from("chat_conversations")
             .update({ status: "ativa", last_message_at: new Date().toISOString() })
             .eq("id", conversationId);
           conversationStatus = "ativa";
+          greetingSent = true; // don't re-greet on reopen
         } else {
-          // Create new conversation instead
-          isFirstMessage = true;
+          // Create new conversation
           const { data: customer } = await supabase
             .from("customers").select("id, name").eq("phone", normalizedPhone).maybeSingle();
           const title = customer?.name || senderName || `WhatsApp ${normalizedPhone}`;
@@ -238,21 +260,25 @@ serve(async (req) => {
           if (convError) throw convError;
           conversationId = newConv.id;
           conversationStatus = "ativa";
+          greetingSent = false; // new conv, greeting not yet sent
         }
       } else {
-        // Reactivate if archived
+        // Reactivate
         await supabase.from("chat_conversations")
           .update({ status: "ativa", last_message_at: new Date().toISOString() })
           .eq("id", conversationId);
 
-        // Check if first customer message
-        const { count } = await supabase
-          .from("chat_messages").select("id", { count: "exact", head: true })
-          .eq("conversation_id", conversationId).eq("sender_type", "customer");
-        isFirstMessage = (count || 0) === 0;
+        // Check if greeting was already sent by looking for bot greeting message
+        const { data: botGreeting } = await supabase
+          .from("chat_messages").select("id")
+          .eq("conversation_id", conversationId)
+          .eq("sender_type", "agent")
+          .eq("sender_name", "🤖 Chatbot")
+          .limit(1).maybeSingle();
+        greetingSent = !!botGreeting;
       }
     } else {
-      isFirstMessage = true;
+      // Brand new conversation
       const { data: customer } = await supabase
         .from("customers").select("id, name").eq("phone", normalizedPhone).maybeSingle();
       const title = customer?.name || senderName || `WhatsApp ${normalizedPhone}`;
@@ -264,16 +290,22 @@ serve(async (req) => {
         }).select("id").single();
       if (convError) throw convError;
       conversationId = newConv.id;
+      greetingSent = false;
     }
+
+    // Store the original display content for saving
+    const displayContent = isButtonClick
+      ? (payload.buttonsResponseMessage?.selectedButtonId || payload.listResponseMessage?.title || messageContent)
+      : messageContent;
 
     // Insert customer message
     const { error: msgError } = await supabase.from("chat_messages").insert({
       conversation_id: conversationId, sender_type: "customer",
-      sender_name: senderName || normalizedPhone, content: messageContent,
+      sender_name: senderName || normalizedPhone, content: displayContent,
       external_message_id: messageId || null, is_read: false,
     });
     if (msgError) throw msgError;
-    console.log("Message saved for conversation:", conversationId);
+    console.log("Message saved for conversation:", conversationId, "greetingSent:", greetingSent);
 
     // --- Handle close request ---
     if (isCloseRequest(messageContent)) {
@@ -287,7 +319,6 @@ serve(async (req) => {
       }
       await supabase.from("chat_conversations")
         .update({ status: "encerrada" }).eq("id", conversationId);
-
       return new Response(JSON.stringify({ ok: true, conversationId, action: "closed" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -315,7 +346,7 @@ serve(async (req) => {
     }
 
     // --- Chatbot auto-reply ---
-    const matchedRule = await matchChatbotRule(supabase, messageContent, conversationId, isFirstMessage);
+    const matchedRule = await matchChatbotRule(supabase, messageContent, conversationId, greetingSent);
 
     if (matchedRule) {
       let replyContent: string | null = null;
@@ -329,7 +360,6 @@ serve(async (req) => {
       if (replyContent) {
         let sent: boolean;
 
-        // For greeting and keyword responses, add action buttons
         if (matchedRule.trigger_type === "greeting") {
           sent = await sendZapiButtonList(normalizedPhone, replyContent, [
             { id: "backup", label: "☁️ Backup em Nuvem" },
@@ -340,7 +370,6 @@ serve(async (req) => {
             { id: "encerrar", label: "❌ Encerrar" },
           ]);
         } else if (matchedRule.trigger_type === "keyword") {
-          // After answering a keyword, offer follow-up buttons
           sent = await sendZapiButtonList(normalizedPhone, replyContent, [
             { id: "cotacao", label: "💰 Solicitar Cotação" },
             { id: "suporte", label: "🎧 Falar com Consultor" },
