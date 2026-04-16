@@ -453,21 +453,16 @@ serve(async (req) => {
       }
 
       if (categoryMsg) {
-        const sent = await sendZapiMenu(normalizedPhone, categoryMsg, [
-          { id: "cotacao", label: "💰 Solicitar Cotação" },
-          { id: "servicos", label: "📋 Ver Outros Serviços" },
-          { id: "encerrar", label: "❌ Encerrar" },
-        ]);
-        if (sent) {
-          await supabase.from("chat_messages").insert({
-            conversation_id: conversationId, sender_type: "agent",
-            sender_name: "🤖 Chatbot", content: categoryMsg, is_read: true,
-          });
-        }
-        return new Response(JSON.stringify({ ok: true, conversationId, action: "category_detail" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const sent = await sendZapiMenu(normalizedPhone, categoryMsg, menuDefinitions.category);
+      if (sent) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: conversationId, sender_type: "agent",
+          sender_name: "🤖 Chatbot", content: categoryMsg, is_read: true,
         });
       }
+      return new Response(JSON.stringify({ ok: true, conversationId, action: "category_detail" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // --- Handle "cotacao" specifically - ask qualifying questions ---
