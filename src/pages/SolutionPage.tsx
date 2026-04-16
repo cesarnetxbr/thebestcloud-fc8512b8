@@ -51,7 +51,7 @@ const SolutionPage = () => {
                 variant="cta"
                 size="lg"
                 className="text-base px-8"
-                onClick={() => window.open("https://api.whatsapp.com/send/?phone=5591989696415&text=Ol%C3%A1%21+Gostaria+de+saber+mais+sobre+os+servi%C3%A7os+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank")}
+                onClick={() => window.open("https://api.whatsapp.com/send/?phone=5591981317645&text=Ol%C3%A1%21+Gostaria+de+falar+com+um+consultor+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank")}
               >
                 Fale com um Consultor
               </Button>
