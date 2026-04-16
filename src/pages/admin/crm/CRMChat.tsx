@@ -378,20 +378,23 @@ const CRMChat = () => {
   const whatsappConversations = conversations?.filter(c => c.channel === "whatsapp" && c.status === "ativa").length || 0;
   const waitingConversations = conversations?.filter(c => !c.assigned_to && c.status === "ativa").length || 0;
 
+  // Mobile: show chat area when a conversation is selected
+  const showChatOnMobile = !!selectedId;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Phone className="h-6 w-6 text-green-500" />
-            Multi-atendimento WhatsApp
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />
+            <span className="truncate">Multi-atendimento WhatsApp</span>
           </h2>
-          <p className="text-muted-foreground">Central de conversas com múltiplos atendentes</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Central de conversas com múltiplos atendentes</p>
         </div>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> Nova Conversa</Button>
+            <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" /> Nova Conversa</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Nova Conversa</DialogTitle></DialogHeader>
@@ -443,22 +446,22 @@ const CRMChat = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">Meus atendimentos</div>
-          <div className="text-2xl font-bold">{myConversations}</div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">Meus atendimentos</div>
+          <div className="text-xl sm:text-2xl font-bold">{myConversations}</div>
         </Card>
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">WhatsApp ativos</div>
-          <div className="text-2xl font-bold text-green-500">{whatsappConversations}</div>
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">WhatsApp ativos</div>
+          <div className="text-xl sm:text-2xl font-bold text-green-500">{whatsappConversations}</div>
         </Card>
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">Aguardando agente</div>
-          <div className="text-2xl font-bold text-amber-500">{waitingConversations}</div>
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">Aguardando agente</div>
+          <div className="text-xl sm:text-2xl font-bold text-amber-500">{waitingConversations}</div>
         </Card>
-        <Card className="p-3">
-          <div className="text-xs text-muted-foreground">Total conversas</div>
-          <div className="text-2xl font-bold">{conversations?.filter(c => c.status === "ativa").length || 0}</div>
+        <Card className="p-2 sm:p-3">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">Total conversas</div>
+          <div className="text-xl sm:text-2xl font-bold">{conversations?.filter(c => c.status === "ativa").length || 0}</div>
         </Card>
       </div>
 
