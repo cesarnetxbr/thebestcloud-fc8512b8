@@ -441,16 +441,14 @@ serve(async (req) => {
       });
     }
 
-    // --- Handle category detail buttons ---
-    if (isButtonClick) {
-      const btnId = payload.buttonsResponseMessage?.selectedButtonId;
-      let categoryMsg: string | null = null;
-
-      if (btnId === "seguranca_cat") {
+    // --- Handle category detail ---
+    if (resolvedActionId === "seguranca_cat" || resolvedActionId === "protecao_cat" || resolvedActionId === "operacoes_cat") {
+      let categoryMsg = "";
+      if (resolvedActionId === "seguranca_cat") {
         categoryMsg = "🔐 *Segurança – The Best Cloud*\n\nNossas soluções de segurança:\n\n• *XDR* – Detecção e resposta estendidas em toda a infraestrutura\n• *EDR* – Proteção avançada de endpoints com IA\n• *MDR* – Monitoramento 24/7 por especialistas\n• *DLP* – Prevenção contra vazamento de dados (LGPD)\n• *Segurança de E-mail* – Bloqueio de phishing e malware\n• *Arquivamento de E-mail* – Conformidade regulatória\n• *SAT* – Treinamento de conscientização em segurança\n\n🌐 thebestcloud.com.br";
-      } else if (btnId === "protecao_cat") {
+      } else if (resolvedActionId === "protecao_cat") {
         categoryMsg = "🛡️ *Proteção – The Best Cloud*\n\nNossas soluções de proteção:\n\n• *Backup em Nuvem* – Automático, contínuo, criptografia AES-256\n• *Anti-Ransomware* – Detecção e reversão em tempo real com IA\n• *Antivírus Gerenciado* – Atualizações contínuas e relatórios\n• *Disaster Recovery* – Failover automático, RTO/RPO configuráveis\n• *Proteção contra Ransomware* – Integrada à plataforma\n\n🌐 thebestcloud.com.br";
-      } else if (btnId === "operacoes_cat") {
+      } else {
         categoryMsg = "⚙️ *Operações – The Best Cloud*\n\nNossas soluções de operações:\n\n• *RMM* – Gerenciamento e monitoramento remoto\n• *Monitoramento 24/7* – Alertas em tempo real\n• *Automação de TI* – Scripts e tarefas automatizadas\n• *Gestão de Patches* – Atualizações de segurança centralizadas\n• *Inventário de Hardware/Software* – Visibilidade completa\n\n🌐 thebestcloud.com.br";
       }
 
