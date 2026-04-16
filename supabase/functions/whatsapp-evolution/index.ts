@@ -10,116 +10,121 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
-  const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
+  const ZAPI_INSTANCE_ID = Deno.env.get("ZAPI_INSTANCE_ID");
+  const ZAPI_TOKEN = Deno.env.get("ZAPI_TOKEN");
 
-  console.log("EVOLUTION_API_URL length:", EVOLUTION_API_URL?.length);
-  console.log("EVOLUTION_API_URL starts with http:", EVOLUTION_API_URL?.startsWith("http"));
-
-  if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY) {
+  if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
+    console.error("Z-API not configured", { hasInstanceId: !!ZAPI_INSTANCE_ID, hasToken: !!ZAPI_TOKEN });
     return new Response(
-      JSON.stringify({ error: "Evolution API not configured", hasUrl: !!EVOLUTION_API_URL, hasKey: !!EVOLUTION_API_KEY }),
+      JSON.stringify({ error: "Z-API not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
-  // Auto-fix URL if missing protocol
-  let apiUrl = EVOLUTION_API_URL.trim();
-  if (!apiUrl.startsWith("http://") && !apiUrl.startsWith("https://")) {
-    apiUrl = `https://${apiUrl}`;
-  }
-  const baseUrl = apiUrl.replace(/\/$/, "");
-  console.log("Using Evolution API baseUrl:", baseUrl);
+  const baseUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`;
+  console.log("Z-API baseUrl constructed, instance:", ZAPI_INSTANCE_ID.substring(0, 8) + "...");
 
   try {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
-    const instanceName = url.searchParams.get("instance");
-
-    const headers = {
-      "apikey": EVOLUTION_API_KEY,
-      "Content-Type": "application/json",
-    };
 
     let result;
 
     switch (action) {
-      case "create": {
-        const body = await req.json();
-        const targetUrl = `${baseUrl}/instance/create`;
-        console.log("Creating instance at:", targetUrl);
-        const res = await fetch(targetUrl, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            instanceName: body.instanceName,
-            qrcode: true,
-            integration: "WHATSAPP-BAILEYS",
-          }),
-        });
-        result = await res.json();
+      case "qrcode": {
+        console.log("Fetching QR code from Z-API...");
+        const res = await fetch(`${baseUrl}/qr-code`, { method: "GET" });
         if (!res.ok) {
-          return new Response(JSON.stringify({ error: "Evolution create failed", detail: result }), {
+          const errorText = await res.text();
+          console.error("QR code fetch failed:", res.status, errorText);
+          return new Response(JSON.stringify({ error: "Failed to get QR code", status: res.status, detail: errorText }), {
             status: res.status,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
+        result = await res.json();
+        console.log("QR code response keys:", Object.keys(result));
         break;
       }
 
-      case "connect": {
-        if (!instanceName) {
-          return new Response(JSON.stringify({ error: "instance param required" }), {
-            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      case "qrcode-image": {
+        console.log("Fetching QR code image from Z-API...");
+        const res = await fetch(`${baseUrl}/qr-code/image`, { method: "GET" });
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("QR code image fetch failed:", res.status, errorText);
+          return new Response(JSON.stringify({ error: "Failed to get QR code image", status: res.status }), {
+            status: res.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const res = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
-          method: "GET",
-          headers,
-        });
         result = await res.json();
         break;
       }
 
       case "status": {
-        if (!instanceName) {
-          return new Response(JSON.stringify({ error: "instance param required" }), {
-            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        console.log("Checking Z-API status...");
+        const res = await fetch(`${baseUrl}/status`, { method: "GET" });
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Status check failed:", res.status, errorText);
+          return new Response(JSON.stringify({ error: "Failed to check status", status: res.status }), {
+            status: res.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const res = await fetch(`${baseUrl}/instance/connectionState/${instanceName}`, {
-          method: "GET",
-          headers,
-        });
+        result = await res.json();
+        console.log("Status response:", JSON.stringify(result));
+        break;
+      }
+
+      case "disconnect": {
+        console.log("Disconnecting Z-API...");
+        const res = await fetch(`${baseUrl}/disconnect`, { method: "GET" });
         result = await res.json();
         break;
       }
 
-      case "delete": {
-        if (!instanceName) {
-          return new Response(JSON.stringify({ error: "instance param required" }), {
-            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const res = await fetch(`${baseUrl}/instance/delete/${instanceName}`, {
-          method: "DELETE",
-          headers,
-        });
+      case "restart": {
+        console.log("Restarting Z-API...");
+        const res = await fetch(`${baseUrl}/restart`, { method: "GET" });
         result = await res.json();
         break;
       }
 
-      case "list": {
-        const res = await fetch(`${baseUrl}/instance/fetchInstances`, {
-          method: "GET",
-          headers,
+      case "send-text": {
+        const body = await req.json();
+        console.log("Sending text message via Z-API to:", body.phone);
+        const res = await fetch(`${baseUrl}/send-text`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: body.phone,
+            message: body.message,
+          }),
         });
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Send text failed:", res.status, errorText);
+          return new Response(JSON.stringify({ error: "Failed to send message", detail: errorText }), {
+            status: res.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         result = await res.json();
+        break;
+      }
+
+      case "connected": {
+        console.log("Checking if connected...");
+        const res = await fetch(`${baseUrl}/connected`, { method: "GET" });
+        result = await res.json();
+        console.log("Connected response:", JSON.stringify(result));
         break;
       }
 
       default:
-        return new Response(JSON.stringify({ error: "Invalid action. Use: create, connect, status, delete, list" }), {
+        return new Response(JSON.stringify({ error: "Invalid action. Use: qrcode, status, disconnect, restart, send-text, connected" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     }
@@ -130,7 +135,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    console.error("Evolution API error:", msg);
+    console.error("Z-API error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
