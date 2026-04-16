@@ -382,7 +382,7 @@ const CRMChat = () => {
   const showChatOnMobile = !!selectedId;
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="min-w-0">
@@ -465,7 +465,7 @@ const CRMChat = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 h-[calc(100vh-380px)] sm:h-[calc(100vh-340px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 h-[calc(100vh-320px)] sm:h-[calc(100vh-300px)] min-h-[400px] overflow-hidden">
         {/* Conversation list — hidden on mobile when a chat is open */}
         <Card className={cn("lg:col-span-1 flex flex-col", showChatOnMobile ? "hidden lg:flex" : "flex")}>
           <CardHeader className="pb-2 space-y-2 px-3 sm:px-6">
@@ -554,7 +554,7 @@ const CRMChat = () => {
         </Card>
 
         {/* Chat area — full width on mobile when open */}
-        <Card className={cn("lg:col-span-2 flex flex-col", showChatOnMobile ? "flex" : "hidden lg:flex")}>
+        <Card className={cn("lg:col-span-2 flex flex-col overflow-hidden", showChatOnMobile ? "flex" : "hidden lg:flex")}>
           {!selectedId ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
@@ -660,7 +660,7 @@ const CRMChat = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 p-0 overflow-hidden flex flex-col min-h-0">
-                <ScrollArea className="flex-1 p-3 sm:p-4">
+                <ScrollArea className="flex-1 min-h-0 p-3 sm:p-4">
                   <div className="space-y-3">
                     {!messages?.length ? (
                       <div className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda. Inicie a conversa!</div>
