@@ -459,11 +459,7 @@ serve(async (req) => {
       ["cotacao", "orcamento", "quanto custa", "preco", "valor", "plano"].some(kw => normalizedForSpecial.includes(kw));
     if (isCotacaoRequest) {
       const cotacaoMsg = "💰 *Solicitar Cotação – The Best Cloud*\n\nPara elaborar uma proposta personalizada, preciso de algumas informações:\n\n1️⃣ *Qual o volume de dados aproximado?* (em GB ou TB)\n2️⃣ *Quantos dispositivos deseja proteger?* (servidores, estações, notebooks)\n3️⃣ *Quais serviços tem interesse?*\n   • Backup em Nuvem\n   • Anti-Ransomware\n   • Disaster Recovery\n   • Segurança de E-mail\n   • Outros\n\nPor favor, responda com essas informações e um consultor preparará sua proposta! 📋";
-      const sent = await sendZapiMenu(normalizedPhone, cotacaoMsg, [
-        { id: "suporte", label: "🎧 Falar com Consultor" },
-        { id: "servicos", label: "📋 Ver Serviços" },
-        { id: "encerrar", label: "❌ Encerrar" },
-      ]);
+      const sent = await sendZapiMenu(normalizedPhone, cotacaoMsg, menuDefinitions.cotacao);
       if (sent) {
         await supabase.from("chat_messages").insert({
           conversation_id: conversationId, sender_type: "agent",
