@@ -441,7 +441,6 @@ serve(async (req) => {
         categoryMsg = "⚙️ *Operações – The Best Cloud*\n\nNossas soluções de operações:\n\n• *RMM* – Gerenciamento e monitoramento remoto\n• *Monitoramento 24/7* – Alertas em tempo real\n• *Automação de TI* – Scripts e tarefas automatizadas\n• *Gestão de Patches* – Atualizações de segurança centralizadas\n• *Inventário de Hardware/Software* – Visibilidade completa\n\n🌐 thebestcloud.com.br";
       }
 
-      if (categoryMsg) {
       const sent = await sendZapiMenu(normalizedPhone, categoryMsg, menuDefinitions.category);
       if (sent) {
         await supabase.from("chat_messages").insert({
