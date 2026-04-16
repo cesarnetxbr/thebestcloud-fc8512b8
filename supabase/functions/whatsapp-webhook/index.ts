@@ -401,12 +401,7 @@ serve(async (req) => {
     // --- Handle reopen request ---
     if (isReopenRequest(messageContent) && conversationStatus === "ativa") {
       const reopenMsg = "Conversa reaberta! 🔄\n\nComo posso ajudá-lo?";
-      const sent = await sendZapiMenu(normalizedPhone, reopenMsg, [
-        { id: "servicos", label: "📋 Nossos Serviços" },
-        { id: "cotacao", label: "💰 Cotação" },
-        { id: "suporte", label: "🎧 Suporte Técnico" },
-        { id: "encerrar", label: "❌ Encerrar" },
-      ]);
+      const sent = await sendZapiMenu(normalizedPhone, reopenMsg, menuDefinitions.reopen);
       if (sent) {
         await supabase.from("chat_messages").insert({
           conversation_id: conversationId, sender_type: "agent",
