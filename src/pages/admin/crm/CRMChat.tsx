@@ -660,14 +660,14 @@ const CRMChat = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 p-0 overflow-hidden flex flex-col min-h-0">
-                <ScrollArea className="flex-1 p-4">
+                <ScrollArea className="flex-1 p-3 sm:p-4">
                   <div className="space-y-3">
                     {!messages?.length ? (
                       <div className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda. Inicie a conversa!</div>
                     ) : messages.map(msg => (
                       <div key={msg.id} className={cn("flex", msg.sender_type === "agent" ? "justify-end" : "justify-start")}>
                         <div className={cn(
-                          "max-w-[70%] rounded-lg px-3 py-2 text-sm",
+                          "max-w-[85%] sm:max-w-[70%] rounded-lg px-3 py-2 text-sm",
                           msg.sender_type === "agent"
                             ? "bg-primary text-primary-foreground"
                             : msg.sender_type === "system"
@@ -703,19 +703,19 @@ const CRMChat = () => {
                         </div>
                       </div>
                     )}
-                    <div className="p-3 flex gap-2 items-end">
-                      <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" title="Respostas rápidas" onClick={() => setShowQuickReplies(!showQuickReplies)}>
+                    <div className="p-2 sm:p-3 flex gap-1.5 sm:gap-2 items-end">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" title="Respostas rápidas" onClick={() => setShowQuickReplies(!showQuickReplies)}>
                         <Zap className="h-4 w-4" />
                       </Button>
                       <Textarea
                         value={newMessage}
                         onChange={e => setNewMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Digite sua mensagem... (Enter para enviar)"
+                        placeholder="Digite sua mensagem..."
                         rows={1}
-                        className="resize-none min-h-[40px]"
+                        className="resize-none min-h-[36px] sm:min-h-[40px] text-sm"
                       />
-                      <Button size="icon" className="h-9 w-9 shrink-0" onClick={() => newMessage.trim() && sendMessage.mutate()} disabled={!newMessage.trim()}>
+                      <Button size="icon" className="h-8 w-8 sm:h-9 sm:w-9 shrink-0" onClick={() => newMessage.trim() && sendMessage.mutate()} disabled={!newMessage.trim()}>
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
