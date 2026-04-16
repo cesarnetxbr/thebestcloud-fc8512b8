@@ -225,12 +225,13 @@ serve(async (req) => {
     // Extract message text — handle button responses first
     let messageContent = "";
     let isButtonClick = false;
+    let resolvedActionId: string | null = null;
 
     if (payload.buttonsResponseMessage?.selectedButtonId) {
       const btnId = payload.buttonsResponseMessage.selectedButtonId;
       isButtonClick = true;
-      // Resolve button ID to keyword for matching
-      const resolved = resolveButtonId(btnId);
+      resolvedActionId = btnId;
+      const resolved = resolveActionId(btnId);
       messageContent = resolved || btnId;
       console.log("Button click resolved:", btnId, "→", messageContent);
     } else if (payload.listResponseMessage?.title) {
