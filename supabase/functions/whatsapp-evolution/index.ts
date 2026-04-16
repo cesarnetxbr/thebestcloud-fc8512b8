@@ -23,7 +23,10 @@ serve(async (req) => {
   }
 
   const baseUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`;
-  const zapiHeaders: Record<string, string> = {
+  const zapiGetHeaders: Record<string, string> = {
+    ...(ZAPI_CLIENT_TOKEN ? { "Client-Token": ZAPI_CLIENT_TOKEN } : {}),
+  };
+  const zapiPostHeaders: Record<string, string> = {
     "Content-Type": "application/json",
     ...(ZAPI_CLIENT_TOKEN ? { "Client-Token": ZAPI_CLIENT_TOKEN } : {}),
   };
