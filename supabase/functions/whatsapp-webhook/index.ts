@@ -421,7 +421,7 @@ serve(async (req) => {
     // --- Handle "servicos" / services request ---
     const normalizedForSpecial = normalizeText(messageContent);
     const isServicosRequest = ["servicos", "solucoes", "produtos", "catalogo", "o que voces fazem", "quais servicos", "servico"].some(kw => normalizedForSpecial.includes(kw));
-    if (isServicosRequest || (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "servicos")) {
+    if (isServicosRequest || resolvedActionId === "servicos") {
       const servicosMsg = "📋 *Nossos Serviços – The Best Cloud*\n\nOferecemos soluções completas de ciberproteção organizadas em 3 pilares:\n\n🔐 *Segurança*\n• Detecção e Resposta (XDR, EDR, MDR)\n• Prevenção de Perda de Dados (DLP)\n• Segurança e Arquivamento de E-mail\n• Treinamento de Conscientização (SAT)\n\n🛡️ *Proteção*\n• Backup em Nuvem com IA\n• Anti-Ransomware\n• Antivírus Gerenciado\n• Disaster Recovery\n\n⚙️ *Operações*\n• Gerenciamento Remoto (RMM)\n• Monitoramento 24/7\n• Automação de TI\n• Gestão de Patches\n\n🌐 Saiba mais: thebestcloud.com.br";
       const sent = await sendZapiMenu(normalizedPhone, servicosMsg, [
         { id: "seguranca_cat", label: "🔐 Segurança" },
