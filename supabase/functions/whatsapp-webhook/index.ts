@@ -487,19 +487,9 @@ serve(async (req) => {
         let sent: boolean;
 
         if (matchedRule.trigger_type === "greeting") {
-          sent = await sendZapiMenu(normalizedPhone, replyContent, [
-            { id: "servicos", label: "📋 Nossos Serviços" },
-            { id: "cotacao", label: "💰 Cotação" },
-            { id: "suporte", label: "🎧 Suporte" },
-            { id: "encerrar", label: "❌ Encerrar" },
-          ]);
+          sent = await sendZapiMenu(normalizedPhone, replyContent, menuDefinitions.greeting);
         } else if (matchedRule.trigger_type === "keyword") {
-          sent = await sendZapiMenu(normalizedPhone, replyContent, [
-            { id: "cotacao", label: "💰 Solicitar Cotação" },
-            { id: "servicos", label: "📋 Nossos Serviços" },
-            { id: "suporte", label: "🎧 Falar com Consultor" },
-            { id: "encerrar", label: "❌ Encerrar" },
-          ]);
+          sent = await sendZapiMenu(normalizedPhone, replyContent, menuDefinitions.keyword);
         } else {
           sent = await sendZapiMessage(normalizedPhone, replyContent);
         }
