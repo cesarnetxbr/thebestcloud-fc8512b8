@@ -70,6 +70,10 @@ const buttonIdKeywords: Record<string, string[]> = {
   "disaster": ["disaster recovery", "recuperacao", "desastre", "continuidade"],
   "cotacao": ["preco", "valor", "cotacao", "custo", "plano", "orcamento"],
   "suporte": ["suporte", "ajuda", "problema", "erro", "ticket"],
+  "servicos": ["servicos", "solucoes", "produtos", "catalogo"],
+  "seguranca_cat": ["seguranca_cat"],
+  "protecao_cat": ["protecao_cat"],
+  "operacoes_cat": ["operacoes_cat"],
   "encerrar": ["encerrar"],
 };
 
