@@ -6,95 +6,101 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendZapiMessage(phone: string, message: string) {
+function getZapiConfig() {
   const ZAPI_INSTANCE_ID = Deno.env.get("ZAPI_INSTANCE_ID");
   const ZAPI_TOKEN = Deno.env.get("ZAPI_TOKEN");
   const ZAPI_CLIENT_TOKEN = Deno.env.get("ZAPI_CLIENT_TOKEN");
-
-  if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
-    console.error("Z-API not configured for auto-reply");
-    return false;
-  }
-
+  if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) return null;
   const baseUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(ZAPI_CLIENT_TOKEN ? { "Client-Token": ZAPI_CLIENT_TOKEN } : {}),
   };
+  return { baseUrl, headers };
+}
 
+async function sendZapiMessage(phone: string, message: string) {
+  const config = getZapiConfig();
+  if (!config) { console.error("Z-API not configured"); return false; }
   try {
-    const res = await fetch(`${baseUrl}/send-text`, {
-      method: "POST",
-      headers,
+    const res = await fetch(`${config.baseUrl}/send-text`, {
+      method: "POST", headers: config.headers,
       body: JSON.stringify({ phone, message }),
     });
-    if (!res.ok) {
-      console.error("Z-API send failed:", res.status, await res.text());
-      return false;
-    }
+    if (!res.ok) { console.error("Z-API send failed:", res.status, await res.text()); return false; }
     console.log("Auto-reply sent to:", phone);
     return true;
+  } catch (e) { console.error("Z-API send error:", e); return false; }
+}
+
+async function sendZapiButtonList(phone: string, message: string, buttons: { id: string; label: string }[]) {
+  const config = getZapiConfig();
+  if (!config) { console.error("Z-API not configured for buttons"); return sendZapiMessage(phone, message); }
+  try {
+    // Z-API button list endpoint
+    const res = await fetch(`${config.baseUrl}/send-button-list`, {
+      method: "POST", headers: config.headers,
+      body: JSON.stringify({
+        phone,
+        message,
+        buttonList: {
+          buttons: buttons.map(b => ({ id: b.id, label: b.label })),
+        },
+      }),
+    });
+    if (!res.ok) {
+      console.warn("Z-API button-list failed, falling back to text:", res.status);
+      // Fallback: send as numbered text
+      const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
+      return sendZapiMessage(phone, fallbackText);
+    }
+    console.log("Button list sent to:", phone);
+    return true;
   } catch (e) {
-    console.error("Z-API send error:", e);
-    return false;
+    console.error("Z-API button error:", e);
+    const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
+    return sendZapiMessage(phone, fallbackText);
   }
 }
 
 async function matchChatbotRule(
-  supabase: any,
-  messageContent: string,
-  conversationId: string,
-  isFirstMessage: boolean
+  supabase: any, messageContent: string, conversationId: string, isFirstMessage: boolean
 ) {
-  // Fetch all active rules ordered by priority desc
   const { data: rules, error } = await supabase
-    .from("chatbot_rules")
-    .select("*")
-    .eq("is_active", true)
+    .from("chatbot_rules").select("*").eq("is_active", true)
     .order("priority", { ascending: false });
-
   if (error || !rules?.length) return null;
 
   const lowerMsg = messageContent.toLowerCase().trim();
 
-  // 1. Check greeting rules (only for first message in conversation)
+  // Only send greeting for truly first message in conversation
   if (isFirstMessage) {
     const greetingRule = rules.find((r: any) => r.trigger_type === "greeting");
     if (greetingRule) return greetingRule;
   }
 
-  // 2. Check keyword rules
+  // Keyword rules
   for (const rule of rules) {
     if (rule.trigger_type !== "keyword" || !rule.trigger_value) continue;
     const keywords = rule.trigger_value.split(",").map((k: string) => k.trim().toLowerCase());
-    if (keywords.some((kw: string) => kw && lowerMsg.includes(kw))) {
-      return rule;
-    }
+    if (keywords.some((kw: string) => kw && lowerMsg.includes(kw))) return rule;
   }
 
-  // 3. Check AI rules
+  // AI rules
   const aiRule = rules.find((r: any) => r.trigger_type === "ai");
   if (aiRule) return aiRule;
 
-  // 4. Fallback
-  const fallbackRule = rules.find((r: any) => r.trigger_type === "fallback");
-  return fallbackRule || null;
+  // Fallback
+  return rules.find((r: any) => r.trigger_type === "fallback") || null;
 }
 
 async function generateAIResponse(systemPrompt: string, userMessage: string): Promise<string | null> {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) {
-    console.error("LOVABLE_API_KEY not configured for AI responses");
-    return null;
-  }
-
+  if (!LOVABLE_API_KEY) { console.error("LOVABLE_API_KEY not configured"); return null; }
   try {
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
         messages: [
@@ -103,18 +109,22 @@ async function generateAIResponse(systemPrompt: string, userMessage: string): Pr
         ],
       }),
     });
-
-    if (!res.ok) {
-      console.error("AI gateway error:", res.status);
-      return null;
-    }
-
+    if (!res.ok) { console.error("AI gateway error:", res.status); return null; }
     const data = await res.json();
     return data.choices?.[0]?.message?.content || null;
-  } catch (e) {
-    console.error("AI call error:", e);
-    return null;
-  }
+  } catch (e) { console.error("AI call error:", e); return null; }
+}
+
+// Check if user wants to close conversation
+function isCloseRequest(msg: string): boolean {
+  const closeKeywords = ["encerrar", "finalizar", "fechar conversa", "encerrar conversa", "finalizar atendimento", "0"];
+  return closeKeywords.some(kw => msg.toLowerCase().trim().includes(kw));
+}
+
+// Check if user wants to reopen
+function isReopenRequest(msg: string): boolean {
+  const reopenKeywords = ["reabrir", "voltar", "reabrir conversa", "novo atendimento"];
+  return reopenKeywords.some(kw => msg.toLowerCase().trim().includes(kw));
 }
 
 serve(async (req) => {
@@ -136,9 +146,13 @@ serve(async (req) => {
     const senderName = payload.senderName || payload.chatName || phone;
     const isGroup = payload.isGroup === true;
 
-    // Extract message text
+    // Extract message text (including button response)
     let messageContent = "";
-    if (payload.text?.message) {
+    if (payload.buttonsResponseMessage?.selectedButtonId) {
+      messageContent = payload.buttonsResponseMessage.selectedButtonId;
+    } else if (payload.listResponseMessage?.title) {
+      messageContent = payload.listResponseMessage.title;
+    } else if (payload.text?.message) {
       messageContent = payload.text.message;
     } else if (payload.body) {
       messageContent = payload.body;
@@ -168,14 +182,8 @@ serve(async (req) => {
       });
     }
 
-    if (isGroup) {
-      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "group" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (isFromMe) {
-      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "fromMe" }), {
+    if (isGroup || isFromMe) {
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: isGroup ? "group" : "fromMe" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -185,11 +193,7 @@ serve(async (req) => {
     // Deduplicate
     if (messageId) {
       const { data: existing } = await supabase
-        .from("chat_messages")
-        .select("id")
-        .eq("external_message_id", messageId)
-        .maybeSingle();
-
+        .from("chat_messages").select("id").eq("external_message_id", messageId).maybeSingle();
       if (existing) {
         return new Response(JSON.stringify({ ok: true, skipped: true, reason: "duplicate" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -200,70 +204,115 @@ serve(async (req) => {
     // Find or create conversation
     let conversationId: string;
     let isFirstMessage = false;
+    let conversationStatus = "ativa";
 
     const { data: existingConv } = await supabase
-      .from("chat_conversations")
-      .select("id")
-      .eq("phone", normalizedPhone)
-      .eq("channel", "whatsapp")
-      .in("status", ["ativa", "arquivada"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .from("chat_conversations").select("id, status")
+      .eq("phone", normalizedPhone).eq("channel", "whatsapp")
+      .in("status", ["ativa", "arquivada", "encerrada"])
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
 
     if (existingConv) {
       conversationId = existingConv.id;
-      await supabase
-        .from("chat_conversations")
-        .update({ status: "ativa", last_message_at: new Date().toISOString() })
-        .eq("id", conversationId);
+      conversationStatus = existingConv.status;
 
-      // Check if this is the first customer message in this conversation
-      const { count } = await supabase
-        .from("chat_messages")
-        .select("id", { count: "exact", head: true })
-        .eq("conversation_id", conversationId)
-        .eq("sender_type", "customer");
-      isFirstMessage = (count || 0) === 0;
+      // If conversation was closed and user sends "reabrir" → reopen it
+      if (existingConv.status === "encerrada") {
+        if (isReopenRequest(messageContent)) {
+          await supabase.from("chat_conversations")
+            .update({ status: "ativa", last_message_at: new Date().toISOString() })
+            .eq("id", conversationId);
+          conversationStatus = "ativa";
+        } else {
+          // Create new conversation instead
+          isFirstMessage = true;
+          const { data: customer } = await supabase
+            .from("customers").select("id, name").eq("phone", normalizedPhone).maybeSingle();
+          const title = customer?.name || senderName || `WhatsApp ${normalizedPhone}`;
+          const { data: newConv, error: convError } = await supabase
+            .from("chat_conversations").insert({
+              title, channel: "whatsapp", phone: normalizedPhone,
+              customer_id: customer?.id || null, status: "ativa",
+              last_message_at: new Date().toISOString(),
+            }).select("id").single();
+          if (convError) throw convError;
+          conversationId = newConv.id;
+          conversationStatus = "ativa";
+        }
+      } else {
+        // Reactivate if archived
+        await supabase.from("chat_conversations")
+          .update({ status: "ativa", last_message_at: new Date().toISOString() })
+          .eq("id", conversationId);
+
+        // Check if first customer message
+        const { count } = await supabase
+          .from("chat_messages").select("id", { count: "exact", head: true })
+          .eq("conversation_id", conversationId).eq("sender_type", "customer");
+        isFirstMessage = (count || 0) === 0;
+      }
     } else {
       isFirstMessage = true;
       const { data: customer } = await supabase
-        .from("customers")
-        .select("id, name")
-        .eq("phone", normalizedPhone)
-        .maybeSingle();
-
+        .from("customers").select("id, name").eq("phone", normalizedPhone).maybeSingle();
       const title = customer?.name || senderName || `WhatsApp ${normalizedPhone}`;
-
       const { data: newConv, error: convError } = await supabase
-        .from("chat_conversations")
-        .insert({
-          title,
-          channel: "whatsapp",
-          phone: normalizedPhone,
-          customer_id: customer?.id || null,
-          status: "ativa",
+        .from("chat_conversations").insert({
+          title, channel: "whatsapp", phone: normalizedPhone,
+          customer_id: customer?.id || null, status: "ativa",
           last_message_at: new Date().toISOString(),
-        })
-        .select("id")
-        .single();
-
+        }).select("id").single();
       if (convError) throw convError;
       conversationId = newConv.id;
     }
 
     // Insert customer message
     const { error: msgError } = await supabase.from("chat_messages").insert({
-      conversation_id: conversationId,
-      sender_type: "customer",
-      sender_name: senderName || normalizedPhone,
-      content: messageContent,
-      external_message_id: messageId || null,
-      is_read: false,
+      conversation_id: conversationId, sender_type: "customer",
+      sender_name: senderName || normalizedPhone, content: messageContent,
+      external_message_id: messageId || null, is_read: false,
     });
-
     if (msgError) throw msgError;
     console.log("Message saved for conversation:", conversationId);
+
+    // --- Handle close request ---
+    if (isCloseRequest(messageContent)) {
+      const closeMsg = "Atendimento encerrado. ✅\n\nObrigado por entrar em contato com a The Best Cloud! Se precisar de algo, envie *reabrir* para retomar o atendimento.\n\nAté logo! 👋";
+      const sent = await sendZapiMessage(normalizedPhone, closeMsg);
+      if (sent) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: conversationId, sender_type: "agent",
+          sender_name: "🤖 Chatbot", content: closeMsg, is_read: true,
+        });
+      }
+      await supabase.from("chat_conversations")
+        .update({ status: "encerrada" }).eq("id", conversationId);
+
+      return new Response(JSON.stringify({ ok: true, conversationId, action: "closed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Handle reopen request ---
+    if (isReopenRequest(messageContent) && conversationStatus === "ativa") {
+      const reopenMsg = "Conversa reaberta! 🔄\n\nComo posso ajudá-lo?";
+      const sent = await sendZapiButtonList(normalizedPhone, reopenMsg, [
+        { id: "backup", label: "☁️ Backup em Nuvem" },
+        { id: "ransomware", label: "🛡️ Anti-Ransomware" },
+        { id: "suporte", label: "🎧 Suporte Técnico" },
+        { id: "cotacao", label: "💰 Cotação" },
+        { id: "encerrar", label: "❌ Encerrar" },
+      ]);
+      if (sent) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: conversationId, sender_type: "agent",
+          sender_name: "🤖 Chatbot", content: reopenMsg, is_read: true,
+        });
+      }
+      return new Response(JSON.stringify({ ok: true, conversationId, action: "reopened" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // --- Chatbot auto-reply ---
     const matchedRule = await matchChatbotRule(supabase, messageContent, conversationId, isFirstMessage);
@@ -278,17 +327,33 @@ serve(async (req) => {
       }
 
       if (replyContent) {
-        // Send via Z-API
-        const sent = await sendZapiMessage(normalizedPhone, replyContent);
+        let sent: boolean;
+
+        // For greeting and keyword responses, add action buttons
+        if (matchedRule.trigger_type === "greeting") {
+          sent = await sendZapiButtonList(normalizedPhone, replyContent, [
+            { id: "backup", label: "☁️ Backup em Nuvem" },
+            { id: "ransomware", label: "🛡️ Anti-Ransomware" },
+            { id: "disaster", label: "🔄 Disaster Recovery" },
+            { id: "cotacao", label: "💰 Cotação" },
+            { id: "suporte", label: "🎧 Suporte" },
+            { id: "encerrar", label: "❌ Encerrar" },
+          ]);
+        } else if (matchedRule.trigger_type === "keyword") {
+          // After answering a keyword, offer follow-up buttons
+          sent = await sendZapiButtonList(normalizedPhone, replyContent, [
+            { id: "cotacao", label: "💰 Solicitar Cotação" },
+            { id: "suporte", label: "🎧 Falar com Consultor" },
+            { id: "encerrar", label: "❌ Encerrar" },
+          ]);
+        } else {
+          sent = await sendZapiMessage(normalizedPhone, replyContent);
+        }
 
         if (sent) {
-          // Save bot reply in chat_messages
           await supabase.from("chat_messages").insert({
-            conversation_id: conversationId,
-            sender_type: "agent",
-            sender_name: "🤖 Chatbot",
-            content: replyContent,
-            is_read: true,
+            conversation_id: conversationId, sender_type: "agent",
+            sender_name: "🤖 Chatbot", content: replyContent, is_read: true,
           });
           console.log("Chatbot auto-reply sent, rule:", matchedRule.name);
         }
@@ -302,8 +367,7 @@ serve(async (req) => {
     const msg = error instanceof Error ? error.message : "Unknown error";
     console.error("Webhook error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
