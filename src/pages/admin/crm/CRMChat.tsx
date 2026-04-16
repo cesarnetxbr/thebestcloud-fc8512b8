@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Plus, Send, MessageCircle, Archive, User, Building2, Search,
   XCircle, RotateCcw, ArrowRightLeft, Zap, Users, Phone, Kanban,
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
