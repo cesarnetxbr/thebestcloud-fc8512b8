@@ -196,9 +196,9 @@ function isReopenRequest(msg: string): boolean {
   return ["reabrir", "voltar", "reabrir conversa", "novo atendimento"].some(kw => n.includes(kw));
 }
 
-// Resolve button click ID into a searchable message
-function resolveButtonId(buttonId: string): string | null {
-  const mapped = buttonIdKeywords[buttonId];
+// Resolve button click ID or action ID into a searchable keyword
+function resolveActionId(actionId: string): string | null {
+  const mapped = actionKeywords[actionId];
   if (mapped && mapped.length > 0) return mapped[0];
   return null;
 }
