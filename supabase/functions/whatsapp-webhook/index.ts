@@ -401,7 +401,7 @@ serve(async (req) => {
     // --- Handle reopen request ---
     if (isReopenRequest(messageContent) && conversationStatus === "ativa") {
       const reopenMsg = "Conversa reaberta! 🔄\n\nComo posso ajudá-lo?";
-      const sent = await sendZapiButtonList(normalizedPhone, reopenMsg, [
+      const sent = await sendZapiMenu(normalizedPhone, reopenMsg, [
         { id: "servicos", label: "📋 Nossos Serviços" },
         { id: "cotacao", label: "💰 Cotação" },
         { id: "suporte", label: "🎧 Suporte Técnico" },
@@ -423,7 +423,7 @@ serve(async (req) => {
     const isServicosRequest = ["servicos", "solucoes", "produtos", "catalogo", "o que voces fazem", "quais servicos", "servico"].some(kw => normalizedForSpecial.includes(kw));
     if (isServicosRequest || (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "servicos")) {
       const servicosMsg = "📋 *Nossos Serviços – The Best Cloud*\n\nOferecemos soluções completas de ciberproteção organizadas em 3 pilares:\n\n🔐 *Segurança*\n• Detecção e Resposta (XDR, EDR, MDR)\n• Prevenção de Perda de Dados (DLP)\n• Segurança e Arquivamento de E-mail\n• Treinamento de Conscientização (SAT)\n\n🛡️ *Proteção*\n• Backup em Nuvem com IA\n• Anti-Ransomware\n• Antivírus Gerenciado\n• Disaster Recovery\n\n⚙️ *Operações*\n• Gerenciamento Remoto (RMM)\n• Monitoramento 24/7\n• Automação de TI\n• Gestão de Patches\n\n🌐 Saiba mais: thebestcloud.com.br";
-      const sent = await sendZapiButtonList(normalizedPhone, servicosMsg, [
+      const sent = await sendZapiMenu(normalizedPhone, servicosMsg, [
         { id: "seguranca_cat", label: "🔐 Segurança" },
         { id: "protecao_cat", label: "🛡️ Proteção" },
         { id: "operacoes_cat", label: "⚙️ Operações" },
@@ -455,7 +455,7 @@ serve(async (req) => {
       }
 
       if (categoryMsg) {
-        const sent = await sendZapiButtonList(normalizedPhone, categoryMsg, [
+        const sent = await sendZapiMenu(normalizedPhone, categoryMsg, [
           { id: "cotacao", label: "💰 Solicitar Cotação" },
           { id: "servicos", label: "📋 Ver Outros Serviços" },
           { id: "encerrar", label: "❌ Encerrar" },
@@ -477,7 +477,7 @@ serve(async (req) => {
       ["cotacao", "orcamento", "quanto custa", "preco", "valor", "plano"].some(kw => normalizedForSpecial.includes(kw));
     if (isCotacaoRequest) {
       const cotacaoMsg = "💰 *Solicitar Cotação – The Best Cloud*\n\nPara elaborar uma proposta personalizada, preciso de algumas informações:\n\n1️⃣ *Qual o volume de dados aproximado?* (em GB ou TB)\n2️⃣ *Quantos dispositivos deseja proteger?* (servidores, estações, notebooks)\n3️⃣ *Quais serviços tem interesse?*\n   • Backup em Nuvem\n   • Anti-Ransomware\n   • Disaster Recovery\n   • Segurança de E-mail\n   • Outros\n\nPor favor, responda com essas informações e um consultor preparará sua proposta! 📋";
-      const sent = await sendZapiButtonList(normalizedPhone, cotacaoMsg, [
+      const sent = await sendZapiMenu(normalizedPhone, cotacaoMsg, [
         { id: "suporte", label: "🎧 Falar com Consultor" },
         { id: "servicos", label: "📋 Ver Serviços" },
         { id: "encerrar", label: "❌ Encerrar" },
@@ -509,14 +509,14 @@ serve(async (req) => {
         let sent: boolean;
 
         if (matchedRule.trigger_type === "greeting") {
-          sent = await sendZapiButtonList(normalizedPhone, replyContent, [
+          sent = await sendZapiMenu(normalizedPhone, replyContent, [
             { id: "servicos", label: "📋 Nossos Serviços" },
             { id: "cotacao", label: "💰 Cotação" },
             { id: "suporte", label: "🎧 Suporte" },
             { id: "encerrar", label: "❌ Encerrar" },
           ]);
         } else if (matchedRule.trigger_type === "keyword") {
-          sent = await sendZapiButtonList(normalizedPhone, replyContent, [
+          sent = await sendZapiMenu(normalizedPhone, replyContent, [
             { id: "cotacao", label: "💰 Solicitar Cotação" },
             { id: "servicos", label: "📋 Nossos Serviços" },
             { id: "suporte", label: "🎧 Falar com Consultor" },
