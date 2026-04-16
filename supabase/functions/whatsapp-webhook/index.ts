@@ -70,6 +70,10 @@ const buttonIdKeywords: Record<string, string[]> = {
   "disaster": ["disaster recovery", "recuperacao", "desastre", "continuidade"],
   "cotacao": ["preco", "valor", "cotacao", "custo", "plano", "orcamento"],
   "suporte": ["suporte", "ajuda", "problema", "erro", "ticket"],
+  "servicos": ["servicos", "solucoes", "produtos", "catalogo"],
+  "seguranca_cat": ["seguranca_cat"],
+  "protecao_cat": ["protecao_cat"],
+  "operacoes_cat": ["operacoes_cat"],
   "encerrar": ["encerrar"],
 };
 
@@ -328,10 +332,9 @@ serve(async (req) => {
     if (isReopenRequest(messageContent) && conversationStatus === "ativa") {
       const reopenMsg = "Conversa reaberta! 🔄\n\nComo posso ajudá-lo?";
       const sent = await sendZapiButtonList(normalizedPhone, reopenMsg, [
-        { id: "backup", label: "☁️ Backup em Nuvem" },
-        { id: "ransomware", label: "🛡️ Anti-Ransomware" },
-        { id: "suporte", label: "🎧 Suporte Técnico" },
+        { id: "servicos", label: "📋 Nossos Serviços" },
         { id: "cotacao", label: "💰 Cotação" },
+        { id: "suporte", label: "🎧 Suporte Técnico" },
         { id: "encerrar", label: "❌ Encerrar" },
       ]);
       if (sent) {
@@ -341,6 +344,81 @@ serve(async (req) => {
         });
       }
       return new Response(JSON.stringify({ ok: true, conversationId, action: "reopened" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Handle "servicos" / services request ---
+    const normalizedForSpecial = normalizeText(messageContent);
+    const isServicosRequest = ["servicos", "solucoes", "produtos", "catalogo", "o que voces fazem", "quais servicos", "servico"].some(kw => normalizedForSpecial.includes(kw));
+    if (isServicosRequest || (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "servicos")) {
+      const servicosMsg = "📋 *Nossos Serviços – The Best Cloud*\n\nOferecemos soluções completas de ciberproteção organizadas em 3 pilares:\n\n🔐 *Segurança*\n• Detecção e Resposta (XDR, EDR, MDR)\n• Prevenção de Perda de Dados (DLP)\n• Segurança e Arquivamento de E-mail\n• Treinamento de Conscientização (SAT)\n\n🛡️ *Proteção*\n• Backup em Nuvem com IA\n• Anti-Ransomware\n• Antivírus Gerenciado\n• Disaster Recovery\n\n⚙️ *Operações*\n• Gerenciamento Remoto (RMM)\n• Monitoramento 24/7\n• Automação de TI\n• Gestão de Patches\n\n🌐 Saiba mais: thebestcloud.com.br";
+      const sent = await sendZapiButtonList(normalizedPhone, servicosMsg, [
+        { id: "seguranca_cat", label: "🔐 Segurança" },
+        { id: "protecao_cat", label: "🛡️ Proteção" },
+        { id: "operacoes_cat", label: "⚙️ Operações" },
+        { id: "cotacao", label: "💰 Cotação" },
+        { id: "encerrar", label: "❌ Encerrar" },
+      ]);
+      if (sent) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: conversationId, sender_type: "agent",
+          sender_name: "🤖 Chatbot", content: servicosMsg, is_read: true,
+        });
+      }
+      return new Response(JSON.stringify({ ok: true, conversationId, action: "servicos" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Handle category detail buttons ---
+    if (isButtonClick) {
+      const btnId = payload.buttonsResponseMessage?.selectedButtonId;
+      let categoryMsg: string | null = null;
+
+      if (btnId === "seguranca_cat") {
+        categoryMsg = "🔐 *Segurança – The Best Cloud*\n\nNossas soluções de segurança:\n\n• *XDR* – Detecção e resposta estendidas em toda a infraestrutura\n• *EDR* – Proteção avançada de endpoints com IA\n• *MDR* – Monitoramento 24/7 por especialistas\n• *DLP* – Prevenção contra vazamento de dados (LGPD)\n• *Segurança de E-mail* – Bloqueio de phishing e malware\n• *Arquivamento de E-mail* – Conformidade regulatória\n• *SAT* – Treinamento de conscientização em segurança\n\n🌐 thebestcloud.com.br";
+      } else if (btnId === "protecao_cat") {
+        categoryMsg = "🛡️ *Proteção – The Best Cloud*\n\nNossas soluções de proteção:\n\n• *Backup em Nuvem* – Automático, contínuo, criptografia AES-256\n• *Anti-Ransomware* – Detecção e reversão em tempo real com IA\n• *Antivírus Gerenciado* – Atualizações contínuas e relatórios\n• *Disaster Recovery* – Failover automático, RTO/RPO configuráveis\n• *Proteção contra Ransomware* – Integrada à plataforma\n\n🌐 thebestcloud.com.br";
+      } else if (btnId === "operacoes_cat") {
+        categoryMsg = "⚙️ *Operações – The Best Cloud*\n\nNossas soluções de operações:\n\n• *RMM* – Gerenciamento e monitoramento remoto\n• *Monitoramento 24/7* – Alertas em tempo real\n• *Automação de TI* – Scripts e tarefas automatizadas\n• *Gestão de Patches* – Atualizações de segurança centralizadas\n• *Inventário de Hardware/Software* – Visibilidade completa\n\n🌐 thebestcloud.com.br";
+      }
+
+      if (categoryMsg) {
+        const sent = await sendZapiButtonList(normalizedPhone, categoryMsg, [
+          { id: "cotacao", label: "💰 Solicitar Cotação" },
+          { id: "servicos", label: "📋 Ver Outros Serviços" },
+          { id: "encerrar", label: "❌ Encerrar" },
+        ]);
+        if (sent) {
+          await supabase.from("chat_messages").insert({
+            conversation_id: conversationId, sender_type: "agent",
+            sender_name: "🤖 Chatbot", content: categoryMsg, is_read: true,
+          });
+        }
+        return new Response(JSON.stringify({ ok: true, conversationId, action: "category_detail" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // --- Handle "cotacao" specifically - ask qualifying questions ---
+    const isCotacaoRequest = (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "cotacao") || 
+      ["cotacao", "orcamento", "quanto custa", "preco", "valor", "plano"].some(kw => normalizedForSpecial.includes(kw));
+    if (isCotacaoRequest) {
+      const cotacaoMsg = "💰 *Solicitar Cotação – The Best Cloud*\n\nPara elaborar uma proposta personalizada, preciso de algumas informações:\n\n1️⃣ *Qual o volume de dados aproximado?* (em GB ou TB)\n2️⃣ *Quantos dispositivos deseja proteger?* (servidores, estações, notebooks)\n3️⃣ *Quais serviços tem interesse?*\n   • Backup em Nuvem\n   • Anti-Ransomware\n   • Disaster Recovery\n   • Segurança de E-mail\n   • Outros\n\nPor favor, responda com essas informações e um consultor preparará sua proposta! 📋";
+      const sent = await sendZapiButtonList(normalizedPhone, cotacaoMsg, [
+        { id: "suporte", label: "🎧 Falar com Consultor" },
+        { id: "servicos", label: "📋 Ver Serviços" },
+        { id: "encerrar", label: "❌ Encerrar" },
+      ]);
+      if (sent) {
+        await supabase.from("chat_messages").insert({
+          conversation_id: conversationId, sender_type: "agent",
+          sender_name: "🤖 Chatbot", content: cotacaoMsg, is_read: true,
+        });
+      }
+      return new Response(JSON.stringify({ ok: true, conversationId, action: "cotacao" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -362,9 +440,7 @@ serve(async (req) => {
 
         if (matchedRule.trigger_type === "greeting") {
           sent = await sendZapiButtonList(normalizedPhone, replyContent, [
-            { id: "backup", label: "☁️ Backup em Nuvem" },
-            { id: "ransomware", label: "🛡️ Anti-Ransomware" },
-            { id: "disaster", label: "🔄 Disaster Recovery" },
+            { id: "servicos", label: "📋 Nossos Serviços" },
             { id: "cotacao", label: "💰 Cotação" },
             { id: "suporte", label: "🎧 Suporte" },
             { id: "encerrar", label: "❌ Encerrar" },
@@ -372,6 +448,7 @@ serve(async (req) => {
         } else if (matchedRule.trigger_type === "keyword") {
           sent = await sendZapiButtonList(normalizedPhone, replyContent, [
             { id: "cotacao", label: "💰 Solicitar Cotação" },
+            { id: "servicos", label: "📋 Nossos Serviços" },
             { id: "suporte", label: "🎧 Falar com Consultor" },
             { id: "encerrar", label: "❌ Encerrar" },
           ]);

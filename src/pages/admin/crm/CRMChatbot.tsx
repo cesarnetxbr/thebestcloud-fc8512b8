@@ -53,8 +53,17 @@ const suggestedRules: Omit<RuleForm, "id">[] = [
     triggerValue: "",
     responseType: "text",
     responseContent:
-      "Olá! 👋 Bem-vindo à The Best Cloud!\n\nSomos especialistas em Ciberproteção com IA: backup, antivírus, anti-ransomware e muito mais em uma plataforma única.\n\nComo posso ajudá-lo hoje?\n\n1️⃣ Backup em Nuvem\n2️⃣ Proteção contra Ransomware\n3️⃣ Antivírus Gerenciado\n4️⃣ Disaster Recovery\n5️⃣ Falar com um consultor",
+      "Olá! 👋 Bem-vindo à The Best Cloud!\n\nSomos especialistas em Ciberproteção com IA: backup, antivírus, anti-ransomware e muito mais em uma plataforma única.\n\nComo posso ajudá-lo hoje?",
     priority: 10,
+  },
+  {
+    name: "Nossos Serviços",
+    triggerType: "keyword",
+    triggerValue: "serviços, serviço, soluções, produtos, catálogo, o que vocês fazem",
+    responseType: "text",
+    responseContent:
+      "📋 *Nossos Serviços – The Best Cloud*\n\nOferecemos soluções completas organizadas em 3 pilares:\n\n🔐 *Segurança* – XDR, EDR, MDR, DLP, Segurança de E-mail, SAT\n🛡️ *Proteção* – Backup em Nuvem, Anti-Ransomware, Disaster Recovery\n⚙️ *Operações* – RMM, Monitoramento 24/7, Automação de TI\n\n🌐 thebestcloud.com.br",
+    priority: 6,
   },
   {
     name: "Backup / Ciberproteção",
@@ -62,7 +71,7 @@ const suggestedRules: Omit<RuleForm, "id">[] = [
     triggerValue: "backup, ciberproteção, nuvem, cloud, armazenamento, dados",
     responseType: "text",
     responseContent:
-      "☁️ *Backup em Nuvem – The Best Cloud*\n\nNossa solução de backup é potencializada por IA para garantir:\n\n✅ Backup automático e contínuo\n✅ Recuperação granular de arquivos\n✅ Criptografia AES-256\n✅ Proteção contra ransomware integrada\n✅ Monitoramento 24/7\n\nQuer receber uma cotação personalizada? Informe o volume de dados aproximado (em GB/TB) e quantos dispositivos deseja proteger.",
+      "☁️ *Backup em Nuvem – The Best Cloud*\n\nNossa solução de backup é potencializada por IA para garantir:\n\n✅ Backup automático e contínuo\n✅ Recuperação granular de arquivos\n✅ Criptografia AES-256\n✅ Proteção contra ransomware integrada\n✅ Monitoramento 24/7",
     priority: 5,
   },
   {
@@ -71,16 +80,7 @@ const suggestedRules: Omit<RuleForm, "id">[] = [
     triggerValue: "ransomware, vírus, malware, ataque, segurança, antivírus, proteção",
     responseType: "text",
     responseContent:
-      "🛡️ *Proteção Anti-Ransomware – The Best Cloud*\n\nNossa plataforma usa inteligência artificial para:\n\n✅ Detectar e bloquear ransomware em tempo real\n✅ Reverter alterações maliciosas automaticamente\n✅ Antivírus gerenciado com atualizações contínuas\n✅ Firewall e filtragem de URLs\n✅ Relatórios de vulnerabilidade\n\nDeseja agendar uma demonstração gratuita?",
-    priority: 5,
-  },
-  {
-    name: "Preço / Cotação",
-    triggerType: "keyword",
-    triggerValue: "preço, valor, cotação, custo, plano, quanto custa, orçamento",
-    responseType: "text",
-    responseContent:
-      "💰 *Planos The Best Cloud*\n\nNossos planos são personalizados de acordo com:\n\n📦 Volume de dados (GB/TB)\n💻 Quantidade de dispositivos\n🔒 Nível de proteção desejado\n\nPara uma cotação personalizada, preciso saber:\n1. Quantos servidores/estações?\n2. Volume total de dados?\n3. Precisa de disaster recovery?\n\nOu prefere falar diretamente com um consultor?",
+      "🛡️ *Proteção Anti-Ransomware – The Best Cloud*\n\nNossa plataforma usa inteligência artificial para:\n\n✅ Detectar e bloquear ransomware em tempo real\n✅ Reverter alterações maliciosas automaticamente\n✅ Antivírus gerenciado com atualizações contínuas\n✅ Firewall e filtragem de URLs\n✅ Relatórios de vulnerabilidade",
     priority: 5,
   },
   {
@@ -89,7 +89,7 @@ const suggestedRules: Omit<RuleForm, "id">[] = [
     triggerValue: "disaster recovery, recuperação, desastre, continuidade, RTO, RPO",
     responseType: "text",
     responseContent:
-      "🔄 *Disaster Recovery – The Best Cloud*\n\nGaranta a continuidade do seu negócio com:\n\n✅ Failover automático para a nuvem\n✅ RTO/RPO configuráveis\n✅ Testes de recuperação agendados\n✅ Recuperação completa de servidores\n✅ Orquestração de runbooks\n\nSua empresa não pode parar! Agende uma consultoria gratuita.",
+      "🔄 *Disaster Recovery – The Best Cloud*\n\nGaranta a continuidade do seu negócio com:\n\n✅ Failover automático para a nuvem\n✅ RTO/RPO configuráveis\n✅ Testes de recuperação agendados\n✅ Recuperação completa de servidores\n✅ Orquestração de runbooks",
     priority: 5,
   },
   {
@@ -107,7 +107,7 @@ const suggestedRules: Omit<RuleForm, "id">[] = [
     triggerValue: "",
     responseType: "text",
     responseContent:
-      "Obrigado pela sua mensagem! 😊\n\nNão encontrei uma resposta automática para sua pergunta, mas um dos nossos consultores será notificado e responderá em breve.\n\nEnquanto isso, você pode acessar nossa base de conhecimento em:\n🌐 thebestcloud.com.br\n\nAgradecemos sua paciência!",
+      "Obrigado pela sua mensagem! 😊\n\nNão encontrei uma resposta automática para sua pergunta, mas um dos nossos consultores será notificado e responderá em breve.\n\n🌐 thebestcloud.com.br",
     priority: 0,
   },
 ];
