@@ -361,6 +361,11 @@ const AdminLayout = () => {
                                 )}
                               >
                                 {item.label}
+                                {item.path === "/admin/crm/chat" && unreadChatCount > 0 && (
+                                  <Badge className="ml-auto bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center animate-pulse">
+                                    {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                                  </Badge>
+                                )}
                               </Link>
                             );
                           })}
