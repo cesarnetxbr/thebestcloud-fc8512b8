@@ -465,20 +465,20 @@ const CRMChat = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-340px)]">
-        {/* Conversation list */}
-        <Card className="lg:col-span-1 flex flex-col">
-          <CardHeader className="pb-2 space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 h-[calc(100vh-380px)] sm:h-[calc(100vh-340px)]">
+        {/* Conversation list — hidden on mobile when a chat is open */}
+        <Card className={cn("lg:col-span-1 flex flex-col", showChatOnMobile ? "hidden lg:flex" : "flex")}>
+          <CardHeader className="pb-2 space-y-2 px-3 sm:px-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9" />
+              <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 h-9" />
             </div>
             <div className="flex gap-1 flex-wrap">
               {[
                 { value: "todas", label: "Todas" },
                 { value: "ativa", label: "Ativas" },
-                { value: "arquivada", label: "Arquivadas" },
-                { value: "encerrada", label: "Encerradas" },
+                { value: "arquivada", label: "Arquiv." },
+                { value: "encerrada", label: "Encerr." },
               ].map(f => (
                 <Button key={f.value} variant={statusFilter === f.value ? "default" : "ghost"} size="sm" className="text-xs h-7 px-2" onClick={() => setStatusFilter(f.value)}>
                   {f.label}
@@ -510,7 +510,7 @@ const CRMChat = () => {
                     key={conv.id}
                     onClick={() => setSelectedId(conv.id)}
                     className={cn(
-                      "w-full text-left px-4 py-3 border-b border-border hover:bg-muted/50 transition-colors",
+                      "w-full text-left px-3 sm:px-4 py-3 border-b border-border hover:bg-muted/50 transition-colors",
                       selectedId === conv.id && "bg-muted"
                     )}
                   >
@@ -553,8 +553,8 @@ const CRMChat = () => {
           </CardContent>
         </Card>
 
-        {/* Chat area */}
-        <Card className="lg:col-span-2 flex flex-col">
+        {/* Chat area — full width on mobile when open */}
+        <Card className={cn("lg:col-span-2 flex flex-col", showChatOnMobile ? "flex" : "hidden lg:flex")}>
           {!selectedId ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
