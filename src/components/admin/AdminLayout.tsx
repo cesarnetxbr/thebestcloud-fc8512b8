@@ -213,6 +213,42 @@ const navSections: NavSection[] = [
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  const fetchUnreadCount = useCallback(async () => {
+    const { count, error } = await supabase
+      .from("chat_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("is_read", false)
+      .neq("sender_type", "agent");
+    if (!error && count !== null) setUnreadChatCount(count);
+  }, []);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const channel = supabase
+      .channel("admin-chat-notifications")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, (payload) => {
+        const msg = payload.new as any;
+        if (msg.sender_type !== "agent") {
+          fetchUnreadCount();
+          // Show prominent toast notification
+          toast.info("💬 Nova mensagem WhatsApp", {
+            description: msg.content?.substring(0, 80) || "Nova mensagem recebida",
+            duration: 6000,
+            action: {
+              label: "Ver",
+              onClick: () => { window.location.href = "/admin/crm/chat"; },
+            },
+          });
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages" }, () => {
+        fetchUnreadCount();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchUnreadCount]);
 
   const toggleSection = (label: string) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
