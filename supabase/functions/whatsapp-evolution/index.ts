@@ -30,7 +30,12 @@ serve(async (req) => {
     "Content-Type": "application/json",
     ...(ZAPI_CLIENT_TOKEN ? { "Client-Token": ZAPI_CLIENT_TOKEN } : {}),
   };
-  console.log("Z-API baseUrl constructed, instance:", ZAPI_INSTANCE_ID.substring(0, 8) + "..., hasClientToken:", !!ZAPI_CLIENT_TOKEN);
+  console.log("Z-API config:", {
+    instance: ZAPI_INSTANCE_ID.substring(0, 8) + "...",
+    hasClientToken: !!ZAPI_CLIENT_TOKEN,
+    clientTokenLength: ZAPI_CLIENT_TOKEN?.length,
+    clientTokenPrefix: ZAPI_CLIENT_TOKEN?.substring(0, 4) + "...",
+  });
 
   try {
     const url = new URL(req.url);
