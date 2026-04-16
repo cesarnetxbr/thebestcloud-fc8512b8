@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -12,9 +13,19 @@ serve(async (req) => {
   const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
   const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
 
+  console.log("EVOLUTION_API_URL length:", EVOLUTION_API_URL?.length);
+  console.log("EVOLUTION_API_URL starts with http:", EVOLUTION_API_URL?.startsWith("http"));
+
   if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY) {
     return new Response(
-      JSON.stringify({ error: "Evolution API not configured" }),
+      JSON.stringify({ error: "Evolution API not configured", hasUrl: !!EVOLUTION_API_URL, hasKey: !!EVOLUTION_API_KEY }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  if (!EVOLUTION_API_URL.startsWith("http")) {
+    return new Response(
+      JSON.stringify({ error: "EVOLUTION_API_URL must be a valid URL starting with http:// or https://. Current value does not start with http." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -36,7 +47,9 @@ serve(async (req) => {
     switch (action) {
       case "create": {
         const body = await req.json();
-        const res = await fetch(`${baseUrl}/instance/create`, {
+        const targetUrl = `${baseUrl}/instance/create`;
+        console.log("Creating instance at:", targetUrl);
+        const res = await fetch(targetUrl, {
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -118,6 +131,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
+    console.error("Evolution API error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
