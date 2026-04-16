@@ -12,6 +12,7 @@ serve(async (req) => {
 
   const ZAPI_INSTANCE_ID = Deno.env.get("ZAPI_INSTANCE_ID");
   const ZAPI_TOKEN = Deno.env.get("ZAPI_TOKEN");
+  const ZAPI_CLIENT_TOKEN = Deno.env.get("ZAPI_CLIENT_TOKEN");
 
   if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
     console.error("Z-API not configured", { hasInstanceId: !!ZAPI_INSTANCE_ID, hasToken: !!ZAPI_TOKEN });
@@ -22,7 +23,11 @@ serve(async (req) => {
   }
 
   const baseUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`;
-  console.log("Z-API baseUrl constructed, instance:", ZAPI_INSTANCE_ID.substring(0, 8) + "...");
+  const zapiHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(ZAPI_CLIENT_TOKEN ? { "Client-Token": ZAPI_CLIENT_TOKEN } : {}),
+  };
+  console.log("Z-API baseUrl constructed, instance:", ZAPI_INSTANCE_ID.substring(0, 8) + "..., hasClientToken:", !!ZAPI_CLIENT_TOKEN);
 
   try {
     const url = new URL(req.url);
