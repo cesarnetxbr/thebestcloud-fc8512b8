@@ -33,29 +33,11 @@ async function sendZapiMessage(phone: string, message: string) {
   } catch (e) { console.error("Z-API send error:", e); return false; }
 }
 
-async function sendZapiButtonList(phone: string, message: string, buttons: { id: string; label: string }[]) {
-  const config = getZapiConfig();
-  if (!config) return sendZapiMessage(phone, message);
-  try {
-    const res = await fetch(`${config.baseUrl}/send-button-list`, {
-      method: "POST", headers: config.headers,
-      body: JSON.stringify({
-        phone, message,
-        buttonList: { buttons: buttons.map(b => ({ id: b.id, label: b.label })) },
-      }),
-    });
-    if (!res.ok) {
-      console.warn("Z-API button-list failed, falling back to text:", res.status);
-      const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
-      return sendZapiMessage(phone, fallbackText);
-    }
-    console.log("Button list sent to:", phone);
-    return true;
-  } catch (e) {
-    console.error("Z-API button error:", e);
-    const fallbackText = message + "\n\n" + buttons.map((b, i) => `${i + 1}️⃣ ${b.label}`).join("\n");
-    return sendZapiMessage(phone, fallbackText);
-  }
+// Send text message with numbered menu options appended
+async function sendZapiMenu(phone: string, message: string, options: { id: string; label: string }[]) {
+  const menuText = options.map((o, i) => `${i + 1}️⃣ ${o.label}`).join("\n");
+  const fullMessage = message + "\n\n" + menuText + "\n\n_Responda com o número da opção desejada._";
+  return sendZapiMessage(phone, fullMessage);
 }
 
 // Normalize accented characters for matching
