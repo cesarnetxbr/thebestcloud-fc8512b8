@@ -105,7 +105,7 @@ serve(async (req) => {
         console.log("Sending text message via Z-API to:", body.phone);
         const res = await fetch(`${baseUrl}/send-text`, {
           method: "POST",
-          headers: zapiGetHeaders,
+          headers: zapiPostHeaders,
           body: JSON.stringify({
             phone: body.phone,
             message: body.message,
