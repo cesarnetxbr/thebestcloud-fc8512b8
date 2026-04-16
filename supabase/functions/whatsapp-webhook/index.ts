@@ -466,7 +466,7 @@ serve(async (req) => {
     }
 
     // --- Handle "cotacao" specifically - ask qualifying questions ---
-    const isCotacaoRequest = (isButtonClick && payload.buttonsResponseMessage?.selectedButtonId === "cotacao") || 
+    const isCotacaoRequest = resolvedActionId === "cotacao" || 
       ["cotacao", "orcamento", "quanto custa", "preco", "valor", "plano"].some(kw => normalizedForSpecial.includes(kw));
     if (isCotacaoRequest) {
       const cotacaoMsg = "💰 *Solicitar Cotação – The Best Cloud*\n\nPara elaborar uma proposta personalizada, preciso de algumas informações:\n\n1️⃣ *Qual o volume de dados aproximado?* (em GB ou TB)\n2️⃣ *Quantos dispositivos deseja proteger?* (servidores, estações, notebooks)\n3️⃣ *Quais serviços tem interesse?*\n   • Backup em Nuvem\n   • Anti-Ransomware\n   • Disaster Recovery\n   • Segurança de E-mail\n   • Outros\n\nPor favor, responda com essas informações e um consultor preparará sua proposta! 📋";
