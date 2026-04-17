@@ -277,7 +277,7 @@ const TrialPage = () => {
           <div className="space-y-3">
             <label className="text-sm font-medium text-foreground block">Como deseja receber o acesso? *</label>
             <div
-              onClick={() => setForm({ ...form, support_option: "email", slot_id: "" })}
+              onClick={() => setForm({ ...form, support_option: "email", selected_slot_id: "", selected_date: "", selected_hour: "" })}
               className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                 form.support_option === "email"
                   ? "border-primary bg-primary/5"
