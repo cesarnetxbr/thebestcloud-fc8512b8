@@ -17,3 +17,4 @@ type: feature
 - Auto-close after 48h via whatsapp-auto-close edge function + pg_cron
 - chat_conversations has phone column for WhatsApp number matching
 - chat_messages has external_message_id for deduplication
+- UNIFIED CONVERSATION PER PHONE: webhook ALWAYS reuses the most recent conversation for a phone number, even if status="encerrada" (auto-reopens to "ativa"). Never creates duplicate conversations for the same contact — preserves full history.
