@@ -45,6 +45,13 @@ function normalizeText(text: string): string {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/@c\.us$/i, "").replace(/@s\.whatsapp\.net$/i, "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("55")) return digits;
+  return `55${digits}`;
+}
+
 // Action ID → keyword mapping for matching chatbot rules
 const actionKeywords: Record<string, string[]> = {
   "backup": ["backup", "ciberprotecao", "nuvem", "cloud"],
@@ -273,7 +280,7 @@ serve(async (req) => {
       });
     }
 
-    const normalizedPhone = phone.replace(/@c\.us$/, "").replace(/@s\.whatsapp\.net$/, "");
+    const normalizedPhone = normalizePhone(phone);
 
     // Deduplicate
     if (messageId) {
@@ -291,11 +298,13 @@ serve(async (req) => {
     let greetingSent = false;
     let conversationStatus = "ativa";
 
-    const { data: existingConv } = await supabase
-      .from("chat_conversations").select("id, status")
-      .eq("phone", normalizedPhone).eq("channel", "whatsapp")
+    const { data: existingConvs } = await supabase
+      .from("chat_conversations").select("id, status, phone, created_at")
+      .eq("channel", "whatsapp")
       .in("status", ["ativa", "arquivada", "encerrada"])
-      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      .order("created_at", { ascending: false });
+
+    const existingConv = existingConvs?.find((conv: any) => normalizePhone(conv.phone || "") === normalizedPhone) ?? null;
 
     if (existingConv) {
       conversationId = existingConv.id;
