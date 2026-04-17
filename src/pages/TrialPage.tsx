@@ -30,6 +30,17 @@ const formatCpfCnpj = (value: string) => {
   return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
 };
 
+// Gera lista de horas inteiras (1h cada) entre start e end
+const generateHourSlots = (start: string, end: string): string[] => {
+  const startHour = parseInt(start.slice(0, 2), 10);
+  const endHour = parseInt(end.slice(0, 2), 10);
+  const hours: string[] = [];
+  for (let h = startHour; h < endHour; h++) {
+    hours.push(`${String(h).padStart(2, "0")}:00`);
+  }
+  return hours;
+};
+
 const TrialPage = () => {
   const [form, setForm] = useState({
     name: "",
@@ -37,18 +48,20 @@ const TrialPage = () => {
     phone: "",
     cpf_cnpj: "",
     support_option: "" as "" | "email" | "agendar",
-    slot_id: "",
+    selected_date: "",
+    selected_hour: "",
+    selected_slot_id: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // Carrega slots disponíveis futuros (agenda técnica)
+  // Carrega slots disponíveis futuros (agenda técnica) — sem expor nome do técnico ao cliente
   const { data: availableSlots = [] } = useQuery({
     queryKey: ["available-support-slots"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("support_schedule_slots")
-        .select("id, slot_date, start_time, end_time, operator_name")
+        .select("id, slot_date, start_time, end_time")
         .eq("status", "disponivel")
         .gte("slot_date", today)
         .order("slot_date", { ascending: true })
@@ -58,10 +71,44 @@ const TrialPage = () => {
     },
   });
 
+  // Reservas já feitas (para esconder horários ocupados)
+  const { data: reservations = [] } = useQuery({
+    queryKey: ["slot-reservations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("support_slot_reservations")
+        .select("slot_id, reserved_hour");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Agrupa slots por data
+  const slotsByDate = availableSlots.reduce((acc: Record<string, any[]>, s: any) => {
+    (acc[s.slot_date] = acc[s.slot_date] || []).push(s);
+    return acc;
+  }, {});
+
+  const availableDates = Object.keys(slotsByDate);
+
+  // Para a data selecionada, gera todas as horas disponíveis (1h) considerando reservas
+  const hoursForSelectedDate = (() => {
+    if (!form.selected_date) return [] as { hour: string; slot_id: string }[];
+    const slots = slotsByDate[form.selected_date] || [];
+    const result: { hour: string; slot_id: string }[] = [];
+    slots.forEach((s) => {
+      generateHourSlots(s.start_time, s.end_time).forEach((h) => {
+        const isReserved = reservations.some(
+          (r: any) => r.slot_id === s.id && r.reserved_hour?.slice(0, 5) === h
+        );
+        if (!isReserved) result.push({ hour: h, slot_id: s.id });
+      });
+    });
+    return result;
+  })();
+
   const submitTrial = useMutation({
     mutationFn: async () => {
-      const selectedSlot = availableSlots.find((s: any) => s.id === form.slot_id);
-
       const { data: categories } = await supabase
         .from("ticket_categories")
         .select("id")
@@ -75,8 +122,8 @@ const TrialPage = () => {
         ? "📧 Receber por e-mail (acesso + manual)"
         : "📅 Agendamento de suporte remoto";
 
-      const slotInfo = selectedSlot
-        ? `${format(new Date(selectedSlot.slot_date + "T00:00:00"), "dd/MM/yyyy (EEEE)", { locale: ptBR })} das ${selectedSlot.start_time?.slice(0, 5)} às ${selectedSlot.end_time?.slice(0, 5)} — Técnico: ${selectedSlot.operator_name}`
+      const slotInfo = form.support_option === "agendar" && form.selected_date && form.selected_hour
+        ? `${format(new Date(form.selected_date + "T00:00:00"), "dd/MM/yyyy (EEEE)", { locale: ptBR })} às ${form.selected_hour}`
         : null;
 
       const description = [
@@ -112,7 +159,6 @@ const TrialPage = () => {
         .maybeSingle();
       if (ticketError) throw ticketError;
 
-      // Salva no trial_clients
       const trialStart = new Date().toISOString().split("T")[0];
       const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
       const { data: trialData, error: trialError } = await supabase
@@ -123,8 +169,8 @@ const TrialPage = () => {
           phone: form.phone,
           cpf_cnpj: form.cpf_cnpj || null,
           support_option: form.support_option,
-          available_date: selectedSlot?.slot_date || null,
-          available_time: selectedSlot?.start_time || null,
+          available_date: form.selected_date || null,
+          available_time: form.selected_hour || null,
           ticket_id: ticketData?.id || null,
           trial_start_date: trialStart,
           trial_end_date: trialEnd,
@@ -134,19 +180,20 @@ const TrialPage = () => {
         .maybeSingle();
       if (trialError) throw trialError;
 
-      // Reserva o slot escolhido
-      if (selectedSlot && trialData?.id) {
-        const { error: slotError } = await supabase
-          .from("support_schedule_slots")
-          .update({
-            status: "reservado",
-            trial_client_id: trialData.id,
+      // Cria a reserva da hora escolhida (1h dentro da janela do técnico)
+      if (form.support_option === "agendar" && form.selected_slot_id && form.selected_hour) {
+        const { error: resError } = await supabase
+          .from("support_slot_reservations")
+          .insert({
+            slot_id: form.selected_slot_id,
+            trial_client_id: trialData?.id || null,
+            reserved_hour: form.selected_hour,
             reserved_by_name: form.name,
             reserved_by_email: form.email,
-          })
-          .eq("id", selectedSlot.id)
-          .eq("status", "disponivel");
-        if (slotError) throw slotError;
+            reserved_by_phone: form.phone,
+            status: "reservado",
+          });
+        if (resError) throw resError;
       }
     },
     onSuccess: () => {
@@ -158,7 +205,7 @@ const TrialPage = () => {
 
   const canSubmit =
     form.name && form.email && form.phone && form.support_option &&
-    (form.support_option === "email" || form.slot_id);
+    (form.support_option === "email" || (form.selected_date && form.selected_hour));
 
   if (submitted) {
     return (
