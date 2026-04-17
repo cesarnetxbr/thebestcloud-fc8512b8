@@ -159,8 +159,6 @@ const navSections: NavSection[] = [
   {
     title: "SUPORTE",
     items: [
-      { label: "Chamados", icon: Headphones, path: "/admin/tickets", module: "chamados" },
-      { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule", module: "agenda_tecnica" },
       { label: "Ouvidoria", icon: ClipboardList, path: "/admin/ouvidoria", module: "ouvidoria" },
     ],
   },
