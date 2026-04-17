@@ -302,28 +302,21 @@ serve(async (req) => {
       conversationStatus = existingConv.status;
 
       if (existingConv.status === "encerrada") {
-        if (isReopenRequest(messageContent)) {
-          await supabase.from("chat_conversations")
-            .update({ status: "ativa", last_message_at: new Date().toISOString() })
-            .eq("id", conversationId);
-          conversationStatus = "ativa";
-          greetingSent = true; // don't re-greet on reopen
-        } else {
-          // Create new conversation
-          const { data: customer } = await supabase
-            .from("customers").select("id, name").eq("phone", normalizedPhone).maybeSingle();
-          const title = customer?.name || senderName || `WhatsApp ${normalizedPhone}`;
-          const { data: newConv, error: convError } = await supabase
-            .from("chat_conversations").insert({
-              title, channel: "whatsapp", phone: normalizedPhone,
-              customer_id: customer?.id || null, status: "ativa",
-              last_message_at: new Date().toISOString(),
-            }).select("id").single();
-          if (convError) throw convError;
-          conversationId = newConv.id;
-          conversationStatus = "ativa";
-          greetingSent = false; // new conv, greeting not yet sent
-        }
+        // ALWAYS reopen the existing conversation to preserve full history
+        // (no new conversation is created for the same phone)
+        await supabase.from("chat_conversations")
+          .update({ status: "ativa", last_message_at: new Date().toISOString() })
+          .eq("id", conversationId);
+        conversationStatus = "ativa";
+
+        // Check if greeting was previously sent — if yes, don't re-greet on reopen
+        const { data: botGreeting } = await supabase
+          .from("chat_messages").select("id")
+          .eq("conversation_id", conversationId)
+          .eq("sender_type", "agent")
+          .eq("sender_name", "🤖 Chatbot")
+          .limit(1).maybeSingle();
+        greetingSent = !!botGreeting;
       } else {
         // Reactivate
         await supabase.from("chat_conversations")
