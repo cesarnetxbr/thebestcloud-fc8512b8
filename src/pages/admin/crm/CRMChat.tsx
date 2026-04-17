@@ -382,9 +382,9 @@ const CRMChat = () => {
   const showChatOnMobile = !!selectedId;
 
   return (
-    <div className="space-y-3 sm:space-y-4 h-full flex flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col space-y-3 overflow-hidden sm:space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between shrink-0">
         <div className="min-w-0">
           <h2 className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2">
             <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />
@@ -446,7 +446,7 @@ const CRMChat = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 shrink-0">
         <Card className="p-2 sm:p-3">
           <div className="text-[10px] sm:text-xs text-muted-foreground">Meus atendimentos</div>
           <div className="text-xl sm:text-2xl font-bold">{myConversations}</div>
@@ -465,10 +465,10 @@ const CRMChat = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 h-[calc(100vh-320px)] sm:h-[calc(100vh-300px)] min-h-[400px] overflow-hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 overflow-hidden">
         {/* Conversation list — hidden on mobile when a chat is open */}
-        <Card className={cn("lg:col-span-1 flex flex-col", showChatOnMobile ? "hidden lg:flex" : "flex")}>
-          <CardHeader className="pb-2 space-y-2 px-3 sm:px-6">
+        <Card className={cn("lg:col-span-1 flex min-h-0 flex-col overflow-hidden", showChatOnMobile ? "hidden lg:flex" : "flex")}>
+          <CardHeader className="shrink-0 pb-2 space-y-2 px-3 sm:px-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar conversas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 h-9" />
@@ -498,9 +498,8 @@ const CRMChat = () => {
               ))}
             </div>
           </CardHeader>
-          <CardContent className="flex-1 p-0 overflow-hidden min-h-0">
-            <ScrollArea className="h-full w-full">
-              <div className="flex flex-col">
+          <CardContent className="flex-1 min-h-0 p-0">
+            <div className="h-full overflow-y-auto">
               {!filtered?.length ? (
                 <div className="p-6 text-center text-muted-foreground text-sm">Nenhuma conversa encontrada</div>
               ) : filtered.map(conv => {
@@ -550,15 +549,14 @@ const CRMChat = () => {
                   </button>
                 );
               })}
-              </div>
-            </ScrollArea>
+            </div>
           </CardContent>
         </Card>
 
         {/* Chat area — full width on mobile when open */}
-        <Card className={cn("lg:col-span-2 flex flex-col overflow-hidden", showChatOnMobile ? "flex" : "hidden lg:flex")}>
+        <Card className={cn("lg:col-span-2 flex min-h-0 flex-col overflow-hidden", showChatOnMobile ? "flex" : "hidden lg:flex")}>
           {!selectedId ? (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            <div className="flex-1 min-h-0 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p>Selecione uma conversa ou crie uma nova</p>
@@ -566,9 +564,8 @@ const CRMChat = () => {
             </div>
           ) : (
             <>
-              <CardHeader className="pb-2 border-b border-border px-3 sm:px-6">
+              <CardHeader className="shrink-0 pb-2 border-b border-border px-3 sm:px-6">
                 <div className="flex items-center gap-2">
-                  {/* Back button — mobile only */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -596,7 +593,6 @@ const CRMChat = () => {
                       {statusLabels[selected?.status || "ativa"].label}
                     </Badge>
 
-                    {/* Transfer agent */}
                     {selected?.status === "ativa" && (
                       <Popover>
                         <PopoverTrigger asChild>
@@ -661,8 +657,8 @@ const CRMChat = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden flex flex-col min-h-0">
-                <ScrollArea className="flex-1 min-h-0 h-full">
+              <CardContent className="flex-1 min-h-0 p-0 flex flex-col overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto">
                   <div className="space-y-3 p-3 sm:p-4">
                     {!messages?.length ? (
                       <div className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda. Inicie a conversa!</div>
@@ -690,10 +686,9 @@ const CRMChat = () => {
                     ))}
                     <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
                 {selected?.status === "ativa" && (
-                  <div className="border-t border-border">
-                    {/* Quick replies */}
+                  <div className="shrink-0 border-t border-border">
                     {showQuickReplies && quickReplies && quickReplies.length > 0 && (
                       <div className="p-2 border-b border-border bg-muted/30 max-h-32 overflow-y-auto">
                         <div className="flex flex-wrap gap-1">

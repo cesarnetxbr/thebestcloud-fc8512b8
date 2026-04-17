@@ -431,9 +431,9 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex min-h-screen min-w-0 flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-background border-b border-border px-6 py-4 flex items-center gap-4">
+        <header className="sticky top-0 z-30 bg-background border-b border-border px-6 py-4 flex items-center gap-4 shrink-0">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground">
             <Menu className="h-6 w-6" />
           </button>
@@ -442,7 +442,7 @@ const AdminLayout = () => {
           </h1>
         </header>
 
-        <main className="flex-1 p-6">
+        <main className="flex-1 min-h-0 overflow-hidden p-6">
           <Outlet />
         </main>
       </div>
