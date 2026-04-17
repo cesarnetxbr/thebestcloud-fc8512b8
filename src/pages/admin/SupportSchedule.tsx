@@ -282,6 +282,39 @@ const SupportSchedule = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Slot Dialog */}
+      <Dialog open={!!editingId} onOpenChange={(o) => !o && setEditingId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Horário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Data *</label>
+              <Input type="date" value={editForm.slot_date} onChange={(e) => setEditForm({ ...editForm, slot_date: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Início *</label>
+                <Input type="time" value={editForm.start_time} onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Fim *</label>
+                <Input type="time" value={editForm.end_time} onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Observações</label>
+              <Input value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditingId(null)}>Cancelar</Button>
+              <Button onClick={() => updateSlot.mutate()} disabled={updateSlot.isPending}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
