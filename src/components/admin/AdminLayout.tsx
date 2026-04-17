@@ -46,20 +46,24 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 interface NavItem {
   label: string;
   icon: any;
   path: string;
   indent?: boolean;
+  module?: string;
 }
 
 interface NavSection {
   title?: string;
+  module?: string;
   items: NavItem[];
   expandable?: {
     label: string;
     icon: any;
+    module?: string;
     items: NavItem[];
   };
 }
@@ -67,15 +71,15 @@ interface NavSection {
 const navSections: NavSection[] = [
   {
     items: [
-      { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-      { label: "Usuários", icon: Users, path: "/admin/users" },
+      { label: "Dashboard", icon: LayoutDashboard, path: "/admin", module: "dashboard" },
+      { label: "Usuários", icon: Users, path: "/admin/users", module: "usuarios" },
     ],
   },
   {
     title: "CADASTROS",
     items: [
-      { label: "Clientes", icon: Users, path: "/admin/customers" },
-      { label: "Clientes Trial", icon: Gift, path: "/admin/trial-clients" },
+      { label: "Clientes", icon: Users, path: "/admin/customers", module: "clientes" },
+      { label: "Clientes Trial", icon: Gift, path: "/admin/trial-clients", module: "trial_clients" },
     ],
   },
   {
@@ -84,13 +88,14 @@ const navSections: NavSection[] = [
     expandable: {
       label: "Pipeline & Vendas",
       icon: Target,
+      module: "comercial",
       items: [
-        { label: "Dashboard CRM", icon: BarChart3, path: "/admin/crm" },
-        { label: "Pipeline", icon: Kanban, path: "/admin/crm/pipeline" },
-        { label: "Leads", icon: UserPlus, path: "/admin/crm/leads" },
-        { label: "Agenda", icon: CalendarDays, path: "/admin/crm/agenda" },
-        { label: "Solicitações", icon: ClipboardList, path: "/admin/crm/requests" },
-        { label: "Orçamentos", icon: FileText, path: "/admin/crm/quotes" },
+        { label: "Dashboard CRM", icon: BarChart3, path: "/admin/crm", module: "comercial" },
+        { label: "Pipeline", icon: Kanban, path: "/admin/crm/pipeline", module: "comercial" },
+        { label: "Leads", icon: UserPlus, path: "/admin/crm/leads", module: "comercial" },
+        { label: "Agenda", icon: CalendarDays, path: "/admin/crm/agenda", module: "comercial" },
+        { label: "Solicitações", icon: ClipboardList, path: "/admin/crm/requests", module: "comercial" },
+        { label: "Orçamentos", icon: FileText, path: "/admin/crm/quotes", module: "comercial" },
       ],
     },
   },
@@ -99,11 +104,12 @@ const navSections: NavSection[] = [
     expandable: {
       label: "Chat & Atendimento",
       icon: Phone,
+      module: "chat",
       items: [
-        { label: "Multi-atendimento", icon: MessageSquare, path: "/admin/crm/chat" },
-        { label: "WhatsApp Connect", icon: Phone, path: "/admin/crm/whatsapp-connect" },
-        { label: "Chatbot & IA", icon: Zap, path: "/admin/crm/chatbot" },
-        { label: "Config. Chat", icon: Settings, path: "/admin/crm/chat/settings" },
+        { label: "Multi-atendimento", icon: MessageSquare, path: "/admin/crm/chat", module: "chat" },
+        { label: "WhatsApp Connect", icon: Phone, path: "/admin/crm/whatsapp-connect", module: "chat" },
+        { label: "Chatbot & IA", icon: Zap, path: "/admin/crm/chatbot", module: "chat" },
+        { label: "Config. Chat", icon: Settings, path: "/admin/crm/chat/settings", module: "chat" },
       ],
     },
   },
@@ -113,9 +119,10 @@ const navSections: NavSection[] = [
     expandable: {
       label: "Visão Geral",
       icon: TrendingUp,
+      module: "analytics",
       items: [
-        { label: "Dashboard Marketing", icon: BarChart3, path: "/admin/crm/marketing" },
-        { label: "Analytics & Tracking", icon: Activity, path: "/admin/analytics" },
+        { label: "Dashboard Marketing", icon: BarChart3, path: "/admin/crm/marketing", module: "analytics" },
+        { label: "Analytics & Tracking", icon: Activity, path: "/admin/analytics", module: "analytics" },
       ],
     },
   },
@@ -124,11 +131,12 @@ const navSections: NavSection[] = [
     expandable: {
       label: "E-mail Marketing",
       icon: Mail,
+      module: "marketing_email",
       items: [
-        { label: "Dashboard E-mail", icon: BarChart3, path: "/admin/marketing" },
-        { label: "Campanhas E-mail", icon: Send, path: "/admin/marketing/campaigns" },
-        { label: "Listas", icon: Users, path: "/admin/marketing/lists" },
-        { label: "Templates E-mail", icon: FileText, path: "/admin/marketing/templates" },
+        { label: "Dashboard E-mail", icon: BarChart3, path: "/admin/marketing", module: "marketing_email" },
+        { label: "Campanhas E-mail", icon: Send, path: "/admin/marketing/campaigns", module: "marketing_email" },
+        { label: "Listas", icon: Users, path: "/admin/marketing/lists", module: "marketing_email" },
+        { label: "Templates E-mail", icon: FileText, path: "/admin/marketing/templates", module: "marketing_email" },
       ],
     },
   },
@@ -137,20 +145,21 @@ const navSections: NavSection[] = [
     expandable: {
       label: "SMS Marketing",
       icon: MessageSquare,
+      module: "marketing_sms",
       items: [
-        { label: "Dashboard SMS", icon: BarChart3, path: "/admin/sms" },
-        { label: "Campanhas SMS", icon: Send, path: "/admin/sms/campaigns" },
-        { label: "Contatos SMS", icon: Phone, path: "/admin/sms/contacts" },
-        { label: "Templates SMS", icon: FileText, path: "/admin/sms/templates" },
+        { label: "Dashboard SMS", icon: BarChart3, path: "/admin/sms", module: "marketing_sms" },
+        { label: "Campanhas SMS", icon: Send, path: "/admin/sms/campaigns", module: "marketing_sms" },
+        { label: "Contatos SMS", icon: Phone, path: "/admin/sms/contacts", module: "marketing_sms" },
+        { label: "Templates SMS", icon: FileText, path: "/admin/sms/templates", module: "marketing_sms" },
       ],
     },
   },
   {
     title: "SUPORTE",
     items: [
-      { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
-      { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule" },
-      { label: "Ouvidoria", icon: ClipboardList, path: "/admin/ouvidoria" },
+      { label: "Chamados", icon: Headphones, path: "/admin/tickets", module: "chamados" },
+      { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule", module: "agenda_tecnica" },
+      { label: "Ouvidoria", icon: ClipboardList, path: "/admin/ouvidoria", module: "ouvidoria" },
     ],
   },
   {
@@ -159,15 +168,16 @@ const navSections: NavSection[] = [
     expandable: {
       label: "Gestão Financeira",
       icon: Briefcase,
+      module: "financeiro",
       items: [
-        { label: "Resumo", icon: BarChart3, path: "/admin/financial" },
-        { label: "Painel CFO", icon: PieChart, path: "/admin/financial/cfo" },
-        { label: "DRE & Caixa", icon: FileText, path: "/admin/financial/dre" },
-        { label: "Receitas", icon: TrendingUp, path: "/admin/financial/receitas" },
-        { label: "Despesas", icon: TrendingDown, path: "/admin/financial/despesas" },
-        { label: "Comissões", icon: DollarSign, path: "/admin/financial/comissoes" },
-        { label: "Automações", icon: Zap, path: "/admin/financial/automacoes" },
-        { label: "Categorias", icon: FolderOpen, path: "/admin/financial/categorias" },
+        { label: "Resumo", icon: BarChart3, path: "/admin/financial", module: "financeiro" },
+        { label: "Painel CFO", icon: PieChart, path: "/admin/financial/cfo", module: "financeiro" },
+        { label: "DRE & Caixa", icon: FileText, path: "/admin/financial/dre", module: "financeiro" },
+        { label: "Receitas", icon: TrendingUp, path: "/admin/financial/receitas", module: "financeiro" },
+        { label: "Despesas", icon: TrendingDown, path: "/admin/financial/despesas", module: "financeiro" },
+        { label: "Comissões", icon: DollarSign, path: "/admin/financial/comissoes", module: "financeiro" },
+        { label: "Automações", icon: Zap, path: "/admin/financial/automacoes", module: "financeiro" },
+        { label: "Categorias", icon: FolderOpen, path: "/admin/financial/categorias", module: "financeiro" },
       ],
     },
   },
@@ -177,14 +187,15 @@ const navSections: NavSection[] = [
     expandable: {
       label: "Preços e Faturamento",
       icon: DollarSign,
+      module: "faturamento",
       items: [
-        { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables" },
-        { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables" },
-        { label: "Conexões", icon: Link2, path: "/admin/connections" },
-        { label: "Tenants", icon: Globe, path: "/admin/tenants" },
-        { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard" },
-        { label: "Custo", icon: TrendingDown, path: "/admin/invoices/custo", indent: true },
-        { label: "Venda", icon: TrendingUp, path: "/admin/invoices/venda", indent: true },
+        { label: "Tabela de custo", icon: Tag, path: "/admin/cost-tables", module: "tabelas_custo" },
+        { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables", module: "tabelas_venda" },
+        { label: "Conexões", icon: Link2, path: "/admin/connections", module: "conexoes" },
+        { label: "Tenants", icon: Globe, path: "/admin/tenants", module: "tenants" },
+        { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard", module: "faturamento" },
+        { label: "Custo", icon: TrendingDown, path: "/admin/invoices/custo", indent: true, module: "faturamento" },
+        { label: "Venda", icon: TrendingUp, path: "/admin/invoices/venda", indent: true, module: "faturamento" },
       ],
     },
   },
@@ -194,19 +205,20 @@ const navSections: NavSection[] = [
     expandable: {
       label: "Proteção de Dados",
       icon: Shield,
+      module: "lgpd",
       items: [
-        { label: "Painel LGPD", icon: Shield, path: "/admin/lgpd" },
-        { label: "Mapeamento (ROPA)", icon: Database, path: "/admin/lgpd/ropa" },
-        { label: "Consentimentos", icon: Users, path: "/admin/lgpd/consents" },
-        { label: "Solicitações", icon: FileText, path: "/admin/lgpd/requests" },
-        { label: "Incidentes", icon: AlertTriangle, path: "/admin/lgpd/incidents" },
+        { label: "Painel LGPD", icon: Shield, path: "/admin/lgpd", module: "lgpd" },
+        { label: "Mapeamento (ROPA)", icon: Database, path: "/admin/lgpd/ropa", module: "lgpd" },
+        { label: "Consentimentos", icon: Users, path: "/admin/lgpd/consents", module: "lgpd" },
+        { label: "Solicitações", icon: FileText, path: "/admin/lgpd/requests", module: "lgpd" },
+        { label: "Incidentes", icon: AlertTriangle, path: "/admin/lgpd/incidents", module: "lgpd" },
       ],
     },
   },
   {
     items: [
-      { label: "Configurações", icon: Settings, path: "/admin/settings" },
-      { label: "Auditoria", icon: ClipboardList, path: "/admin/audit-logs" },
+      { label: "Configurações", icon: Settings, path: "/admin/settings", module: "configuracoes" },
+      { label: "Auditoria", icon: ClipboardList, path: "/admin/audit-logs", module: "auditoria" },
     ],
   },
 ];
