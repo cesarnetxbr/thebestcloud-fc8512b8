@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Gift, Info, CheckCircle, ArrowLeft, Mail, Calendar } from "lucide-react";
+import { Gift, Info, CheckCircle, ArrowLeft, Mail, Calendar, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const formatPhone = (value: string) => {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -34,13 +37,31 @@ const TrialPage = () => {
     phone: "",
     cpf_cnpj: "",
     support_option: "" as "" | "email" | "agendar",
-    available_date: "",
-    available_time: "",
+    slot_id: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
+  // Carrega slots disponíveis futuros (agenda técnica)
+  const { data: availableSlots = [] } = useQuery({
+    queryKey: ["available-support-slots"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("support_schedule_slots")
+        .select("id, slot_date, start_time, end_time, operator_name")
+        .eq("status", "disponivel")
+        .gte("slot_date", today)
+        .order("slot_date", { ascending: true })
+        .order("start_time", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const submitTrial = useMutation({
     mutationFn: async () => {
+      const selectedSlot = availableSlots.find((s: any) => s.id === form.slot_id);
+
       const { data: categories } = await supabase
         .from("ticket_categories")
         .select("id")
@@ -54,6 +75,10 @@ const TrialPage = () => {
         ? "📧 Receber por e-mail (acesso + manual)"
         : "📅 Agendamento de suporte remoto";
 
+      const slotInfo = selectedSlot
+        ? `${format(new Date(selectedSlot.slot_date + "T00:00:00"), "dd/MM/yyyy (EEEE)", { locale: ptBR })} das ${selectedSlot.start_time?.slice(0, 5)} às ${selectedSlot.end_time?.slice(0, 5)} — Técnico: ${selectedSlot.operator_name}`
+        : null;
+
       const description = [
         `📋 Solicitação de Teste Gratuito 14 Dias`,
         ``,
@@ -63,8 +88,7 @@ const TrialPage = () => {
         form.cpf_cnpj ? `CPF/CNPJ: ${form.cpf_cnpj}` : null,
         ``,
         `Opção escolhida: ${optionLabel}`,
-        form.support_option === "agendar" ? `Data disponível: ${form.available_date}` : null,
-        form.support_option === "agendar" ? `Horário disponível: ${form.available_time}` : null,
+        slotInfo ? `Horário agendado: ${slotInfo}` : null,
         ``,
         `🎁 Benefícios do teste:`,
         `• 15 dias de teste gratuito`,
@@ -74,32 +98,56 @@ const TrialPage = () => {
 
       const num = `CHM-${Date.now().toString().slice(-6)}`;
 
-      const { data: ticketData, error } = await supabase.from("tickets").insert({
-        ticket_number: num,
-        subject: `Teste Grátis 14 Dias — ${form.name}`,
-        description,
-        priority: "media",
-        category_id: categoryId,
-        created_by: "00000000-0000-0000-0000-000000000000",
-      }).select("id").single();
-      if (error) throw error;
+      const { data: ticketData, error: ticketError } = await supabase
+        .from("tickets")
+        .insert({
+          ticket_number: num,
+          subject: `Teste Grátis 14 Dias — ${form.name}`,
+          description,
+          priority: "media",
+          category_id: categoryId,
+          created_by: "00000000-0000-0000-0000-000000000000",
+        })
+        .select("id")
+        .maybeSingle();
+      if (ticketError) throw ticketError;
 
-      // Also save to trial_clients table
+      // Salva no trial_clients
       const trialStart = new Date().toISOString().split("T")[0];
       const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-      await supabase.from("trial_clients").insert({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        cpf_cnpj: form.cpf_cnpj || null,
-        support_option: form.support_option,
-        available_date: form.support_option === "agendar" ? form.available_date : null,
-        available_time: form.support_option === "agendar" ? form.available_time : null,
-        ticket_id: ticketData?.id || null,
-        trial_start_date: trialStart,
-        trial_end_date: trialEnd,
-        status: "pending",
-      });
+      const { data: trialData, error: trialError } = await supabase
+        .from("trial_clients")
+        .insert({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          cpf_cnpj: form.cpf_cnpj || null,
+          support_option: form.support_option,
+          available_date: selectedSlot?.slot_date || null,
+          available_time: selectedSlot?.start_time || null,
+          ticket_id: ticketData?.id || null,
+          trial_start_date: trialStart,
+          trial_end_date: trialEnd,
+          status: "pending",
+        })
+        .select("id")
+        .maybeSingle();
+      if (trialError) throw trialError;
+
+      // Reserva o slot escolhido
+      if (selectedSlot && trialData?.id) {
+        const { error: slotError } = await supabase
+          .from("support_schedule_slots")
+          .update({
+            status: "reservado",
+            trial_client_id: trialData.id,
+            reserved_by_name: form.name,
+            reserved_by_email: form.email,
+          })
+          .eq("id", selectedSlot.id)
+          .eq("status", "disponivel");
+        if (slotError) throw slotError;
+      }
     },
     onSuccess: () => {
       setSubmitted(true);
@@ -110,7 +158,7 @@ const TrialPage = () => {
 
   const canSubmit =
     form.name && form.email && form.phone && form.support_option &&
-    (form.support_option === "email" || (form.available_date && form.available_time));
+    (form.support_option === "email" || form.slot_id);
 
   if (submitted) {
     return (
@@ -182,7 +230,7 @@ const TrialPage = () => {
           <div className="space-y-3">
             <label className="text-sm font-medium text-foreground block">Como deseja receber o acesso? *</label>
             <div
-              onClick={() => setForm({ ...form, support_option: "email", available_date: "", available_time: "" })}
+              onClick={() => setForm({ ...form, support_option: "email", slot_id: "" })}
               className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                 form.support_option === "email"
                   ? "border-primary bg-primary/5"
@@ -223,31 +271,36 @@ const TrialPage = () => {
                   <span className="font-medium text-sm">Agendar suporte remoto</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Agende uma data e horário para instalação assistida com nossa equipe técnica.
+                  Escolha um horário disponível na agenda do nosso técnico.
                 </p>
               </div>
             </div>
           </div>
 
           {form.support_option === "agendar" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Data disponível *</label>
-                <Input
-                  type="date"
-                  value={form.available_date}
-                  onChange={(e) => setForm({ ...form, available_date: e.target.value })}
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Horário disponível *</label>
-                <Input
-                  type="time"
-                  value={form.available_time}
-                  onChange={(e) => setForm({ ...form, available_time: e.target.value })}
-                />
-              </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block flex items-center gap-1">
+                <Clock className="h-4 w-4" /> Horário disponível *
+              </label>
+              {availableSlots.length === 0 ? (
+                <div className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
+                  Nenhum horário disponível no momento. Por favor, escolha "Receber por e-mail" ou tente novamente em breve.
+                </div>
+              ) : (
+                <Select value={form.slot_id} onValueChange={(v) => setForm({ ...form, slot_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um horário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSlots.map((s: any) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {format(new Date(s.slot_date + "T00:00:00"), "dd/MM (EEE)", { locale: ptBR })} •{" "}
+                        {s.start_time?.slice(0, 5)} às {s.end_time?.slice(0, 5)} • {s.operator_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           )}
 

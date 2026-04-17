@@ -2351,6 +2351,62 @@ export type Database = {
         }
         Relationships: []
       }
+      support_schedule_slots: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          notes: string | null
+          operator_id: string
+          operator_name: string
+          reserved_by_email: string | null
+          reserved_by_name: string | null
+          slot_date: string
+          start_time: string
+          status: string
+          trial_client_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          operator_id: string
+          operator_name: string
+          reserved_by_email?: string | null
+          reserved_by_name?: string | null
+          slot_date: string
+          start_time: string
+          status?: string
+          trial_client_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          operator_id?: string
+          operator_name?: string
+          reserved_by_email?: string | null
+          reserved_by_name?: string | null
+          slot_date?: string
+          start_time?: string
+          status?: string
+          trial_client_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_schedule_slots_trial_client_id_fkey"
+            columns: ["trial_client_id"]
+            isOneToOne: false
+            referencedRelation: "trial_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_usage: {
         Row: {
           connection_id: string | null

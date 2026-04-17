@@ -34,6 +34,7 @@ import Tenants from "./pages/admin/Tenants";
 import TrialClientsPage from "./pages/admin/TrialClients";
 import AuditLogs from "./pages/admin/AuditLogs";
 import Tickets from "./pages/admin/Tickets";
+import SupportSchedule from "./pages/admin/SupportSchedule";
 import CommercialRequests from "./pages/admin/CommercialRequests";
 import UsersPage from "./pages/admin/Users";
 import FinancialSummary from "./pages/admin/financial/FinancialSummary";
@@ -144,6 +145,7 @@ const App = () => (
               <Route path="settings" element={<Settings />} />
               <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="tickets" element={<Tickets />} />
+              <Route path="support-schedule" element={<SupportSchedule />} />
               <Route path="commercial-requests" element={<CommercialRequests />} />
               <Route path="quotes" element={<Quotes />} />
               <Route path="crm" element={<CRMDashboard />} />
