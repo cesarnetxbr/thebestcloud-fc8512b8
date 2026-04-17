@@ -280,7 +280,22 @@ const AdminLayout = () => {
     return location.pathname.startsWith(path);
   };
 
-  const allNavItems = navSections.flatMap(s => [
+  const { canView } = useRolePermissions();
+
+  // Filter nav based on permissions
+  const visibleSections = navSections
+    .map((section) => {
+      const filteredItems = section.items.filter((i) => !i.module || canView(i.module));
+      let filteredExpandable = section.expandable;
+      if (section.expandable) {
+        const subItems = section.expandable.items.filter((i) => !i.module || canView(i.module));
+        filteredExpandable = subItems.length > 0 ? { ...section.expandable, items: subItems } : undefined;
+      }
+      return { ...section, items: filteredItems, expandable: filteredExpandable };
+    })
+    .filter((s) => s.items.length > 0 || s.expandable);
+
+  const allNavItems = visibleSections.flatMap(s => [
     ...s.items,
     ...(s.expandable?.items || []),
   ]);
