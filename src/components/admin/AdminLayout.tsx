@@ -102,7 +102,7 @@ const navSections: NavSection[] = [
   {
     items: [],
     expandable: {
-      label: "Chat & Atendimento",
+      label: "Chats & Atendimentos",
       icon: Phone,
       module: "chat",
       items: [
@@ -110,6 +110,8 @@ const navSections: NavSection[] = [
         { label: "WhatsApp Connect", icon: Phone, path: "/admin/crm/whatsapp-connect", module: "chat" },
         { label: "Chatbot & IA", icon: Zap, path: "/admin/crm/chatbot", module: "chat" },
         { label: "Config. Chat", icon: Settings, path: "/admin/crm/chat/settings", module: "chat" },
+        { label: "Chamados", icon: Headphones, path: "/admin/tickets", module: "chamados" },
+        { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule", module: "agenda_tecnica" },
       ],
     },
   },
@@ -157,8 +159,6 @@ const navSections: NavSection[] = [
   {
     title: "SUPORTE",
     items: [
-      { label: "Chamados", icon: Headphones, path: "/admin/tickets", module: "chamados" },
-      { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule", module: "agenda_tecnica" },
       { label: "Ouvidoria", icon: ClipboardList, path: "/admin/ouvidoria", module: "ouvidoria" },
     ],
   },
@@ -372,7 +372,7 @@ const AdminLayout = () => {
                       >
                         <ExpIcon className="h-4 w-4" />
                         {exp.label}
-                        {exp.label === "Chat & Atendimento" && unreadChatCount > 0 && (
+                        {exp.label === "Chats & Atendimentos" && unreadChatCount > 0 && (
                           <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center animate-pulse">
                             {unreadChatCount > 99 ? "99+" : unreadChatCount}
                           </Badge>
