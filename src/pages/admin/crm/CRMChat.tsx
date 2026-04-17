@@ -498,8 +498,9 @@ const CRMChat = () => {
               ))}
             </div>
           </CardHeader>
-          <CardContent className="flex-1 p-0 overflow-hidden">
-            <ScrollArea className="h-full">
+          <CardContent className="flex-1 p-0 overflow-hidden min-h-0">
+            <ScrollArea className="h-full w-full">
+              <div className="flex flex-col">
               {!filtered?.length ? (
                 <div className="p-6 text-center text-muted-foreground text-sm">Nenhuma conversa encontrada</div>
               ) : filtered.map(conv => {
@@ -549,6 +550,7 @@ const CRMChat = () => {
                   </button>
                 );
               })}
+              </div>
             </ScrollArea>
           </CardContent>
         </Card>
@@ -660,8 +662,8 @@ const CRMChat = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 p-0 overflow-hidden flex flex-col min-h-0">
-                <ScrollArea className="flex-1 min-h-0 p-3 sm:p-4">
-                  <div className="space-y-3">
+                <ScrollArea className="flex-1 min-h-0 h-full">
+                  <div className="space-y-3 p-3 sm:p-4">
                     {!messages?.length ? (
                       <div className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda. Inicie a conversa!</div>
                     ) : messages.map(msg => (
