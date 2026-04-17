@@ -36,6 +36,8 @@ const SupportSchedule = () => {
     end_time: "",
     notes: "",
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ slot_date: "", start_time: "", end_time: "", notes: "" });
 
   const { data: profile } = useQuery({
     queryKey: ["profile-me", user?.id],
@@ -96,6 +98,36 @@ const SupportSchedule = () => {
       qc.invalidateQueries({ queryKey: ["support-slots"] });
     },
   });
+
+  const updateSlot = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error("Slot inválido");
+      if (editForm.start_time >= editForm.end_time) throw new Error("Horário final deve ser maior que o inicial");
+      const { error } = await supabase.from("support_schedule_slots").update({
+        slot_date: editForm.slot_date,
+        start_time: editForm.start_time,
+        end_time: editForm.end_time,
+        notes: editForm.notes || null,
+      }).eq("id", editingId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Horário atualizado!" });
+      setEditingId(null);
+      qc.invalidateQueries({ queryKey: ["support-slots"] });
+    },
+    onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
+  });
+
+  const startEdit = (s: any) => {
+    setEditForm({
+      slot_date: s.slot_date,
+      start_time: s.start_time?.slice(0, 5) || "",
+      end_time: s.end_time?.slice(0, 5) || "",
+      notes: s.notes || "",
+    });
+    setEditingId(s.id);
+  };
 
   return (
     <div className="space-y-6">
@@ -222,16 +254,26 @@ const SupportSchedule = () => {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{s.notes || "—"}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm("Remover este horário?")) deleteSlot.mutate(s.id);
-                        }}
-                        disabled={s.status === "reservado"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEdit(s)}
+                          title="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Remover este horário?")) deleteSlot.mutate(s.id);
+                          }}
+                          title="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
