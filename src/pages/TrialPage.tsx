@@ -325,28 +325,71 @@ const TrialPage = () => {
           </div>
 
           {form.support_option === "agendar" && (
-            <div>
-              <label className="text-sm font-medium mb-1 block flex items-center gap-1">
-                <Clock className="h-4 w-4" /> Horário disponível *
-              </label>
-              {availableSlots.length === 0 ? (
-                <div className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
-                  Nenhum horário disponível no momento. Por favor, escolha "Receber por e-mail" ou tente novamente em breve.
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1 block flex items-center gap-1">
+                  <Calendar className="h-4 w-4" /> Escolha o dia *
+                </label>
+                {availableDates.length === 0 ? (
+                  <div className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
+                    Nenhum dia disponível no momento. Escolha "Receber por e-mail" ou tente novamente em breve.
+                  </div>
+                ) : (
+                  <Select
+                    value={form.selected_date}
+                    onValueChange={(v) => setForm({ ...form, selected_date: v, selected_hour: "", selected_slot_id: "" })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um dia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableDates.map((d) => (
+                        <SelectItem key={d} value={d}>
+                          {format(new Date(d + "T00:00:00"), "dd/MM/yyyy (EEEE)", { locale: ptBR })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {form.selected_date && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block flex items-center gap-1">
+                    <Clock className="h-4 w-4" /> Escolha o horário (1 hora) *
+                  </label>
+                  {hoursForSelectedDate.length === 0 ? (
+                    <div className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
+                      Todos os horários deste dia já foram reservados. Escolha outro dia.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-4 gap-2">
+                      {hoursForSelectedDate.map(({ hour, slot_id }) => {
+                        const isSelected = form.selected_hour === hour && form.selected_slot_id === slot_id;
+                        return (
+                          <button
+                            key={`${slot_id}-${hour}`}
+                            type="button"
+                            onClick={() => setForm({ ...form, selected_hour: hour, selected_slot_id: slot_id })}
+                            className={`p-2 text-sm rounded-lg border-2 transition-all ${
+                              isSelected
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border hover:border-primary/50 bg-background"
+                            }`}
+                          >
+                            {hour}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {form.selected_hour && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Atendimento agendado das <strong>{form.selected_hour}</strong> às{" "}
+                      <strong>{String(parseInt(form.selected_hour) + 1).padStart(2, "0")}:00</strong>.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <Select value={form.slot_id} onValueChange={(v) => setForm({ ...form, slot_id: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um horário" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableSlots.map((s: any) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {format(new Date(s.slot_date + "T00:00:00"), "dd/MM (EEE)", { locale: ptBR })} •{" "}
-                        {s.start_time?.slice(0, 5)} às {s.end_time?.slice(0, 5)} • {s.operator_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               )}
             </div>
           )}
