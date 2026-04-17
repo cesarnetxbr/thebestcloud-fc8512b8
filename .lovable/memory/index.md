@@ -22,6 +22,7 @@ Tech: Supabase Edge Functions with Service Role Key for external APIs. Automated
 - [Public Trial Request](mem://features/public-trial-request) — 14-day free trial form and logic
 - [Client Registration Logic](mem://auth/client-registration-logic) — Linking new auth users to existing customer records
 - [Support Tickets](mem://features/admin/support-tickets) — Ticket formatting and categories
+- [Support Schedule](mem://features/admin/support-schedule) — Operators publish slots; trial form auto-reserves them
 - [LGPD Compliance](mem://features/lgpd-compliance) — Privacy module and DPO info
 - [Quotes Module](mem://features/admin/quotes-module) — Commercial proposals generation
 - [Knowledge Base](mem://features/knowledge-base) — Technical articles and AI search
