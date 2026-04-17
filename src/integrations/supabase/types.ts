@@ -2407,6 +2407,57 @@ export type Database = {
           },
         ]
       }
+      support_slot_reservations: {
+        Row: {
+          created_at: string
+          id: string
+          reserved_by_email: string
+          reserved_by_name: string
+          reserved_by_phone: string | null
+          reserved_hour: string
+          slot_id: string
+          status: string
+          trial_client_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reserved_by_email: string
+          reserved_by_name: string
+          reserved_by_phone?: string | null
+          reserved_hour: string
+          slot_id: string
+          status?: string
+          trial_client_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reserved_by_email?: string
+          reserved_by_name?: string
+          reserved_by_phone?: string | null
+          reserved_hour?: string
+          slot_id?: string
+          status?: string
+          trial_client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_slot_reservations_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "support_schedule_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_slot_reservations_trial_client_id_fkey"
+            columns: ["trial_client_id"]
+            isOneToOne: false
+            referencedRelation: "trial_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_usage: {
         Row: {
           connection_id: string | null
