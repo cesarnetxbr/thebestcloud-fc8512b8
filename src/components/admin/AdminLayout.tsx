@@ -267,13 +267,17 @@ const AdminLayout = () => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const isSectionExpanded = (label: string) => {
-    if (expandedSections[label] !== undefined) return expandedSections[label];
-    // Auto-expand if any sub-item is active
-    return true;
-  };
   const { user, signOut } = useAuth();
   const location = useLocation();
+
+  const isSectionExpanded = (label: string, hasActiveChild: boolean) => {
+    // Manual toggle takes precedence
+    if (expandedSections[label] !== undefined) return expandedSections[label];
+    // Auto-expand only if user is currently inside this section
+    if (hasActiveChild) return true;
+    // Default: closed for cleaner UI
+    return false;
+  };
 
   const isActive = (path: string) => {
     if (path === "/admin") return location.pathname === "/admin";
