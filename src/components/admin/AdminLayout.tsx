@@ -149,6 +149,7 @@ const navSections: NavSection[] = [
     title: "SUPORTE",
     items: [
       { label: "Chamados", icon: Headphones, path: "/admin/tickets" },
+      { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule" },
       { label: "Ouvidoria", icon: ClipboardList, path: "/admin/ouvidoria" },
     ],
   },
