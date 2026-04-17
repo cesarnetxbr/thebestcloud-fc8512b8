@@ -299,9 +299,9 @@ serve(async (req) => {
     let conversationStatus = "ativa";
 
     const { data: existingConvs } = await supabase
-      .from("chat_conversations").select("id, status, phone, created_at")
+      .from("chat_conversations").select("id, status, phone, created_at, last_message_at")
       .eq("channel", "whatsapp")
-      .in("status", ["ativa", "arquivada", "encerrada"])
+      .order("last_message_at", { ascending: false })
       .order("created_at", { ascending: false });
 
     const existingConv = existingConvs?.find((conv: any) => normalizePhone(conv.phone || "") === normalizedPhone) ?? null;
