@@ -372,7 +372,7 @@ const AdminLayout = () => {
                       >
                         <ExpIcon className="h-4 w-4" />
                         {exp.label}
-                        {exp.label === "Chat & Atendimento" && unreadChatCount > 0 && (
+                        {exp.label === "Chats & Atendimentos" && unreadChatCount > 0 && (
                           <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center animate-pulse">
                             {unreadChatCount > 99 ? "99+" : unreadChatCount}
                           </Badge>
