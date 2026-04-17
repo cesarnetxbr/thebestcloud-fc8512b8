@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { CalendarDays, Plus, Trash2, Clock, User } from "lucide-react";
+import { CalendarDays, Plus, Trash2, Clock, User, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -36,6 +36,8 @@ const SupportSchedule = () => {
     end_time: "",
     notes: "",
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ slot_date: "", start_time: "", end_time: "", notes: "" });
 
   const { data: profile } = useQuery({
     queryKey: ["profile-me", user?.id],
@@ -96,6 +98,36 @@ const SupportSchedule = () => {
       qc.invalidateQueries({ queryKey: ["support-slots"] });
     },
   });
+
+  const updateSlot = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error("Slot inválido");
+      if (editForm.start_time >= editForm.end_time) throw new Error("Horário final deve ser maior que o inicial");
+      const { error } = await supabase.from("support_schedule_slots").update({
+        slot_date: editForm.slot_date,
+        start_time: editForm.start_time,
+        end_time: editForm.end_time,
+        notes: editForm.notes || null,
+      }).eq("id", editingId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Horário atualizado!" });
+      setEditingId(null);
+      qc.invalidateQueries({ queryKey: ["support-slots"] });
+    },
+    onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
+  });
+
+  const startEdit = (s: any) => {
+    setEditForm({
+      slot_date: s.slot_date,
+      start_time: s.start_time?.slice(0, 5) || "",
+      end_time: s.end_time?.slice(0, 5) || "",
+      notes: s.notes || "",
+    });
+    setEditingId(s.id);
+  };
 
   return (
     <div className="space-y-6">
@@ -222,16 +254,26 @@ const SupportSchedule = () => {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{s.notes || "—"}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm("Remover este horário?")) deleteSlot.mutate(s.id);
-                        }}
-                        disabled={s.status === "reservado"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEdit(s)}
+                          title="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Remover este horário?")) deleteSlot.mutate(s.id);
+                          }}
+                          title="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -240,6 +282,39 @@ const SupportSchedule = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Slot Dialog */}
+      <Dialog open={!!editingId} onOpenChange={(o) => !o && setEditingId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Horário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Data *</label>
+              <Input type="date" value={editForm.slot_date} onChange={(e) => setEditForm({ ...editForm, slot_date: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Início *</label>
+                <Input type="time" value={editForm.start_time} onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Fim *</label>
+                <Input type="time" value={editForm.end_time} onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Observações</label>
+              <Input value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditingId(null)}>Cancelar</Button>
+              <Button onClick={() => updateSlot.mutate()} disabled={updateSlot.isPending}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

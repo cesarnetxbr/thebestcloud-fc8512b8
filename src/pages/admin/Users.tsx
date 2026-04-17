@@ -84,6 +84,36 @@ const Users_Page = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" });
+  const [editForm, setEditForm] = useState({ full_name: "", phone: "", job_title: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = async (u: UserWithRole) => {
+    const { data } = await supabase.from("profiles").select("full_name, phone, job_title").eq("user_id", u.user_id).maybeSingle();
+    setEditForm({
+      full_name: data?.full_name || u.full_name || "",
+      phone: data?.phone || "",
+      job_title: data?.job_title || "",
+    });
+    setDetailUser(u);
+  };
+
+  const saveEdit = async () => {
+    if (!detailUser) return;
+    setSavingEdit(true);
+    const { error } = await supabase.from("profiles").update({
+      full_name: editForm.full_name,
+      phone: editForm.phone || null,
+      job_title: editForm.job_title || null,
+    }).eq("user_id", detailUser.user_id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Usuário atualizado" });
+      setDetailUser(null);
+      fetchUsers();
+    }
+  };
 
   const handleCreateUser = async () => {
     if (!newUser.email || !newUser.password) {
@@ -388,7 +418,7 @@ const Users_Page = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="outline" size="sm" onClick={() => setDetailUser(u)} title="Detalhes">
+                        <Button variant="outline" size="sm" onClick={() => openEdit(u)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => openPermissions(u)} title="Permissões">
@@ -416,11 +446,11 @@ const Users_Page = () => {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
+      {/* Edit / Detail Dialog */}
       <Dialog open={!!detailUser} onOpenChange={(open) => !open && setDetailUser(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Detalhes do Usuário</DialogTitle>
+            <DialogTitle>Editar Usuário</DialogTitle>
           </DialogHeader>
           {detailUser && (
             <div className="space-y-4">
@@ -429,7 +459,6 @@ const Users_Page = () => {
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold">{detailUser.full_name || "Sem nome"}</p>
                   <p className="text-sm text-muted-foreground">{detailUser.email || `${detailUser.user_id.slice(0, 8)}...`}</p>
                   <div className="flex gap-2 mt-1">
                     <Badge className={ROLE_COLORS[detailUser.role]}>{ROLE_LABELS[detailUser.role]}</Badge>
@@ -440,35 +469,29 @@ const Users_Page = () => {
                 </div>
               </div>
 
-              <div className="grid gap-3 text-sm">
-                <div className="flex items-start gap-2 p-2 border rounded">
-                  <Clock className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Último Login</p>
-                    <p className="text-muted-foreground">{formatDate(detailUser.last_login_at)}</p>
-                  </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Nome completo</label>
+                  <Input value={editForm.full_name} onChange={(e) => setEditForm((p) => ({ ...p, full_name: e.target.value }))} />
                 </div>
-                <div className="flex items-start gap-2 p-2 border rounded">
-                  <CalendarDays className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Cadastrado em</p>
-                    <p className="text-muted-foreground">{formatDate(detailUser.created_at)}</p>
-                  </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Telefone</label>
+                  <Input value={editForm.phone} onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))} placeholder="(xx) xxxxx-xxxx" />
                 </div>
-                <div className="flex items-start gap-2 p-2 border rounded">
-                  <UserPlus className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Cadastrado por</p>
-                    <p className="text-muted-foreground">{detailUser.created_by_name || "Sistema (auto-cadastro)"}</p>
-                  </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Cargo</label>
+                  <Input value={editForm.job_title} onChange={(e) => setEditForm((p) => ({ ...p, job_title: e.target.value }))} placeholder="Ex: Operador de Suporte" />
                 </div>
-                <div className="flex items-start gap-2 p-2 border rounded">
-                  <Pencil className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Última alteração de perfil</p>
-                    <p className="text-muted-foreground">{formatDate(detailUser.updated_at)}</p>
-                  </div>
-                </div>
+              </div>
+
+              <div className="grid gap-2 text-xs text-muted-foreground border-t pt-3">
+                <p>Último login: {formatDate(detailUser.last_login_at)}</p>
+                <p>Cadastrado em: {formatDate(detailUser.created_at)} {detailUser.created_by_name ? `por ${detailUser.created_by_name}` : "(auto-cadastro)"}</p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setDetailUser(null)}>Cancelar</Button>
+                <Button onClick={saveEdit} disabled={savingEdit}>{savingEdit ? "Salvando..." : "Salvar"}</Button>
               </div>
             </div>
           )}
