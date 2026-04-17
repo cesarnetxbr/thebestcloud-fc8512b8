@@ -267,13 +267,17 @@ const AdminLayout = () => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const isSectionExpanded = (label: string) => {
-    if (expandedSections[label] !== undefined) return expandedSections[label];
-    // Auto-expand if any sub-item is active
-    return true;
-  };
   const { user, signOut } = useAuth();
   const location = useLocation();
+
+  const isSectionExpanded = (label: string, hasActiveChild: boolean) => {
+    // Manual toggle takes precedence
+    if (expandedSections[label] !== undefined) return expandedSections[label];
+    // Auto-expand only if user is currently inside this section
+    if (hasActiveChild) return true;
+    // Default: closed for cleaner UI
+    return false;
+  };
 
   const isActive = (path: string) => {
     if (path === "/admin") return location.pathname === "/admin";
@@ -373,9 +377,9 @@ const AdminLayout = () => {
                             {unreadChatCount > 99 ? "99+" : unreadChatCount}
                           </Badge>
                         )}
-                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !isSectionExpanded(exp.label) && "-rotate-90")} />
+                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !isSectionExpanded(exp.label, isAnySubActive) && "-rotate-90")} />
                       </button>
-                      {isSectionExpanded(exp.label) && (
+                      {isSectionExpanded(exp.label, isAnySubActive) && (
                         <div className="ml-4 mt-1 space-y-1">
                          {exp.items.map((item) => {
                             const active = isActive(item.path);
