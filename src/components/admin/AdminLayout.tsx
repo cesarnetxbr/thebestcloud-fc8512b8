@@ -377,9 +377,9 @@ const AdminLayout = () => {
                             {unreadChatCount > 99 ? "99+" : unreadChatCount}
                           </Badge>
                         )}
-                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !isSectionExpanded(exp.label) && "-rotate-90")} />
+                        <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", !isSectionExpanded(exp.label, isAnySubActive) && "-rotate-90")} />
                       </button>
-                      {isSectionExpanded(exp.label) && (
+                      {isSectionExpanded(exp.label, isAnySubActive) && (
                         <div className="ml-4 mt-1 space-y-1">
                          {exp.items.map((item) => {
                             const active = isActive(item.path);
