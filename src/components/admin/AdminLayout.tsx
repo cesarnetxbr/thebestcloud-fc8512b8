@@ -322,7 +322,7 @@ const AdminLayout = () => {
         </div>
 
         <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
-          {navSections.map((section, si) => (
+          {visibleSections.map((section, si) => (
             <div key={si}>
               {section.title && (
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/40 px-4 mb-1">
