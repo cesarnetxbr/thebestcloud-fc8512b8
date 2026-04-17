@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil, Trash2, Power } from "lucide-react";
+import { Shield, Users, Search, Settings2, Clock, CalendarDays, UserPlus, Pencil, Trash2, Power, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import RolePresetsDialog from "@/components/admin/RolePresetsDialog";
 
 const ROLE_LABELS: Record<string, string> = {
   pending: "⏳ Pendente",
@@ -86,6 +87,7 @@ const Users_Page = () => {
   const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" });
   const [editForm, setEditForm] = useState({ full_name: "", phone: "", job_title: "" });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [presetsOpen, setPresetsOpen] = useState(false);
 
   const openEdit = async (u: UserWithRole) => {
     const { data } = await supabase.from("profiles").select("full_name, phone, job_title").eq("user_id", u.user_id).maybeSingle();
@@ -292,10 +294,17 @@ const Users_Page = () => {
           </h2>
           <p className="text-muted-foreground">Gerencie usuários, roles e permissões específicas</p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" /> Novo Usuário
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setPresetsOpen(true)}>
+            <ShieldCheck className="h-4 w-4 mr-2" /> Permissões por Perfil
+          </Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" /> Novo Usuário
+          </Button>
+        </div>
       </div>
+
+      <RolePresetsDialog open={presetsOpen} onOpenChange={setPresetsOpen} />
 
       {/* Create User Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
