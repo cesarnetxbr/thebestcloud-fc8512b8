@@ -190,11 +190,26 @@ const Tickets = () => {
     return p?.full_name || uid?.slice(0, 8);
   };
 
-  const filtered = tickets.filter((t: any) => {
-    const matchSearch = t.subject.toLowerCase().includes(search.toLowerCase()) || t.ticket_number.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "all" || t.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
+  const statusOrder: Record<string, number> = {
+    aberto: 1,
+    aguardando_cliente: 2,
+    em_andamento: 3,
+    resolvido: 4,
+    fechado: 5,
+  };
+
+  const filtered = tickets
+    .filter((t: any) => {
+      const matchSearch = t.subject.toLowerCase().includes(search.toLowerCase()) || t.ticket_number.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = filterStatus === "all" || t.status === filterStatus;
+      return matchSearch && matchStatus;
+    })
+    .sort((a: any, b: any) => {
+      const sa = statusOrder[a.status] ?? 99;
+      const sb = statusOrder[b.status] ?? 99;
+      if (sa !== sb) return sa - sb;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   return (
     <div className="space-y-6">
