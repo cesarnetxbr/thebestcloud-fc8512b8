@@ -52,7 +52,7 @@ export const useRolePermissions = () => {
       const map = new Map<string, ModulePermission>();
       ((presetRes.data || []) as ModulePermission[]).forEach((p) => map.set(p.module, p));
       // overrides win
-      ((overrideRes.data || []) as ModulePermission[]).forEach((p) => map.set(p.module, p));
+      ((overrideRes.data || []) as unknown as ModulePermission[]).forEach((p) => map.set(p.module, p));
       setPermissions(Array.from(map.values()));
       setLoading(false);
     })();
