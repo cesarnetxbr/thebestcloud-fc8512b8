@@ -147,7 +147,7 @@ const Lgpd = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-orange-600" /> Dados Sensíveis</CardTitle>
+              <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Dados Sensíveis</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-2">
               <p>São considerados sensíveis e exigem proteção reforçada os dados sobre:</p>
