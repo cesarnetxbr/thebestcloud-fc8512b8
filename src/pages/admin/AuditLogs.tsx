@@ -34,6 +34,14 @@ const entityLabels: Record<string, string> = {
   price_tables: "Tabelas de preço",
   invoices: "Faturamento",
   skus: "SKUs",
+  tickets: "Chamados",
+  ticket_messages: "Movimentações de chamados",
+  profiles: "Usuários",
+  user_roles: "Papéis de usuário",
+  user_permissions: "Permissões de usuário",
+  quotes: "Orçamentos",
+  quote_items: "Itens de orçamento",
+  ombudsman_reports: "Ouvidoria",
 };
 
 const operationColors: Record<string, string> = {
