@@ -85,6 +85,7 @@ import SmsContacts from "./pages/admin/sms/SmsContacts";
 import SmsTemplates from "./pages/admin/sms/SmsTemplates";
 import AnalyticsDashboard from "./pages/admin/analytics/AnalyticsDashboard";
 import Unauthorized from "./pages/admin/Unauthorized";
+import Documentation from "./pages/admin/Documentation";
 import { useAnalyticsTracker } from "./hooks/useAnalyticsTracker";
 
 const queryClient = new QueryClient();
@@ -185,6 +186,7 @@ const App = () => (
               <Route path="financial/comissoes" element={<Commissions />} />
               <Route path="financial/automacoes" element={<Automations />} />
               <Route path="financial/categorias" element={<FinancialCategories />} />
+              <Route path="documentacao" element={<Documentation />} />
             </Route>
 
             {/* Portal do Cliente */}
