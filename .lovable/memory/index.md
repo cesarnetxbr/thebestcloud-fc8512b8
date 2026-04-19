@@ -35,3 +35,4 @@ Tech: Supabase Edge Functions with Service Role Key for external APIs. Automated
 - [Analytics & Tracking](mem://features/analytics-tracking) — Pageviews, events, marketing metrics, internal usage dashboard
 - [Chat Marketing](mem://features/chat-marketing) — WhatsApp Connect (QR Code), Chatbot/IA, chat-to-pipeline conversion
 - [WhatsApp Z-API](mem://features/whatsapp-zapi) — Z-API integration replacing Evolution API, QR Code connection
+- [Documentação Admin](mem://features/admin/documentation) — Página /admin/documentacao com PDF/Markdown executivo + técnico, mapa mental e fluxograma Mermaid
