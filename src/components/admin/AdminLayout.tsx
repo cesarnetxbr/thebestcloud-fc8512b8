@@ -44,6 +44,7 @@ import {
   Phone,
   Activity,
   CalendarDays,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
@@ -219,6 +220,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Configurações", icon: Settings, path: "/admin/settings", module: "configuracoes" },
       { label: "Auditoria", icon: ClipboardList, path: "/admin/audit-logs", module: "auditoria" },
+      { label: "Documentação", icon: BookOpen, path: "/admin/documentacao", module: "configuracoes" },
     ],
   },
 ];
