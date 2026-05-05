@@ -193,6 +193,98 @@ async function generateAIResponse(systemPrompt: string, userMessage: string): Pr
   } catch (e) { console.error("AI call error:", e); return null; }
 }
 
+// ===== Probability classification (only for site-originated leads) =====
+async function classifyLeadProbability(
+  supabase: any,
+  conversationId: string,
+  leadId: string,
+): Promise<void> {
+  try {
+    // Avoid re-classifying if a deal already exists for this lead
+    const { data: existingDeal } = await supabase
+      .from("crm_deals").select("id").eq("lead_id", leadId).maybeSingle();
+    if (existingDeal) return;
+
+    // Need at least 2 customer messages to classify meaningfully
+    const { data: customerMsgs } = await supabase
+      .from("chat_messages").select("content, created_at")
+      .eq("conversation_id", conversationId)
+      .eq("sender_type", "customer")
+      .order("created_at", { ascending: true });
+    if (!customerMsgs || customerMsgs.length < 2) return;
+
+    const transcript = customerMsgs
+      .map((m: any, i: number) => `Cliente #${i + 1}: ${m.content}`)
+      .join("\n");
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) return;
+
+    const systemPrompt =
+      "Você é analista comercial da The Best Cloud (ciberproteção, backup, segurança em nuvem). " +
+      "Avalie a probabilidade de fechamento de venda com base nas mensagens do cliente. " +
+      "Responda APENAS com JSON válido no formato: " +
+      '{"probability": <0-100>, "reason": "<curto>", "title": "<título do deal>"}';
+
+    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: transcript },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (!aiRes.ok) { console.error("AI classify error:", aiRes.status); return; }
+    const aiData = await aiRes.json();
+    const raw = aiData.choices?.[0]?.message?.content || "{}";
+    let parsed: { probability?: number; reason?: string; title?: string } = {};
+    try { parsed = JSON.parse(raw); } catch { return; }
+
+    const prob = Math.max(0, Math.min(100, Number(parsed.probability) || 0));
+    if (prob < 40) {
+      console.log("Classification below threshold:", prob);
+      return;
+    }
+
+    // Get lead + first pipeline stage
+    const { data: lead } = await supabase
+      .from("crm_leads").select("name, company, customer_id").eq("id", leadId).maybeSingle();
+    const { data: stage } = await supabase
+      .from("crm_pipeline_stages").select("id")
+      .eq("is_active", true).order("position", { ascending: true }).limit(1).maybeSingle();
+
+    const dealTitle = (parsed.title || `${lead?.company || lead?.name || "Lead"} — Site`).slice(0, 200);
+
+    const { data: newDeal, error: dealErr } = await supabase
+      .from("crm_deals").insert({
+        title: dealTitle,
+        lead_id: leadId,
+        stage_id: stage?.id ?? null,
+        probability: prob,
+        status: "aberto",
+        notes: `Criado automaticamente pela IA. Motivo: ${parsed.reason || "n/d"}`,
+      }).select("id").single();
+    if (dealErr) { console.error("Deal insert error:", dealErr); return; }
+
+    // High probability → green tag
+    if (prob >= 75 && newDeal) {
+      await supabase.from("crm_deal_tags").insert({
+        deal_id: newDeal.id,
+        tag_name: "Alta Probabilidade",
+        tag_color: "#16a34a",
+      });
+    }
+
+    console.log("Deal created from AI classification:", newDeal?.id, "prob:", prob);
+  } catch (e) {
+    console.error("classifyLeadProbability error:", e);
+  }
+}
+
 function isCloseRequest(msg: string): boolean {
   const n = normalizeText(msg);
   return ["encerrar", "finalizar", "fechar conversa", "encerrar conversa", "finalizar atendimento", "0"].some(kw => n.includes(kw));
@@ -503,6 +595,18 @@ serve(async (req) => {
           console.log("Chatbot auto-reply sent, rule:", matchedRule.name);
         }
       }
+    }
+
+
+    // --- AI lead-probability classification (only for site-originated leads) ---
+    try {
+      const { data: convInfo } = await supabase
+        .from("chat_conversations").select("lead_id").eq("id", conversationId).maybeSingle();
+      if (convInfo?.lead_id) {
+        await classifyLeadProbability(supabase, conversationId, convInfo.lead_id);
+      }
+    } catch (e) {
+      console.error("Probability classification skipped:", e);
     }
 
     return new Response(JSON.stringify({ ok: true, conversationId, autoReply: !!matchedRule }), {

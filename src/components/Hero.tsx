@@ -1,13 +1,14 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import ConsultantContactDialog from "@/components/ConsultantContactDialog";
 import cyberProtectCloud from "@/assets/landing/cyber-protect-cloud.webp";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [contactOpen, setContactOpen] = useState(false);
 
-  const handleContact = () => {
-    window.open("https://api.whatsapp.com/send/?phone=5591981317645&text=Ol%C3%A1%21+Gostaria+de+falar+com+um+consultor+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank");
-  };
+  const handleContact = () => setContactOpen(true);
 
   const scrollToSolutions = () => {
     document.getElementById("solucoes")?.scrollIntoView({ behavior: "smooth" });
@@ -64,6 +65,7 @@ const Hero = () => {
           <path d="M0 60L1440 60L1440 20C1440 20 1200 0 720 0C240 0 0 20 0 20L0 60Z" fill="hsl(var(--background))" />
         </svg>
       </div>
+      <ConsultantContactDialog open={contactOpen} onOpenChange={setContactOpen} origin="hero" />
     </section>
   );
 };
