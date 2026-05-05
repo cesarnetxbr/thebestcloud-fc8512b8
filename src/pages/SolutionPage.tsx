@@ -132,6 +132,7 @@ const SolutionPage = () => {
 
       <CTASection />
       <Footer />
+      <ConsultantContactDialog open={contactOpen} onOpenChange={setContactOpen} origin={`solution-${slug}`} />
     </div>
   );
 };
