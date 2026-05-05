@@ -36,6 +36,7 @@ const CTASection = () => {
           </Button>
         </div>
       </div>
+      <ConsultantContactDialog open={contactOpen} onOpenChange={setContactOpen} origin="cta-section" />
     </section>
   );
 };

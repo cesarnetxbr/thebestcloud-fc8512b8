@@ -65,6 +65,7 @@ const Hero = () => {
           <path d="M0 60L1440 60L1440 20C1440 20 1200 0 720 0C240 0 0 20 0 20L0 60Z" fill="hsl(var(--background))" />
         </svg>
       </div>
+      <ConsultantContactDialog open={contactOpen} onOpenChange={setContactOpen} origin="hero" />
     </section>
   );
 };
