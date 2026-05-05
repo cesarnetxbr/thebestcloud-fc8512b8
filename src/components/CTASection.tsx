@@ -1,12 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import ConsultantContactDialog from "@/components/ConsultantContactDialog";
 
 const CTASection = () => {
   const navigate = useNavigate();
+  const [contactOpen, setContactOpen] = useState(false);
 
-  const handleContact = () => {
-    window.open("https://api.whatsapp.com/send/?phone=5591981317645&text=Ol%C3%A1%21+Gostaria+de+falar+com+um+consultor+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank");
-  };
+  const handleContact = () => setContactOpen(true);
 
   const scrollToSolutions = () => {
     document.getElementById("solucoes")?.scrollIntoView({ behavior: "smooth" });

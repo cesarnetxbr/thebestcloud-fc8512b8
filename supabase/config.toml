@@ -2,3 +2,6 @@ project_id = "qcbnevxisuzljxtdjbvl"
 
 [functions.whatsapp-evolution]
 verify_jwt = false
+
+[functions.consultant-lead]
+verify_jwt = false
