@@ -597,6 +597,18 @@ serve(async (req) => {
       }
     }
 
+
+    // --- AI lead-probability classification (only for site-originated leads) ---
+    try {
+      const { data: convInfo } = await supabase
+        .from("chat_conversations").select("lead_id").eq("id", conversationId).maybeSingle();
+      if (convInfo?.lead_id) {
+        await classifyLeadProbability(supabase, conversationId, convInfo.lead_id);
+      }
+    } catch (e) {
+      console.error("Probability classification skipped:", e);
+    }
+
     return new Response(JSON.stringify({ ok: true, conversationId, autoReply: !!matchedRule }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
