@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getSolutionBySlug } from "@/data/solutions";
 import Header from "@/components/Header";
@@ -5,10 +6,12 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 import CTASection from "@/components/CTASection";
+import ConsultantContactDialog from "@/components/ConsultantContactDialog";
 
 const SolutionPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const solution = getSolutionBySlug(slug || "");
+  const [contactOpen, setContactOpen] = useState(false);
 
   if (!solution) {
     return (
@@ -51,7 +54,7 @@ const SolutionPage = () => {
                 variant="cta"
                 size="lg"
                 className="text-base px-8"
-                onClick={() => window.open("https://api.whatsapp.com/send/?phone=5591981317645&text=Ol%C3%A1%21+Gostaria+de+falar+com+um+consultor+da+The+Best+Cloud&type=phone_number&app_absent=0", "_blank")}
+                onClick={() => setContactOpen(true)}
               >
                 Fale com um Consultor
               </Button>
