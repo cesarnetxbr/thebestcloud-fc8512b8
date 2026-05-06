@@ -124,7 +124,27 @@ serve(async (req) => {
         .select("id")
         .single();
       if (convErr) {
-        console.error("Conversation insert error:", convErr);
+        // Corrida com índice único — reaproveita conversa criada concorrentemente
+        const { data: raceConv } = await supabase
+          .from("chat_conversations")
+          .select("id")
+          .eq("channel", "whatsapp")
+          .eq("phone", phone)
+          .maybeSingle();
+        if (raceConv) {
+          conversationId = raceConv.id;
+          await supabase
+            .from("chat_conversations")
+            .update({
+              status: "ativa",
+              lead_id: lead.id,
+              title: `${name} — ${company}`,
+              last_message_at: new Date().toISOString(),
+            })
+            .eq("id", conversationId);
+        } else {
+          console.error("Conversation insert error:", convErr);
+        }
       } else {
         conversationId = newConv.id;
       }

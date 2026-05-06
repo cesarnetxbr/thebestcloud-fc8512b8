@@ -2959,6 +2959,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      merge_chat_conversations: {
+        Args: { _drop_id: string; _keep_id: string }
+        Returns: undefined
+      }
+      normalize_phone: { Args: { _phone: string }; Returns: string }
     }
     Enums: {
       app_role:
