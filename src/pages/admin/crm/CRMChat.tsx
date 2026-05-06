@@ -553,8 +553,8 @@ const CRMChat = () => {
           </CardContent>
         </Card>
 
-        {/* Chat area — full width on mobile when open */}
-        <Card className={cn("lg:col-span-2 flex min-h-0 flex-col overflow-hidden", showChatOnMobile ? "flex" : "hidden lg:flex")}>
+        {/* Chat area — janela com header fixo no topo */}
+        <Card className={cn("lg:col-span-2 flex min-h-0 flex-col overflow-hidden rounded-xl border-2 border-border shadow-lg bg-card", showChatOnMobile ? "flex" : "hidden lg:flex")}>
           {!selectedId ? (
             <div className="flex-1 min-h-0 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
@@ -564,7 +564,7 @@ const CRMChat = () => {
             </div>
           ) : (
             <>
-              <CardHeader className="shrink-0 pb-2 border-b border-border px-3 sm:px-6">
+              <CardHeader className="sticky top-0 z-10 shrink-0 pb-2 pt-3 border-b border-border px-3 sm:px-6 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
