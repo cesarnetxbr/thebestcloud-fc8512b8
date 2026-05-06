@@ -119,6 +119,7 @@ const CRMChatSettings = () => {
         <TabsList>
           <TabsTrigger value="departments"><Users className="h-4 w-4 mr-1" /> Departamentos</TabsTrigger>
           <TabsTrigger value="quick-replies"><Zap className="h-4 w-4 mr-1" /> Respostas Rápidas</TabsTrigger>
+          <TabsTrigger value="ai"><Brain className="h-4 w-4 mr-1" /> IA Comercial</TabsTrigger>
         </TabsList>
 
         <TabsContent value="departments">
