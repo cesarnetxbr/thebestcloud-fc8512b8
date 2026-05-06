@@ -257,6 +257,10 @@ const CRMChatSettings = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="ai">
+          <AISettingsPanel />
+        </TabsContent>
       </Tabs>
     </div>
   );
