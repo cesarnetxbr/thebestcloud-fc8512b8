@@ -244,9 +244,25 @@ async function classifyLeadProbability(
     let parsed: { probability?: number; reason?: string; title?: string } = {};
     try { parsed = JSON.parse(raw); } catch { return; }
 
+    // Carrega limiares configuráveis (com fallback seguro)
+    const { data: settingsRow } = await supabase
+      .from("ai_settings").select("value").eq("key", "lead_classification").maybeSingle();
+    const cfg = (settingsRow?.value || {}) as {
+      deal_threshold?: number; tag_threshold?: number;
+      tag_name?: string; tag_color?: string; enabled?: boolean;
+    };
+    if (cfg.enabled === false) {
+      console.log("AI lead classification disabled by admin settings");
+      return;
+    }
+    const dealThreshold = Number.isFinite(cfg.deal_threshold) ? Number(cfg.deal_threshold) : 40;
+    const tagThreshold = Number.isFinite(cfg.tag_threshold) ? Number(cfg.tag_threshold) : 75;
+    const tagName = cfg.tag_name || "Alta Probabilidade";
+    const tagColor = cfg.tag_color || "#16a34a";
+
     const prob = Math.max(0, Math.min(100, Number(parsed.probability) || 0));
-    if (prob < 40) {
-      console.log("Classification below threshold:", prob);
+    if (prob < dealThreshold) {
+      console.log("Classification below threshold:", prob, "<", dealThreshold);
       return;
     }
 
