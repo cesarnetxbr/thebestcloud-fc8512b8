@@ -688,7 +688,7 @@ const CRMChat = () => {
                   </div>
                 </div>
                 {selected?.status === "ativa" && (
-                  <div className="shrink-0 border-t border-border">
+                  <div className="shrink-0 border-t border-border bg-card">
                     {showQuickReplies && quickReplies && quickReplies.length > 0 && (
                       <div className="p-2 border-b border-border bg-muted/30 max-h-32 overflow-y-auto">
                         <div className="flex flex-wrap gap-1">
