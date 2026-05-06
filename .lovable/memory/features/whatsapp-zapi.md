@@ -18,3 +18,4 @@ type: feature
 - chat_conversations has phone column for WhatsApp number matching
 - chat_messages has external_message_id for deduplication
 - UNIFIED CONVERSATION PER PHONE: webhook ALWAYS reuses the most recent conversation for a phone number, even if status="encerrada" (auto-reopens to "ativa"). Never creates duplicate conversations for the same contact — preserves full history.
+- DB-LEVEL UNIQUENESS: índice único parcial `uniq_chat_conversations_whatsapp_phone` em (phone) WHERE channel='whatsapp' garante 1 conversa por número. Trigger `trg_normalize_chat_conversation_phone` normaliza telefone (somente dígitos via `public.normalize_phone`) em todo INSERT/UPDATE. Função `public.merge_chat_conversations(keep_id, drop_id)` (SECURITY DEFINER, somente service_role) faz fusão preservando mensagens e vínculos (lead/customer/deal). Edge functions `whatsapp-webhook` e `consultant-lead` tratam violação do índice (corrida) reaproveitando a conversa existente.
