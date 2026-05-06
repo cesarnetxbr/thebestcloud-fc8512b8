@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit, Users, Zap, Settings } from "lucide-react";
+import { Plus, Trash2, Edit, Users, Zap, Settings, Brain } from "lucide-react";
 import { toast } from "sonner";
+import AISettingsPanel from "@/components/admin/AISettingsPanel";
 
 const CRMChatSettings = () => {
   const { user } = useAuth();
@@ -118,6 +119,7 @@ const CRMChatSettings = () => {
         <TabsList>
           <TabsTrigger value="departments"><Users className="h-4 w-4 mr-1" /> Departamentos</TabsTrigger>
           <TabsTrigger value="quick-replies"><Zap className="h-4 w-4 mr-1" /> Respostas Rápidas</TabsTrigger>
+          <TabsTrigger value="ai"><Brain className="h-4 w-4 mr-1" /> IA Comercial</TabsTrigger>
         </TabsList>
 
         <TabsContent value="departments">
@@ -254,6 +256,10 @@ const CRMChatSettings = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <AISettingsPanel />
         </TabsContent>
       </Tabs>
     </div>

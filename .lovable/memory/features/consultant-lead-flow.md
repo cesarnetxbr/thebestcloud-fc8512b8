@@ -14,5 +14,7 @@ type: feature
   - Runs ONLY when conversation has lead_id and no deal yet
   - Needs ≥2 customer messages
   - Calls Lovable AI (google/gemini-2.5-flash) with JSON response_format
-  - Thresholds: probability ≥40 → creates crm_deals at first active stage; ≥75 → adds green tag "Alta Probabilidade" (#16a34a)
+  - Thresholds CONFIGURÁVEIS via tabela `ai_settings` (key="lead_classification"): deal_threshold (padrão 40), tag_threshold (padrão 75), tag_name (padrão "Alta Probabilidade"), tag_color (padrão #16a34a), enabled (true/false)
+  - Fallback seguro para os padrões caso a tabela esteja vazia ou indisponível
+- Painel admin: aba "IA Comercial" em /admin/crm/chat/settings (componente src/components/admin/AISettingsPanel.tsx) — sliders 0-100, color picker, switch ativar/desativar
 - Existing flows preserved: greeting menu, numeric resolution, services/quote/category handlers untouched
