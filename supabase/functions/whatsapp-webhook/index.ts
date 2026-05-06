@@ -286,12 +286,12 @@ async function classifyLeadProbability(
       }).select("id").single();
     if (dealErr) { console.error("Deal insert error:", dealErr); return; }
 
-    // High probability → green tag
-    if (prob >= 75 && newDeal) {
+    // Alta probabilidade → tag colorida (limiar configurável)
+    if (prob >= tagThreshold && newDeal) {
       await supabase.from("crm_deal_tags").insert({
         deal_id: newDeal.id,
-        tag_name: "Alta Probabilidade",
-        tag_color: "#16a34a",
+        tag_name: tagName,
+        tag_color: tagColor,
       });
     }
 
