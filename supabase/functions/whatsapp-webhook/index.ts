@@ -460,9 +460,20 @@ serve(async (req) => {
           customer_id: customer?.id || null, status: "ativa",
           last_message_at: new Date().toISOString(),
         }).select("id").single();
-      if (convError) throw convError;
-      conversationId = newConv.id;
-      greetingSent = false;
+      if (convError) {
+        // Possível corrida com índice único (uniq_chat_conversations_whatsapp_phone)
+        // — recupera a conversa que já foi criada por outra requisição
+        const { data: raceConv } = await supabase
+          .from("chat_conversations").select("id")
+          .eq("channel", "whatsapp").eq("phone", normalizedPhone)
+          .maybeSingle();
+        if (!raceConv) throw convError;
+        conversationId = raceConv.id;
+        greetingSent = true; // outra requisição já está cuidando da saudação
+      } else {
+        conversationId = newConv.id;
+        greetingSent = false;
+      }
     }
 
     // Store the original display content for saving
