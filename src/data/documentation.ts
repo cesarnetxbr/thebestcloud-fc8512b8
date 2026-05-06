@@ -182,7 +182,7 @@ export const TECHNICAL_SECTIONS: DocSection[] = [
       ]},
       { type: "heading", text: "Chat & Atendimento" },
       { type: "list", items: [
-        "chat_conversations — uma por telefone (reaproveita auto)",
+        "chat_conversations — uma por telefone (índice único parcial em WhatsApp + trigger de normalização garantem convergência automática; corridas tratadas no edge function)",
         "chat_messages — com external_message_id para deduplicação",
         "chat_departments, chat_quick_replies",
         "chatbot_rules — gatilhos e respostas automáticas",
