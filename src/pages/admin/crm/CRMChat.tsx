@@ -658,7 +658,7 @@ const CRMChat = () => {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 min-h-0 p-0 flex flex-col overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="flex-1 min-h-0 overflow-y-auto bg-muted/20">
                   <div className="space-y-3 p-3 sm:p-4">
                     {!messages?.length ? (
                       <div className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda. Inicie a conversa!</div>
