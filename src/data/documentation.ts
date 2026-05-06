@@ -100,7 +100,7 @@ export const EXECUTIVE_SECTIONS: DocSection[] = [
       { type: "heading", text: "4. Atendimento WhatsApp" },
       { type: "paragraph", text: "Mensagem chega via Z-API webhook → identificação por telefone → reabertura automática se conversa fechada → bot com menus numéricos → escalação para humano se necessário → ticket gerado se aplicável." },
       { type: "heading", text: "5. Fluxo \"Fale com um Consultor\" (Site → Lead → IA → Pipeline)" },
-      { type: "paragraph", text: "Visitante clica em \"Fale com um Consultor\" → modal coleta nome, telefone, e-mail e empresa → edge function consultant-lead cria lead (source=site, status=novo) e abre conversa WhatsApp → bot envia saudação proativa via Z-API + cliente é redirecionado para wa.me → após mensagens do cliente, IA (Gemini) classifica probabilidade: ≥40 cria deal no Pipeline; ≥75 adiciona tag verde \"Alta Probabilidade\"." },
+      { type: "paragraph", text: "Visitante clica em \"Fale com um Consultor\" → modal coleta nome, telefone, e-mail e empresa → edge function consultant-lead cria lead (source=site, status=novo) e abre conversa WhatsApp → bot envia saudação proativa via Z-API + cliente é redirecionado para wa.me → após mensagens do cliente, IA (Gemini) classifica probabilidade. Os limiares são configuráveis em Admin → CRM → Configurações do Chat → IA Comercial (padrão: ≥40 cria deal no Pipeline; ≥75 adiciona tag verde \"Alta Probabilidade\"). Nome e cor da tag também são configuráveis, e a classificação pode ser desativada sem alteração de código." },
     ],
   },
   {
