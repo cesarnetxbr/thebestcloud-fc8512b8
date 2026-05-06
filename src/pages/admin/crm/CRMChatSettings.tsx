@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit, Users, Zap, Settings } from "lucide-react";
+import { Plus, Trash2, Edit, Users, Zap, Settings, Brain } from "lucide-react";
 import { toast } from "sonner";
+import AISettingsPanel from "@/components/admin/AISettingsPanel";
 
 const CRMChatSettings = () => {
   const { user } = useAuth();
