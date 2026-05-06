@@ -186,6 +186,7 @@ export const TECHNICAL_SECTIONS: DocSection[] = [
         "chat_messages — com external_message_id para deduplicação",
         "chat_departments, chat_quick_replies",
         "chatbot_rules — gatilhos e respostas automáticas",
+        "UI Multi-atendimento (Admin → CRM → Chat): layout em janela com cabeçalho fixo (sticky) por conversa, área de mensagens com scroll independente e rodapé de envio fixo — somente as mensagens rolam, contexto da conversa permanece sempre visível",
       ]},
       { type: "heading", text: "Marketing" },
       { type: "list", items: [
