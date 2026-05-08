@@ -733,11 +733,30 @@ const Quotes = () => {
                   const st = STATUS_MAP[q.status] || STATUS_MAP.rascunho;
                   return (
                     <TableRow key={q.id}>
-                      <TableCell className="font-mono text-sm">{q.quote_number}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {q.quote_number}
+                        {(q.version > 1 || q.parent_quote_id) && (
+                          <Badge variant="outline" className="ml-2 text-xs">v{q.version}</Badge>
+                        )}
+                      </TableCell>
                       <TableCell>{q.customer_name}</TableCell>
                       <TableCell>{formatCurrency(q.total_value || 0)}</TableCell>
                       <TableCell>
-                        <Badge variant={st.variant}>{st.label}</Badge>
+                        <Select
+                          value={q.status}
+                          onValueChange={(v) => updateStatusMutation.mutate({ id: q.id, newStatus: v })}
+                        >
+                          <SelectTrigger className="h-8 w-[130px]">
+                            <SelectValue>
+                              <Badge variant={st.variant}>{st.label}</Badge>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_OPTIONS.map((s) => (
+                              <SelectItem key={s} value={s}>{STATUS_MAP[s].label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>{new Date(q.created_at).toLocaleDateString("pt-BR")}</TableCell>
                       <TableCell className="text-right">
@@ -747,6 +766,12 @@ const Quotes = () => {
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar">
                             <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => duplicateMutation.mutate(q)} title="Duplicar (nova versão)" disabled={duplicateMutation.isPending}>
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setHistoryQuoteId(q.id)} title="Histórico de alterações">
+                            <History className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
