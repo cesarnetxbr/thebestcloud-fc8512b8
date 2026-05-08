@@ -65,6 +65,8 @@ const Quotes = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewQuote, setPreviewQuote] = useState<any>(null);
   const [search, setSearch] = useState("");
+  const [historyQuoteId, setHistoryQuoteId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("rascunho");
 
   // Form state
   const [customerName, setCustomerName] = useState("");
