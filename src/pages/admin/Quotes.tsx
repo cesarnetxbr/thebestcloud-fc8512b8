@@ -418,6 +418,12 @@ const Quotes = () => {
     setSignedName(quote.signed_by_name || "");
     setSignedTitle(quote.signed_by_title || "Diretor");
     setStatus(quote.status || "rascunho");
+    setGeneralNotes(quote.general_notes || "");
+    setPolicyText(quote.policy_text || DEFAULT_POLICY_TEXT);
+    setClientAcceptanceName(quote.client_acceptance_name || "");
+    setClientAcceptanceDocument(quote.client_acceptance_document || "");
+    setClientAcceptanceDate(quote.client_acceptance_date || "");
+    setClientSignatureDataUrl(quote.client_signature_data_url || "");
     setItems(
       qItems && qItems.length > 0
         ? qItems.map((it: any, idx: number) => ({
