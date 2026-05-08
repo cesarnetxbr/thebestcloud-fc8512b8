@@ -26,9 +26,13 @@ const QUOTE_CATEGORIES = [
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   rascunho: { label: "Rascunho", variant: "secondary" },
   enviado: { label: "Enviado", variant: "default" },
+  aceito: { label: "Aceito", variant: "outline" },
+  assinado: { label: "Assinado", variant: "outline" },
   aprovado: { label: "Aprovado", variant: "outline" },
   recusado: { label: "Recusado", variant: "destructive" },
 };
+
+const STATUS_OPTIONS = ["rascunho", "enviado", "aceito", "assinado"];
 
 interface QuoteItem {
   id?: string;
