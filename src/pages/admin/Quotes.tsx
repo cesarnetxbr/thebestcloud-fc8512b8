@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Eye, Trash2, FileText, Download, Search, X } from "lucide-react";
+import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const QUOTE_CATEGORIES = [
@@ -57,6 +57,7 @@ const Quotes = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewQuote, setPreviewQuote] = useState<any>(null);
   const [search, setSearch] = useState("");
@@ -172,6 +173,59 @@ const Quotes = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error("ID do orçamento ausente");
+      const totalValue = items.reduce((sum, i) => sum + (i.total_price || 0), 0);
+      const { error } = await supabase
+        .from("quotes")
+        .update({
+          customer_id: customerId,
+          customer_name: customerName,
+          contact_name: contactName,
+          contact_email: contactEmail,
+          contact_phone: contactPhone,
+          contact_department: contactDept,
+          introduction_text: introText,
+          payment_terms: paymentTerms,
+          validity_days: validityDays,
+          total_value: totalValue,
+          signed_by_name: signedName,
+          signed_by_title: signedTitle,
+        } as any)
+        .eq("id", editingId);
+      if (error) throw error;
+
+      // Substitui os itens (preserva o orçamento, recria itens conforme edição)
+      const { error: delError } = await supabase.from("quote_items").delete().eq("quote_id", editingId);
+      if (delError) throw delError;
+
+      const validItems = items.filter((i) => i.service_name.trim());
+      if (validItems.length > 0) {
+        const { error: itemsError } = await supabase.from("quote_items").insert(
+          validItems.map((item, idx) => ({
+            quote_id: editingId,
+            item_number: idx + 1,
+            category: item.category,
+            service_name: item.service_name,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.total_price,
+            markup_info: item.markup_info,
+          })) as any
+        );
+        if (itemsError) throw itemsError;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Orçamento atualizado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+      resetForm();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("quotes").delete().eq("id", id);
@@ -186,6 +240,7 @@ const Quotes = () => {
 
   const resetForm = () => {
     setShowForm(false);
+    setEditingId(null);
     setCustomerName("");
     setCustomerId(null);
     setContactName("");
@@ -200,6 +255,46 @@ const Quotes = () => {
     setSignedName("");
     setSignedTitle("Diretor");
     setItems([emptyItem()]);
+  };
+
+  const openEdit = async (quote: any) => {
+    const { data: qItems, error } = await supabase
+      .from("quote_items")
+      .select("*")
+      .eq("quote_id", quote.id)
+      .order("item_number");
+    if (error) {
+      toast.error("Erro ao carregar itens do orçamento");
+      return;
+    }
+    setEditingId(quote.id);
+    setCustomerId(quote.customer_id || null);
+    setCustomerName(quote.customer_name || "");
+    setContactName(quote.contact_name || "");
+    setContactEmail(quote.contact_email || "");
+    setContactPhone(quote.contact_phone || "");
+    setContactDept(quote.contact_department || "");
+    setIntroText(quote.introduction_text || "");
+    setPaymentTerms(quote.payment_terms || "");
+    setValidityDays(quote.validity_days || 10);
+    setSignedName(quote.signed_by_name || "");
+    setSignedTitle(quote.signed_by_title || "Diretor");
+    setItems(
+      qItems && qItems.length > 0
+        ? qItems.map((it: any, idx: number) => ({
+            id: it.id,
+            item_number: it.item_number || idx + 1,
+            category: it.category || "outros_servicos",
+            service_name: it.service_name || "",
+            description: it.description || "",
+            quantity: Number(it.quantity) || 1,
+            unit_price: Number(it.unit_price) || 0,
+            total_price: Number(it.total_price) || 0,
+            markup_info: it.markup_info || "",
+          }))
+        : [emptyItem()]
+    );
+    setShowForm(true);
   };
 
   const handleCustomerSelect = (id: string) => {
@@ -249,7 +344,7 @@ const Quotes = () => {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">Novo Orçamento</h2>
+          <h2 className="text-2xl font-bold text-foreground">{editingId ? "Editar Orçamento" : "Novo Orçamento"}</h2>
           <Button variant="outline" onClick={resetForm}>
             <X className="h-4 w-4 mr-2" /> Cancelar
           </Button>
@@ -461,9 +556,18 @@ const Quotes = () => {
           <Button variant="outline" onClick={resetForm}>
             Cancelar
           </Button>
-          <Button onClick={() => createMutation.mutate()} disabled={!customerName.trim() || createMutation.isPending}>
+          <Button
+            onClick={() => (editingId ? updateMutation.mutate() : createMutation.mutate())}
+            disabled={!customerName.trim() || createMutation.isPending || updateMutation.isPending}
+          >
             <FileText className="h-4 w-4 mr-2" />
-            {createMutation.isPending ? "Salvando..." : "Criar Orçamento"}
+            {editingId
+              ? updateMutation.isPending
+                ? "Salvando..."
+                : "Salvar Alterações"
+              : createMutation.isPending
+                ? "Salvando..."
+                : "Criar Orçamento"}
           </Button>
         </div>
       </div>
@@ -529,8 +633,11 @@ const Quotes = () => {
                       <TableCell>{new Date(q.created_at).toLocaleDateString("pt-BR")}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => openPreview(q)}>
+                          <Button variant="ghost" size="sm" onClick={() => openPreview(q)} title="Pré-visualizar">
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar">
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"

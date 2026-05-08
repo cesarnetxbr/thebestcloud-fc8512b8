@@ -169,7 +169,7 @@ export const TECHNICAL_SECTIONS: DocSection[] = [
         "crm_leads, crm_deals, crm_pipeline_stages, crm_activities, crm_appointments",
         "crm_deal_items, crm_deal_notes, crm_deal_tags",
         "commercial_requests + items/notes/tags + kanban_stages",
-        "quotes + quote_items (numeração automática ORC-AAAA-NNNNN)",
+        "quotes + quote_items (numeração automática ORC-AAAA-NNNNN; CRUD completo: criar, visualizar, editar e excluir)",
       ]},
       { type: "heading", text: "Faturamento" },
       { type: "list", items: [
