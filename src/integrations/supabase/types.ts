@@ -1989,6 +1989,44 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_audit_log: {
+        Row: {
+          action: string
+          changes: Json | null
+          created_at: string
+          id: string
+          quote_id: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          quote_id: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          quote_id?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_audit_log_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_items: {
         Row: {
           category: string
@@ -2052,6 +2090,7 @@ export type Database = {
           id: string
           introduction_text: string | null
           notes: string | null
+          parent_quote_id: string | null
           payment_terms: string | null
           quote_number: string
           signed_by_name: string | null
@@ -2060,6 +2099,7 @@ export type Database = {
           total_value: number | null
           updated_at: string
           validity_days: number | null
+          version: number
         }
         Insert: {
           contact_department?: string | null
@@ -2073,6 +2113,7 @@ export type Database = {
           id?: string
           introduction_text?: string | null
           notes?: string | null
+          parent_quote_id?: string | null
           payment_terms?: string | null
           quote_number: string
           signed_by_name?: string | null
@@ -2081,6 +2122,7 @@ export type Database = {
           total_value?: number | null
           updated_at?: string
           validity_days?: number | null
+          version?: number
         }
         Update: {
           contact_department?: string | null
@@ -2094,6 +2136,7 @@ export type Database = {
           id?: string
           introduction_text?: string | null
           notes?: string | null
+          parent_quote_id?: string | null
           payment_terms?: string | null
           quote_number?: string
           signed_by_name?: string | null
@@ -2102,6 +2145,7 @@ export type Database = {
           total_value?: number | null
           updated_at?: string
           validity_days?: number | null
+          version?: number
         }
         Relationships: [
           {
@@ -2109,6 +2153,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_parent_quote_id_fkey"
+            columns: ["parent_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
