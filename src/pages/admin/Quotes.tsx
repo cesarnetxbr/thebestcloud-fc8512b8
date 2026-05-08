@@ -387,6 +387,12 @@ const Quotes = () => {
     setSignedTitle("Diretor");
     setItems([emptyItem()]);
     setStatus("rascunho");
+    setGeneralNotes("");
+    setPolicyText(DEFAULT_POLICY_TEXT);
+    setClientAcceptanceName("");
+    setClientAcceptanceDocument("");
+    setClientAcceptanceDate("");
+    setClientSignatureDataUrl("");
   };
 
   const openEdit = async (quote: any) => {
