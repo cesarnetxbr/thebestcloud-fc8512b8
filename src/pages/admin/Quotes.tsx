@@ -454,6 +454,36 @@ const Quotes = () => {
     setShowPreview(true);
   };
 
+  // Impressão multi-página confiável em Chrome e Firefox:
+  // clona o conteúdo do preview para um contêiner fora do Dialog do Radix,
+  // eliminando os limites de altura/overflow que truncavam para 1 página.
+  const handlePrintQuote = () => {
+    const source = document.getElementById("quote-preview");
+    if (!source) {
+      window.print();
+      return;
+    }
+    const PRINT_ID = "tbc-print-root";
+    document.getElementById(PRINT_ID)?.remove();
+    const container = document.createElement("div");
+    container.id = PRINT_ID;
+    container.innerHTML = source.outerHTML;
+    document.body.appendChild(container);
+    document.body.classList.add("printing-quote");
+
+    const cleanup = () => {
+      document.body.classList.remove("printing-quote");
+      document.getElementById(PRINT_ID)?.remove();
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(cleanup, 1000);
+    }, 80);
+  };
+
   const filteredQuotes = quotes.filter(
     (q: any) =>
       q.quote_number?.toLowerCase().includes(search.toLowerCase()) ||
