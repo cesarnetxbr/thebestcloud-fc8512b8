@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil } from "lucide-react";
+import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil, Copy, History } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const QUOTE_CATEGORIES = [
@@ -26,9 +26,13 @@ const QUOTE_CATEGORIES = [
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   rascunho: { label: "Rascunho", variant: "secondary" },
   enviado: { label: "Enviado", variant: "default" },
+  aceito: { label: "Aceito", variant: "outline" },
+  assinado: { label: "Assinado", variant: "outline" },
   aprovado: { label: "Aprovado", variant: "outline" },
   recusado: { label: "Recusado", variant: "destructive" },
 };
+
+const STATUS_OPTIONS = ["rascunho", "enviado", "aceito", "assinado"];
 
 interface QuoteItem {
   id?: string;
@@ -61,6 +65,8 @@ const Quotes = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewQuote, setPreviewQuote] = useState<any>(null);
   const [search, setSearch] = useState("");
+  const [historyQuoteId, setHistoryQuoteId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("rascunho");
 
   // Form state
   const [customerName, setCustomerName] = useState("");
@@ -141,6 +147,7 @@ const Quotes = () => {
           created_by: user?.id,
           signed_by_name: signedName,
           signed_by_title: signedTitle,
+          status,
         } as any)
         .select()
         .single();
@@ -192,6 +199,7 @@ const Quotes = () => {
           total_value: totalValue,
           signed_by_name: signedName,
           signed_by_title: signedTitle,
+          status,
         } as any)
         .eq("id", editingId);
       if (error) throw error;
@@ -238,6 +246,97 @@ const Quotes = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
+      const { error } = await supabase.from("quotes").update({ status: newStatus } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Status atualizado!");
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (quote: any) => {
+      const { data: srcItems } = await supabase
+        .from("quote_items")
+        .select("*")
+        .eq("quote_id", quote.id)
+        .order("item_number");
+
+      // Próxima versão: máxima existente em parent_quote_id = root + 1
+      const rootId = quote.parent_quote_id || quote.id;
+      const { data: siblings } = await supabase
+        .from("quotes")
+        .select("version")
+        .or(`id.eq.${rootId},parent_quote_id.eq.${rootId}`);
+      const nextVersion = Math.max(...(siblings?.map((s: any) => s.version || 1) || [1])) + 1;
+
+      const { data: newQuote, error } = await supabase
+        .from("quotes")
+        .insert({
+          quote_number: "TEMP",
+          customer_id: quote.customer_id,
+          customer_name: quote.customer_name,
+          contact_name: quote.contact_name,
+          contact_email: quote.contact_email,
+          contact_phone: quote.contact_phone,
+          contact_department: quote.contact_department,
+          introduction_text: quote.introduction_text,
+          payment_terms: quote.payment_terms,
+          validity_days: quote.validity_days,
+          total_value: quote.total_value,
+          signed_by_name: quote.signed_by_name,
+          signed_by_title: quote.signed_by_title,
+          status: "rascunho",
+          parent_quote_id: rootId,
+          version: nextVersion,
+          created_by: user?.id,
+        } as any)
+        .select()
+        .single();
+      if (error) throw error;
+
+      if (srcItems && srcItems.length > 0) {
+        await supabase.from("quote_items").insert(
+          srcItems.map((it: any, idx: number) => ({
+            quote_id: newQuote.id,
+            item_number: idx + 1,
+            category: it.category,
+            service_name: it.service_name,
+            description: it.description,
+            quantity: it.quantity,
+            unit_price: it.unit_price,
+            total_price: it.total_price,
+            markup_info: it.markup_info,
+          })) as any
+        );
+      }
+      return newQuote;
+    },
+    onSuccess: () => {
+      toast.success("Orçamento duplicado! Nova versão criada como Rascunho.");
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const { data: auditLog = [] } = useQuery({
+    queryKey: ["quote-audit", historyQuoteId],
+    enabled: !!historyQuoteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quote_audit_log" as any)
+        .select("*")
+        .eq("quote_id", historyQuoteId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
@@ -255,6 +354,7 @@ const Quotes = () => {
     setSignedName("");
     setSignedTitle("Diretor");
     setItems([emptyItem()]);
+    setStatus("rascunho");
   };
 
   const openEdit = async (quote: any) => {
@@ -279,6 +379,7 @@ const Quotes = () => {
     setValidityDays(quote.validity_days || 10);
     setSignedName(quote.signed_by_name || "");
     setSignedTitle(quote.signed_by_title || "Diretor");
+    setStatus(quote.status || "rascunho");
     setItems(
       qItems && qItems.length > 0
         ? qItems.map((it: any, idx: number) => ({
@@ -445,10 +546,12 @@ const Quotes = () => {
                     </Select>
                   </div>
                   <div className="md:col-span-2">
-                    <Label>Nome do Serviço *</Label>
-                    <Select
+                    <Label>Nome do Serviço * <span className="text-xs text-muted-foreground font-normal">(digite livre ou selecione da lista)</span></Label>
+                    <Input
+                      list={`sale-items-${idx}`}
                       value={item.service_name}
-                      onValueChange={(v) => {
+                      onChange={(e) => {
+                        const v = e.target.value;
                         const saleItem = saleTableItems.find((s) => s.item_name === v);
                         updateItem(idx, "service_name", v);
                         if (saleItem) {
@@ -456,21 +559,16 @@ const Quotes = () => {
                           updateItem(idx, "total_price", (saleItem.unit_value || 0) * item.quantity);
                         }
                       }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um serviço" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {saleTableItems
-                          .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
-                          .filter((s, i, arr) => arr.findIndex((x) => x.item_name === s.item_name) === i)
-                          .map((s) => (
-                            <SelectItem key={s.id} value={s.item_name}>
-                              {s.item_name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Nome do serviço (item avulso permitido)"
+                    />
+                    <datalist id={`sale-items-${idx}`}>
+                      {saleTableItems
+                        .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
+                        .filter((s, i, arr) => arr.findIndex((x) => x.item_name === s.item_name) === i)
+                        .map((s) => (
+                          <option key={s.id} value={s.item_name} />
+                        ))}
+                    </datalist>
                   </div>
                 </div>
                 <div>
@@ -549,6 +647,17 @@ const Quotes = () => {
               <Label>Cargo</Label>
               <Input value={signedTitle} onChange={(e) => setSignedTitle(e.target.value)} />
             </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s} value={s}>{STATUS_MAP[s].label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -624,11 +733,30 @@ const Quotes = () => {
                   const st = STATUS_MAP[q.status] || STATUS_MAP.rascunho;
                   return (
                     <TableRow key={q.id}>
-                      <TableCell className="font-mono text-sm">{q.quote_number}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {q.quote_number}
+                        {(q.version > 1 || q.parent_quote_id) && (
+                          <Badge variant="outline" className="ml-2 text-xs">v{q.version}</Badge>
+                        )}
+                      </TableCell>
                       <TableCell>{q.customer_name}</TableCell>
                       <TableCell>{formatCurrency(q.total_value || 0)}</TableCell>
                       <TableCell>
-                        <Badge variant={st.variant}>{st.label}</Badge>
+                        <Select
+                          value={q.status}
+                          onValueChange={(v) => updateStatusMutation.mutate({ id: q.id, newStatus: v })}
+                        >
+                          <SelectTrigger className="h-8 w-[130px]">
+                            <SelectValue>
+                              <Badge variant={st.variant}>{st.label}</Badge>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_OPTIONS.map((s) => (
+                              <SelectItem key={s} value={s}>{STATUS_MAP[s].label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>{new Date(q.created_at).toLocaleDateString("pt-BR")}</TableCell>
                       <TableCell className="text-right">
@@ -638,6 +766,12 @@ const Quotes = () => {
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar">
                             <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => duplicateMutation.mutate(q)} title="Duplicar (nova versão)" disabled={duplicateMutation.isPending}>
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setHistoryQuoteId(q.id)} title="Histórico de alterações">
+                            <History className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -782,6 +916,39 @@ const Quotes = () => {
                   <p className="text-sm text-gray-500">{previewQuote.signed_by_title || "Diretor"}</p>
                 </div>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Histórico de Alterações */}
+      <Dialog open={!!historyQuoteId} onOpenChange={(o) => !o && setHistoryQuoteId(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+          </DialogHeader>
+          {auditLog.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum registro de alteração ainda.</p>
+          ) : (
+            <div className="space-y-2">
+              {auditLog.map((log: any) => (
+                <div key={log.id} className="border rounded-md p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{log.action}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(log.created_at).toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Por: {log.user_email || "Sistema"}
+                  </p>
+                  {log.changes && (
+                    <pre className="text-xs bg-muted/50 rounded p-2 mt-2 overflow-x-auto">
+                      {JSON.stringify(log.changes, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </DialogContent>
