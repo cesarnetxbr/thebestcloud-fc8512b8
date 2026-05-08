@@ -760,6 +760,70 @@ const Quotes = () => {
           </CardContent>
         </Card>
 
+        {/* Observações Gerais e Política */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Observações Gerais e Termos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Observações Gerais (exibidas no final da proposta)</Label>
+              <Textarea rows={4} value={generalNotes} onChange={(e) => setGeneralNotes(e.target.value)} placeholder="Informações adicionais, condições específicas, escopo complementar..." />
+            </div>
+            <div>
+              <Label>Termos de Confidencialidade e Responsabilidade</Label>
+              <Textarea rows={6} value={policyText} onChange={(e) => setPolicyText(e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Aceite do Cliente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Aceite do Cliente</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Nome do responsável pelo aceite</Label>
+              <Input value={clientAcceptanceName} onChange={(e) => setClientAcceptanceName(e.target.value)} />
+            </div>
+            <div>
+              <Label>CPF/Documento</Label>
+              <Input value={clientAcceptanceDocument} onChange={(e) => setClientAcceptanceDocument(e.target.value)} />
+            </div>
+            <div>
+              <Label>Data do aceite</Label>
+              <Input type="date" value={clientAcceptanceDate} onChange={(e) => setClientAcceptanceDate(e.target.value)} />
+            </div>
+            <div className="md:col-span-2">
+              <Label>Assinatura manuscrita (imagem PNG/JPG, até 2MB)</Label>
+              <Input
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) {
+                    toast.error("Imagem deve ter no máximo 2MB");
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => setClientSignatureDataUrl(String(reader.result || ""));
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {clientSignatureDataUrl && (
+                <div className="mt-2 flex items-center gap-3">
+                  <img src={clientSignatureDataUrl} alt="Assinatura" className="h-20 border rounded bg-white p-1" />
+                  <Button variant="ghost" size="sm" onClick={() => setClientSignatureDataUrl("")}>
+                    <X className="h-4 w-4 mr-1" /> Remover
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={resetForm}>
             Cancelar
