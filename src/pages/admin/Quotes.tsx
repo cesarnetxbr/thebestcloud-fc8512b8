@@ -546,10 +546,12 @@ const Quotes = () => {
                     </Select>
                   </div>
                   <div className="md:col-span-2">
-                    <Label>Nome do Serviço *</Label>
-                    <Select
+                    <Label>Nome do Serviço * <span className="text-xs text-muted-foreground font-normal">(digite livre ou selecione da lista)</span></Label>
+                    <Input
+                      list={`sale-items-${idx}`}
                       value={item.service_name}
-                      onValueChange={(v) => {
+                      onChange={(e) => {
+                        const v = e.target.value;
                         const saleItem = saleTableItems.find((s) => s.item_name === v);
                         updateItem(idx, "service_name", v);
                         if (saleItem) {
@@ -557,21 +559,16 @@ const Quotes = () => {
                           updateItem(idx, "total_price", (saleItem.unit_value || 0) * item.quantity);
                         }
                       }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um serviço" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {saleTableItems
-                          .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
-                          .filter((s, i, arr) => arr.findIndex((x) => x.item_name === s.item_name) === i)
-                          .map((s) => (
-                            <SelectItem key={s.id} value={s.item_name}>
-                              {s.item_name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Nome do serviço (item avulso permitido)"
+                    />
+                    <datalist id={`sale-items-${idx}`}>
+                      {saleTableItems
+                        .filter((s) => !item.category || s.category === item.category || item.category === "outros_servicos")
+                        .filter((s, i, arr) => arr.findIndex((x) => x.item_name === s.item_name) === i)
+                        .map((s) => (
+                          <option key={s.id} value={s.item_name} />
+                        ))}
+                    </datalist>
                   </div>
                 </div>
                 <div>
