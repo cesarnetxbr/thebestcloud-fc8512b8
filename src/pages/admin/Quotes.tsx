@@ -199,6 +199,7 @@ const Quotes = () => {
           total_value: totalValue,
           signed_by_name: signedName,
           signed_by_title: signedTitle,
+          status,
         } as any)
         .eq("id", editingId);
       if (error) throw error;
