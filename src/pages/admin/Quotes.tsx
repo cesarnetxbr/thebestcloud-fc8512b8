@@ -57,6 +57,7 @@ const Quotes = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewQuote, setPreviewQuote] = useState<any>(null);
   const [search, setSearch] = useState("");
