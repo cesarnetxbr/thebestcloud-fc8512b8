@@ -840,8 +840,8 @@ const Quotes = () => {
               {/* Header */}
               <div className="flex items-start justify-between border-b-4 border-[#1a365d] pb-4">
                 <div>
-                  <img src={logo} alt="The Best Cloud" className="h-12 mb-2" />
-                  <p className="text-xs text-gray-500">Soluções em Cloud e Cybersegurança</p>
+                  <img src={logo} alt={companyInfo?.nome_fantasia || "The Best Cloud"} className="h-12 mb-2" />
+                  <p className="text-xs text-gray-500">{companyInfo?.slogan || "Soluções em Cloud e Cybersegurança"}</p>
                 </div>
                 <div className="text-right text-sm">
                   <p className="font-bold text-[#1a365d] text-lg">{previewQuote.quote_number}</p>
@@ -853,8 +853,25 @@ const Quotes = () => {
               <div className="grid grid-cols-2 gap-6 text-sm">
                 <div>
                   <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Criado por:</p>
-                  <p className="font-semibold">The Best Cloud</p>
-                  <p>Contato: {previewQuote.signed_by_name || "—"}</p>
+                  <p className="font-semibold">{companyInfo?.nome_fantasia || "The Best Cloud"}</p>
+                  {companyInfo?.razao_social && <p className="text-xs text-gray-600">{companyInfo.razao_social}</p>}
+                  {companyInfo?.cnpj && <p>CNPJ: {companyInfo.cnpj}</p>}
+                  {(companyInfo?.endereco || companyInfo?.cidade) && (
+                    <p>
+                      {[companyInfo?.endereco, companyInfo?.numero, companyInfo?.complemento].filter(Boolean).join(", ")}
+                      {companyInfo?.bairro ? ` — ${companyInfo.bairro}` : ""}
+                    </p>
+                  )}
+                  {(companyInfo?.cidade || companyInfo?.estado || companyInfo?.cep) && (
+                    <p>
+                      {[companyInfo?.cidade, companyInfo?.estado].filter(Boolean).join("/")}
+                      {companyInfo?.cep ? ` — CEP ${companyInfo.cep}` : ""}
+                    </p>
+                  )}
+                  {companyInfo?.phone && <p>Telefone: {companyInfo.phone}</p>}
+                  {companyInfo?.email && <p>E-mail: {companyInfo.email}</p>}
+                  {companyInfo?.website && <p>Site: {companyInfo.website}</p>}
+                  <p className="mt-1">Contato: {previewQuote.signed_by_name || companyInfo?.signed_by_name || "—"}</p>
                 </div>
                 <div>
                   <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Proposta para:</p>
