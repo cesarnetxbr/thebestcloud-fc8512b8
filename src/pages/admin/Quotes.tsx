@@ -422,6 +422,16 @@ const Quotes = () => {
   const addItem = () => setItems((prev) => [...prev, { ...emptyItem(), item_number: prev.length + 1 }]);
   const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
 
+  const moveItem = (idx: number, direction: -1 | 1) => {
+    setItems((prev) => {
+      const newIdx = idx + direction;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const updated = [...prev];
+      [updated[idx], updated[newIdx]] = [updated[newIdx], updated[idx]];
+      return updated.map((it, i) => ({ ...it, item_number: i + 1 }));
+    });
+  };
+
   const openPreview = async (quote: any) => {
     const { data: qItems } = await supabase
       .from("quote_items")
