@@ -168,6 +168,12 @@ const Quotes = () => {
           signed_by_name: signedName,
           signed_by_title: signedTitle,
           status,
+          general_notes: generalNotes,
+          policy_text: policyText,
+          client_acceptance_name: clientAcceptanceName,
+          client_acceptance_document: clientAcceptanceDocument,
+          client_acceptance_date: clientAcceptanceDate || null,
+          client_signature_data_url: clientSignatureDataUrl,
         } as any)
         .select()
         .single();
