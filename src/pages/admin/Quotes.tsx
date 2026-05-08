@@ -240,6 +240,7 @@ const Quotes = () => {
 
   const resetForm = () => {
     setShowForm(false);
+    setEditingId(null);
     setCustomerName("");
     setCustomerId(null);
     setContactName("");
@@ -254,6 +255,46 @@ const Quotes = () => {
     setSignedName("");
     setSignedTitle("Diretor");
     setItems([emptyItem()]);
+  };
+
+  const openEdit = async (quote: any) => {
+    const { data: qItems, error } = await supabase
+      .from("quote_items")
+      .select("*")
+      .eq("quote_id", quote.id)
+      .order("item_number");
+    if (error) {
+      toast.error("Erro ao carregar itens do orçamento");
+      return;
+    }
+    setEditingId(quote.id);
+    setCustomerId(quote.customer_id || null);
+    setCustomerName(quote.customer_name || "");
+    setContactName(quote.contact_name || "");
+    setContactEmail(quote.contact_email || "");
+    setContactPhone(quote.contact_phone || "");
+    setContactDept(quote.contact_department || "");
+    setIntroText(quote.introduction_text || "");
+    setPaymentTerms(quote.payment_terms || "");
+    setValidityDays(quote.validity_days || 10);
+    setSignedName(quote.signed_by_name || "");
+    setSignedTitle(quote.signed_by_title || "Diretor");
+    setItems(
+      qItems && qItems.length > 0
+        ? qItems.map((it: any, idx: number) => ({
+            id: it.id,
+            item_number: it.item_number || idx + 1,
+            category: it.category || "outros_servicos",
+            service_name: it.service_name || "",
+            description: it.description || "",
+            quantity: Number(it.quantity) || 1,
+            unit_price: Number(it.unit_price) || 0,
+            total_price: Number(it.total_price) || 0,
+            markup_info: it.markup_info || "",
+          }))
+        : [emptyItem()]
+    );
+    setShowForm(true);
   };
 
   const handleCustomerSelect = (id: string) => {
