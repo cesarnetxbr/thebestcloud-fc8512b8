@@ -147,6 +147,7 @@ const Quotes = () => {
           created_by: user?.id,
           signed_by_name: signedName,
           signed_by_title: signedTitle,
+          status,
         } as any)
         .select()
         .single();
