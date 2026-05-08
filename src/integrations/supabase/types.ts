@@ -2148,6 +2148,10 @@ export type Database = {
       }
       quotes: {
         Row: {
+          client_acceptance_date: string | null
+          client_acceptance_document: string | null
+          client_acceptance_name: string | null
+          client_signature_data_url: string | null
           contact_department: string | null
           contact_email: string | null
           contact_name: string | null
@@ -2156,11 +2160,13 @@ export type Database = {
           created_by: string | null
           customer_id: string | null
           customer_name: string
+          general_notes: string | null
           id: string
           introduction_text: string | null
           notes: string | null
           parent_quote_id: string | null
           payment_terms: string | null
+          policy_text: string | null
           quote_number: string
           signed_by_name: string | null
           signed_by_title: string | null
@@ -2171,6 +2177,10 @@ export type Database = {
           version: number
         }
         Insert: {
+          client_acceptance_date?: string | null
+          client_acceptance_document?: string | null
+          client_acceptance_name?: string | null
+          client_signature_data_url?: string | null
           contact_department?: string | null
           contact_email?: string | null
           contact_name?: string | null
@@ -2179,11 +2189,13 @@ export type Database = {
           created_by?: string | null
           customer_id?: string | null
           customer_name: string
+          general_notes?: string | null
           id?: string
           introduction_text?: string | null
           notes?: string | null
           parent_quote_id?: string | null
           payment_terms?: string | null
+          policy_text?: string | null
           quote_number: string
           signed_by_name?: string | null
           signed_by_title?: string | null
@@ -2194,6 +2206,10 @@ export type Database = {
           version?: number
         }
         Update: {
+          client_acceptance_date?: string | null
+          client_acceptance_document?: string | null
+          client_acceptance_name?: string | null
+          client_signature_data_url?: string | null
           contact_department?: string | null
           contact_email?: string | null
           contact_name?: string | null
@@ -2202,11 +2218,13 @@ export type Database = {
           created_by?: string | null
           customer_id?: string | null
           customer_name?: string
+          general_notes?: string | null
           id?: string
           introduction_text?: string | null
           notes?: string | null
           parent_quote_id?: string | null
           payment_terms?: string | null
+          policy_text?: string | null
           quote_number?: string
           signed_by_name?: string | null
           signed_by_title?: string | null
