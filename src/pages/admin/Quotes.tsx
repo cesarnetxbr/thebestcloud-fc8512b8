@@ -1087,16 +1087,63 @@ const Quotes = () => {
               </div>
 
               <p className="text-xs text-gray-500 italic">
-                *Os valores contidos nesta proposta comercial serão reajustados anualmente pelo IGPM a partir da data de
+                *Os valores contidos nesta proposta comercial serão reajustados anualmente pelo IPCA a partir da data de
                 contratação destes serviços.
               </p>
 
-              {/* Signature */}
+              {/* Observações Gerais */}
+              {previewQuote.general_notes && (
+                <div className="text-sm">
+                  <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Observações Gerais</p>
+                  <p className="whitespace-pre-line leading-relaxed">{previewQuote.general_notes}</p>
+                </div>
+              )}
+
+              {/* Termos / Política */}
+              {previewQuote.policy_text && (
+                <div className="text-xs text-gray-700 leading-relaxed border-t pt-3">
+                  <p className="font-bold text-[#1a365d] uppercase text-xs mb-2">Termos e Responsabilidades</p>
+                  <p className="whitespace-pre-line">{previewQuote.policy_text}</p>
+                </div>
+              )}
+
+              {/* Signature da The Best Cloud */}
               <div className="text-center pt-8">
                 <p className="text-sm">Atenciosamente,</p>
                 <div className="mt-8 border-t border-black inline-block px-16 pt-2">
                   <p className="font-semibold">{previewQuote.signed_by_name || "—"}</p>
                   <p className="text-sm text-gray-500">{previewQuote.signed_by_title || "Diretor"}</p>
+                </div>
+              </div>
+
+              {/* Aceite do Cliente */}
+              <div className="border-2 border-[#1a365d] rounded p-4 mt-6 text-sm">
+                <p className="font-bold text-[#1a365d] uppercase text-center mb-3">Aceite do Cliente</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Nome</p>
+                    <p className="border-b border-gray-400 pb-1 min-h-[1.5rem]">{previewQuote.client_acceptance_name || ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">CPF/Documento</p>
+                    <p className="border-b border-gray-400 pb-1 min-h-[1.5rem]">{previewQuote.client_acceptance_document || ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Data</p>
+                    <p className="border-b border-gray-400 pb-1 min-h-[1.5rem]">
+                      {previewQuote.client_acceptance_date
+                        ? new Date(previewQuote.client_acceptance_date).toLocaleDateString("pt-BR")
+                        : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Assinatura</p>
+                    <div className="border-b border-gray-400 pb-1 min-h-[4rem] flex items-end">
+                      {previewQuote.client_signature_data_url ? (
+                        <img src={previewQuote.client_signature_data_url} alt="Assinatura do cliente" className="max-h-16 object-contain" />
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
