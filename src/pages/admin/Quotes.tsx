@@ -647,6 +647,17 @@ const Quotes = () => {
               <Label>Cargo</Label>
               <Input value={signedTitle} onChange={(e) => setSignedTitle(e.target.value)} />
             </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s} value={s}>{STATUS_MAP[s].label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
