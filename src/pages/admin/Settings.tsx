@@ -78,16 +78,31 @@ const Settings = () => {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+      const [{ data: profileData }, { data: companyData }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("company_settings").select("*").eq("singleton", true).maybeSingle(),
+      ]);
       if (profileData) {
         setProfile({
           full_name: profileData.full_name || "",
           job_title: profileData.job_title || "",
           phone: profileData.phone || "",
+        });
+      }
+      if (companyData) {
+        setCompany({
+          nome_fantasia: companyData.nome_fantasia || "",
+          razao_social: companyData.razao_social || "",
+          cnpj: companyData.cnpj || "",
+          email: companyData.email || "",
+          phone: companyData.phone || "",
+          endereco: companyData.endereco || "",
+          numero: companyData.numero || "",
+          complemento: companyData.complemento || "",
+          cep: companyData.cep || "",
+          bairro: companyData.bairro || "",
+          cidade: companyData.cidade || "",
+          estado: companyData.estado || "",
         });
       }
       setLoading(false);
@@ -98,12 +113,17 @@ const Settings = () => {
   const handleSaveConfig = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase
+    const { error: profileError } = await supabase
       .from("profiles")
       .update(profile)
       .eq("user_id", user.id);
-    if (error) {
-      toast.error(error.message);
+
+    const { error: companyError } = await supabase
+      .from("company_settings")
+      .upsert({ singleton: true, ...company }, { onConflict: "singleton" });
+
+    if (profileError || companyError) {
+      toast.error((profileError || companyError)?.message || "Erro ao salvar");
     } else {
       toast.success("Configurações salvas com sucesso!");
     }

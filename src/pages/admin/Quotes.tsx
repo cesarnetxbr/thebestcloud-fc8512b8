@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil, Copy, History } from "lucide-react";
+import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil, Copy, History, ArrowUp, ArrowDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const QUOTE_CATEGORIES = [
@@ -92,6 +92,18 @@ const Quotes = () => {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: companyInfo } = useQuery({
+    queryKey: ["company-settings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("*")
+        .eq("singleton", true)
+        .maybeSingle();
       return data;
     },
   });
@@ -422,6 +434,16 @@ const Quotes = () => {
   const addItem = () => setItems((prev) => [...prev, { ...emptyItem(), item_number: prev.length + 1 }]);
   const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
 
+  const moveItem = (idx: number, direction: -1 | 1) => {
+    setItems((prev) => {
+      const newIdx = idx + direction;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const updated = [...prev];
+      [updated[idx], updated[newIdx]] = [updated[newIdx], updated[idx]];
+      return updated.map((it, i) => ({ ...it, item_number: i + 1 }));
+    });
+  };
+
   const openPreview = async (quote: any) => {
     const { data: qItems } = await supabase
       .from("quote_items")
@@ -518,11 +540,19 @@ const Quotes = () => {
               <div key={idx} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-sm">Item {idx + 1}</span>
-                  {items.length > 1 && (
-                    <Button variant="ghost" size="sm" onClick={() => removeItem(idx)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => moveItem(idx, -1)} disabled={idx === 0} title="Mover para cima">
+                      <ArrowUp className="h-4 w-4" />
                     </Button>
-                  )}
+                    <Button variant="ghost" size="sm" onClick={() => moveItem(idx, 1)} disabled={idx === items.length - 1} title="Mover para baixo">
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                    {items.length > 1 && (
+                      <Button variant="ghost" size="sm" onClick={() => removeItem(idx)} title="Remover">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
@@ -810,8 +840,8 @@ const Quotes = () => {
               {/* Header */}
               <div className="flex items-start justify-between border-b-4 border-[#1a365d] pb-4">
                 <div>
-                  <img src={logo} alt="The Best Cloud" className="h-12 mb-2" />
-                  <p className="text-xs text-gray-500">Soluções em Cloud e Cybersegurança</p>
+                  <img src={logo} alt={companyInfo?.nome_fantasia || "The Best Cloud"} className="h-12 mb-2" />
+                  <p className="text-xs text-gray-500">{companyInfo?.slogan || "Soluções em Cloud e Cybersegurança"}</p>
                 </div>
                 <div className="text-right text-sm">
                   <p className="font-bold text-[#1a365d] text-lg">{previewQuote.quote_number}</p>
@@ -823,8 +853,25 @@ const Quotes = () => {
               <div className="grid grid-cols-2 gap-6 text-sm">
                 <div>
                   <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Criado por:</p>
-                  <p className="font-semibold">The Best Cloud</p>
-                  <p>Contato: {previewQuote.signed_by_name || "—"}</p>
+                  <p className="font-semibold">{companyInfo?.nome_fantasia || "The Best Cloud"}</p>
+                  {companyInfo?.razao_social && <p className="text-xs text-gray-600">{companyInfo.razao_social}</p>}
+                  {companyInfo?.cnpj && <p>CNPJ: {companyInfo.cnpj}</p>}
+                  {(companyInfo?.endereco || companyInfo?.cidade) && (
+                    <p>
+                      {[companyInfo?.endereco, companyInfo?.numero, companyInfo?.complemento].filter(Boolean).join(", ")}
+                      {companyInfo?.bairro ? ` — ${companyInfo.bairro}` : ""}
+                    </p>
+                  )}
+                  {(companyInfo?.cidade || companyInfo?.estado || companyInfo?.cep) && (
+                    <p>
+                      {[companyInfo?.cidade, companyInfo?.estado].filter(Boolean).join("/")}
+                      {companyInfo?.cep ? ` — CEP ${companyInfo.cep}` : ""}
+                    </p>
+                  )}
+                  {companyInfo?.phone && <p>Telefone: {companyInfo.phone}</p>}
+                  {companyInfo?.email && <p>E-mail: {companyInfo.email}</p>}
+                  {companyInfo?.website && <p>Site: {companyInfo.website}</p>}
+                  <p className="mt-1">Contato: {previewQuote.signed_by_name || companyInfo?.signed_by_name || "—"}</p>
                 </div>
                 <div>
                   <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Proposta para:</p>

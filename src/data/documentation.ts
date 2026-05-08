@@ -169,8 +169,9 @@ export const TECHNICAL_SECTIONS: DocSection[] = [
         "crm_leads, crm_deals, crm_pipeline_stages, crm_activities, crm_appointments",
         "crm_deal_items, crm_deal_notes, crm_deal_tags",
         "commercial_requests + items/notes/tags + kanban_stages",
-        "quotes + quote_items (numeração automática ORC-AAAA-NNNNN; CRUD completo: criar, visualizar, editar, duplicar e excluir; status configurável Rascunho/Enviado/Aceito/Assinado; versionamento via parent_quote_id + version; itens avulsos permitidos via campo livre com sugestões da tabela de venda)",
+        "quotes + quote_items (numeração automática ORC-AAAA-NNNNN; CRUD completo: criar, visualizar, editar, duplicar e excluir; status configurável Rascunho/Enviado/Aceito/Assinado; versionamento via parent_quote_id + version; itens avulsos permitidos via campo livre com sugestões da tabela de venda; reordenação de itens via setas ↑/↓ no editor)",
         "quote_audit_log — histórico completo de alterações por orçamento (autor, e-mail, ação e diff JSON), populado automaticamente por trigger AFTER INSERT/UPDATE em quotes",
+        "company_settings — registro singleton com dados da empresa emissora (nome fantasia, razão social, CNPJ, contato, endereço, slogan e signatário padrão); usado no cabeçalho e bloco \"Criado por\" das propostas; gerenciado em Admin → Configurações → Sobre sua empresa (somente admins editam, todos autenticados leem)",
       ]},
       { type: "heading", text: "Faturamento" },
       { type: "list", items: [
