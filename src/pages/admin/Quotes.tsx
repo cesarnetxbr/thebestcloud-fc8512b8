@@ -379,6 +379,7 @@ const Quotes = () => {
     setValidityDays(quote.validity_days || 10);
     setSignedName(quote.signed_by_name || "");
     setSignedTitle(quote.signed_by_title || "Diretor");
+    setStatus(quote.status || "rascunho");
     setItems(
       qItems && qItems.length > 0
         ? qItems.map((it: any, idx: number) => ({
