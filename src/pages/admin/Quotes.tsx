@@ -829,7 +829,7 @@ const Quotes = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>Pré-visualização — {previewQuote?.quote_number}</span>
-              <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Button variant="outline" size="sm" onClick={handlePrintQuote}>
                 <Download className="h-4 w-4 mr-1" /> Imprimir / PDF
               </Button>
             </DialogTitle>
