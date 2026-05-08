@@ -344,7 +344,7 @@ const Quotes = () => {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">Novo Orçamento</h2>
+          <h2 className="text-2xl font-bold text-foreground">{editingId ? "Editar Orçamento" : "Novo Orçamento"}</h2>
           <Button variant="outline" onClick={resetForm}>
             <X className="h-4 w-4 mr-2" /> Cancelar
           </Button>
