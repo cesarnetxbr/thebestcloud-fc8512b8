@@ -246,6 +246,97 @@ const Quotes = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
+      const { error } = await supabase.from("quotes").update({ status: newStatus } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Status atualizado!");
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (quote: any) => {
+      const { data: srcItems } = await supabase
+        .from("quote_items")
+        .select("*")
+        .eq("quote_id", quote.id)
+        .order("item_number");
+
+      // Próxima versão: máxima existente em parent_quote_id = root + 1
+      const rootId = quote.parent_quote_id || quote.id;
+      const { data: siblings } = await supabase
+        .from("quotes")
+        .select("version")
+        .or(`id.eq.${rootId},parent_quote_id.eq.${rootId}`);
+      const nextVersion = Math.max(...(siblings?.map((s: any) => s.version || 1) || [1])) + 1;
+
+      const { data: newQuote, error } = await supabase
+        .from("quotes")
+        .insert({
+          quote_number: "TEMP",
+          customer_id: quote.customer_id,
+          customer_name: quote.customer_name,
+          contact_name: quote.contact_name,
+          contact_email: quote.contact_email,
+          contact_phone: quote.contact_phone,
+          contact_department: quote.contact_department,
+          introduction_text: quote.introduction_text,
+          payment_terms: quote.payment_terms,
+          validity_days: quote.validity_days,
+          total_value: quote.total_value,
+          signed_by_name: quote.signed_by_name,
+          signed_by_title: quote.signed_by_title,
+          status: "rascunho",
+          parent_quote_id: rootId,
+          version: nextVersion,
+          created_by: user?.id,
+        } as any)
+        .select()
+        .single();
+      if (error) throw error;
+
+      if (srcItems && srcItems.length > 0) {
+        await supabase.from("quote_items").insert(
+          srcItems.map((it: any, idx: number) => ({
+            quote_id: newQuote.id,
+            item_number: idx + 1,
+            category: it.category,
+            service_name: it.service_name,
+            description: it.description,
+            quantity: it.quantity,
+            unit_price: it.unit_price,
+            total_price: it.total_price,
+            markup_info: it.markup_info,
+          })) as any
+        );
+      }
+      return newQuote;
+    },
+    onSuccess: () => {
+      toast.success("Orçamento duplicado! Nova versão criada como Rascunho.");
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const { data: auditLog = [] } = useQuery({
+    queryKey: ["quote-audit", historyQuoteId],
+    enabled: !!historyQuoteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quote_audit_log" as any)
+        .select("*")
+        .eq("quote_id", historyQuoteId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
