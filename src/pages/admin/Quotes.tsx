@@ -83,6 +83,14 @@ const Quotes = () => {
   const [signedName, setSignedName] = useState("");
   const [signedTitle, setSignedTitle] = useState("Diretor");
   const [items, setItems] = useState<QuoteItem[]>([emptyItem()]);
+  const [generalNotes, setGeneralNotes] = useState("");
+  const DEFAULT_POLICY_TEXT =
+    "Cumprir a Política de Segurança da Informação mantendo sigilo absoluto sobre todas as informações relacionadas à proposta comercial e contratos que venham a ser realizados entre as partes e terceiros.\n\nAssumir a responsabilidade por toda e qualquer despesa com pagamento de seu pessoal, inclusive com traslados, alimentação, acomodação etc., e também por todos os danos e perdas causados a terceiros, diretamente resultantes de ação ou omissão de seus empregados ou prepostos. Por fim, agradecemos toda a confiança depositada na empresa e esperamos concretizar uma parceria de grande sucesso.";
+  const [policyText, setPolicyText] = useState(DEFAULT_POLICY_TEXT);
+  const [clientAcceptanceName, setClientAcceptanceName] = useState("");
+  const [clientAcceptanceDocument, setClientAcceptanceDocument] = useState("");
+  const [clientAcceptanceDate, setClientAcceptanceDate] = useState<string>("");
+  const [clientSignatureDataUrl, setClientSignatureDataUrl] = useState<string>("");
 
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ["quotes"],
@@ -160,6 +168,12 @@ const Quotes = () => {
           signed_by_name: signedName,
           signed_by_title: signedTitle,
           status,
+          general_notes: generalNotes,
+          policy_text: policyText,
+          client_acceptance_name: clientAcceptanceName,
+          client_acceptance_document: clientAcceptanceDocument,
+          client_acceptance_date: clientAcceptanceDate || null,
+          client_signature_data_url: clientSignatureDataUrl,
         } as any)
         .select()
         .single();
@@ -212,6 +226,12 @@ const Quotes = () => {
           signed_by_name: signedName,
           signed_by_title: signedTitle,
           status,
+          general_notes: generalNotes,
+          policy_text: policyText,
+          client_acceptance_name: clientAcceptanceName,
+          client_acceptance_document: clientAcceptanceDocument,
+          client_acceptance_date: clientAcceptanceDate || null,
+          client_signature_data_url: clientSignatureDataUrl,
         } as any)
         .eq("id", editingId);
       if (error) throw error;
@@ -306,6 +326,13 @@ const Quotes = () => {
           parent_quote_id: rootId,
           version: nextVersion,
           created_by: user?.id,
+          general_notes: quote.general_notes,
+          policy_text: quote.policy_text,
+          // Aceite e assinatura NÃO são duplicados (são do cliente)
+          client_acceptance_name: null,
+          client_acceptance_document: null,
+          client_acceptance_date: null,
+          client_signature_data_url: null,
         } as any)
         .select()
         .single();
@@ -367,6 +394,12 @@ const Quotes = () => {
     setSignedTitle("Diretor");
     setItems([emptyItem()]);
     setStatus("rascunho");
+    setGeneralNotes("");
+    setPolicyText(DEFAULT_POLICY_TEXT);
+    setClientAcceptanceName("");
+    setClientAcceptanceDocument("");
+    setClientAcceptanceDate("");
+    setClientSignatureDataUrl("");
   };
 
   const openEdit = async (quote: any) => {
@@ -392,6 +425,12 @@ const Quotes = () => {
     setSignedName(quote.signed_by_name || "");
     setSignedTitle(quote.signed_by_title || "Diretor");
     setStatus(quote.status || "rascunho");
+    setGeneralNotes(quote.general_notes || "");
+    setPolicyText(quote.policy_text || DEFAULT_POLICY_TEXT);
+    setClientAcceptanceName(quote.client_acceptance_name || "");
+    setClientAcceptanceDocument(quote.client_acceptance_document || "");
+    setClientAcceptanceDate(quote.client_acceptance_date || "");
+    setClientSignatureDataUrl(quote.client_signature_data_url || "");
     setItems(
       qItems && qItems.length > 0
         ? qItems.map((it: any, idx: number) => ({
@@ -721,6 +760,70 @@ const Quotes = () => {
           </CardContent>
         </Card>
 
+        {/* Observações Gerais e Política */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Observações Gerais e Termos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Observações Gerais (exibidas no final da proposta)</Label>
+              <Textarea rows={4} value={generalNotes} onChange={(e) => setGeneralNotes(e.target.value)} placeholder="Informações adicionais, condições específicas, escopo complementar..." />
+            </div>
+            <div>
+              <Label>Termos de Confidencialidade e Responsabilidade</Label>
+              <Textarea rows={6} value={policyText} onChange={(e) => setPolicyText(e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Aceite do Cliente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Aceite do Cliente</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Nome do responsável pelo aceite</Label>
+              <Input value={clientAcceptanceName} onChange={(e) => setClientAcceptanceName(e.target.value)} />
+            </div>
+            <div>
+              <Label>CPF/Documento</Label>
+              <Input value={clientAcceptanceDocument} onChange={(e) => setClientAcceptanceDocument(e.target.value)} />
+            </div>
+            <div>
+              <Label>Data do aceite</Label>
+              <Input type="date" value={clientAcceptanceDate} onChange={(e) => setClientAcceptanceDate(e.target.value)} />
+            </div>
+            <div className="md:col-span-2">
+              <Label>Assinatura manuscrita (imagem PNG/JPG, até 2MB)</Label>
+              <Input
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) {
+                    toast.error("Imagem deve ter no máximo 2MB");
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => setClientSignatureDataUrl(String(reader.result || ""));
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {clientSignatureDataUrl && (
+                <div className="mt-2 flex items-center gap-3">
+                  <img src={clientSignatureDataUrl} alt="Assinatura" className="h-20 border rounded bg-white p-1" />
+                  <Button variant="ghost" size="sm" onClick={() => setClientSignatureDataUrl("")}>
+                    <X className="h-4 w-4 mr-1" /> Remover
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={resetForm}>
             Cancelar
@@ -870,7 +973,7 @@ const Quotes = () => {
               {/* Header */}
               <div className="flex items-start justify-between border-b-4 border-[#1a365d] pb-4">
                 <div>
-                  <img src={logo} alt={companyInfo?.nome_fantasia || "The Best Cloud"} className="h-12 mb-2" />
+                  <img src={logo} alt={companyInfo?.nome_fantasia || "The Best Cloud"} className="h-24 w-auto mb-2 object-contain" style={{ imageRendering: "auto" }} />
                   <p className="text-xs text-gray-500">{companyInfo?.slogan || "Soluções em Cloud e Cybersegurança"}</p>
                 </div>
                 <div className="text-right text-sm">
@@ -984,16 +1087,63 @@ const Quotes = () => {
               </div>
 
               <p className="text-xs text-gray-500 italic">
-                *Os valores contidos nesta proposta comercial serão reajustados anualmente pelo IGPM a partir da data de
+                *Os valores contidos nesta proposta comercial serão reajustados anualmente pelo IPCA a partir da data de
                 contratação destes serviços.
               </p>
 
-              {/* Signature */}
+              {/* Observações Gerais */}
+              {previewQuote.general_notes && (
+                <div className="text-sm">
+                  <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Observações Gerais</p>
+                  <p className="whitespace-pre-line leading-relaxed">{previewQuote.general_notes}</p>
+                </div>
+              )}
+
+              {/* Termos / Política */}
+              {previewQuote.policy_text && (
+                <div className="text-xs text-gray-700 leading-relaxed border-t pt-3">
+                  <p className="font-bold text-[#1a365d] uppercase text-xs mb-2">Termos e Responsabilidades</p>
+                  <p className="whitespace-pre-line">{previewQuote.policy_text}</p>
+                </div>
+              )}
+
+              {/* Signature da The Best Cloud */}
               <div className="text-center pt-8">
                 <p className="text-sm">Atenciosamente,</p>
                 <div className="mt-8 border-t border-black inline-block px-16 pt-2">
                   <p className="font-semibold">{previewQuote.signed_by_name || "—"}</p>
                   <p className="text-sm text-gray-500">{previewQuote.signed_by_title || "Diretor"}</p>
+                </div>
+              </div>
+
+              {/* Aceite do Cliente */}
+              <div className="border-2 border-[#1a365d] rounded p-4 mt-6 text-sm">
+                <p className="font-bold text-[#1a365d] uppercase text-center mb-3">Aceite do Cliente</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Nome</p>
+                    <p className="border-b border-gray-400 pb-1 min-h-[1.5rem]">{previewQuote.client_acceptance_name || ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">CPF/Documento</p>
+                    <p className="border-b border-gray-400 pb-1 min-h-[1.5rem]">{previewQuote.client_acceptance_document || ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Data</p>
+                    <p className="border-b border-gray-400 pb-1 min-h-[1.5rem]">
+                      {previewQuote.client_acceptance_date
+                        ? new Date(previewQuote.client_acceptance_date).toLocaleDateString("pt-BR")
+                        : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Assinatura</p>
+                    <div className="border-b border-gray-400 pb-1 min-h-[4rem] flex items-end">
+                      {previewQuote.client_signature_data_url ? (
+                        <img src={previewQuote.client_signature_data_url} alt="Assinatura do cliente" className="max-h-16 object-contain" />
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
