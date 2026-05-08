@@ -354,6 +354,7 @@ const Quotes = () => {
     setSignedName("");
     setSignedTitle("Diretor");
     setItems([emptyItem()]);
+    setStatus("rascunho");
   };
 
   const openEdit = async (quote: any) => {
