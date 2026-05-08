@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Eye, Trash2, FileText, Download, Search, X } from "lucide-react";
+import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const QUOTE_CATEGORIES = [
