@@ -973,7 +973,7 @@ const Quotes = () => {
               {/* Header */}
               <div className="flex items-start justify-between border-b-4 border-[#1a365d] pb-4">
                 <div>
-                  <img src={logo} alt={companyInfo?.nome_fantasia || "The Best Cloud"} className="h-12 mb-2" />
+                  <img src={logo} alt={companyInfo?.nome_fantasia || "The Best Cloud"} className="h-24 w-auto mb-2 object-contain" style={{ imageRendering: "auto" }} />
                   <p className="text-xs text-gray-500">{companyInfo?.slogan || "Soluções em Cloud e Cybersegurança"}</p>
                 </div>
                 <div className="text-right text-sm">
