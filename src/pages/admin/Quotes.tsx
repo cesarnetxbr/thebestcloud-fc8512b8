@@ -173,6 +173,59 @@ const Quotes = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error("ID do orçamento ausente");
+      const totalValue = items.reduce((sum, i) => sum + (i.total_price || 0), 0);
+      const { error } = await supabase
+        .from("quotes")
+        .update({
+          customer_id: customerId,
+          customer_name: customerName,
+          contact_name: contactName,
+          contact_email: contactEmail,
+          contact_phone: contactPhone,
+          contact_department: contactDept,
+          introduction_text: introText,
+          payment_terms: paymentTerms,
+          validity_days: validityDays,
+          total_value: totalValue,
+          signed_by_name: signedName,
+          signed_by_title: signedTitle,
+        } as any)
+        .eq("id", editingId);
+      if (error) throw error;
+
+      // Substitui os itens (preserva o orçamento, recria itens conforme edição)
+      const { error: delError } = await supabase.from("quote_items").delete().eq("quote_id", editingId);
+      if (delError) throw delError;
+
+      const validItems = items.filter((i) => i.service_name.trim());
+      if (validItems.length > 0) {
+        const { error: itemsError } = await supabase.from("quote_items").insert(
+          validItems.map((item, idx) => ({
+            quote_id: editingId,
+            item_number: idx + 1,
+            category: item.category,
+            service_name: item.service_name,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.total_price,
+            markup_info: item.markup_info,
+          })) as any
+        );
+        if (itemsError) throw itemsError;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Orçamento atualizado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+      resetForm();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("quotes").delete().eq("id", id);
