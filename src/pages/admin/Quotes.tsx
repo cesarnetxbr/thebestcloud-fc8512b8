@@ -556,9 +556,18 @@ const Quotes = () => {
           <Button variant="outline" onClick={resetForm}>
             Cancelar
           </Button>
-          <Button onClick={() => createMutation.mutate()} disabled={!customerName.trim() || createMutation.isPending}>
+          <Button
+            onClick={() => (editingId ? updateMutation.mutate() : createMutation.mutate())}
+            disabled={!customerName.trim() || createMutation.isPending || updateMutation.isPending}
+          >
             <FileText className="h-4 w-4 mr-2" />
-            {createMutation.isPending ? "Salvando..." : "Criar Orçamento"}
+            {editingId
+              ? updateMutation.isPending
+                ? "Salvando..."
+                : "Salvar Alterações"
+              : createMutation.isPending
+                ? "Salvando..."
+                : "Criar Orçamento"}
           </Button>
         </div>
       </div>
