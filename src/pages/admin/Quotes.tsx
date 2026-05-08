@@ -96,6 +96,18 @@ const Quotes = () => {
     },
   });
 
+  const { data: companyInfo } = useQuery({
+    queryKey: ["company-settings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("*")
+        .eq("singleton", true)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const { data: customers = [] } = useQuery({
     queryKey: ["customers-list"],
     queryFn: async () => {
