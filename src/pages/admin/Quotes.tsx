@@ -83,6 +83,14 @@ const Quotes = () => {
   const [signedName, setSignedName] = useState("");
   const [signedTitle, setSignedTitle] = useState("Diretor");
   const [items, setItems] = useState<QuoteItem[]>([emptyItem()]);
+  const [generalNotes, setGeneralNotes] = useState("");
+  const DEFAULT_POLICY_TEXT =
+    "Cumprir a Política de Segurança da Informação mantendo sigilo absoluto sobre todas as informações relacionadas à proposta comercial e contratos que venham a ser realizados entre as partes e terceiros.\n\nAssumir a responsabilidade por toda e qualquer despesa com pagamento de seu pessoal, inclusive com traslados, alimentação, acomodação etc., e também por todos os danos e perdas causados a terceiros, diretamente resultantes de ação ou omissão de seus empregados ou prepostos. Por fim, agradecemos toda a confiança depositada na empresa e esperamos concretizar uma parceria de grande sucesso.";
+  const [policyText, setPolicyText] = useState(DEFAULT_POLICY_TEXT);
+  const [clientAcceptanceName, setClientAcceptanceName] = useState("");
+  const [clientAcceptanceDocument, setClientAcceptanceDocument] = useState("");
+  const [clientAcceptanceDate, setClientAcceptanceDate] = useState<string>("");
+  const [clientSignatureDataUrl, setClientSignatureDataUrl] = useState<string>("");
 
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ["quotes"],
