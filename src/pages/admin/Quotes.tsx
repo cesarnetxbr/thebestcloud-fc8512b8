@@ -854,24 +854,27 @@ const Quotes = () => {
                 <div>
                   <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Criado por:</p>
                   <p className="font-semibold">{companyInfo?.nome_fantasia || "The Best Cloud"}</p>
-                  {companyInfo?.razao_social && <p className="text-xs text-gray-600">{companyInfo.razao_social}</p>}
-                  {companyInfo?.cnpj && <p>CNPJ: {companyInfo.cnpj}</p>}
-                  {(companyInfo?.endereco || companyInfo?.cidade) && (
-                    <p>
-                      {[companyInfo?.endereco, companyInfo?.numero, companyInfo?.complemento].filter(Boolean).join(", ")}
-                      {companyInfo?.bairro ? ` — ${companyInfo.bairro}` : ""}
-                    </p>
-                  )}
-                  {(companyInfo?.cidade || companyInfo?.estado || companyInfo?.cep) && (
-                    <p>
-                      {[companyInfo?.cidade, companyInfo?.estado].filter(Boolean).join("/")}
-                      {companyInfo?.cep ? ` — CEP ${companyInfo.cep}` : ""}
-                    </p>
-                  )}
-                  {companyInfo?.phone && <p>Telefone: {companyInfo.phone}</p>}
-                  {companyInfo?.email && <p>E-mail: {companyInfo.email}</p>}
-                  {companyInfo?.website && <p>Site: {companyInfo.website}</p>}
-                  <p className="mt-1">Contato: {previewQuote.signed_by_name || companyInfo?.signed_by_name || "—"}</p>
+                  <p>Contato: {previewQuote.signed_by_name || companyInfo?.signed_by_name || "—"}</p>
+                  <div className="mt-2 space-y-0.5">
+                    <p>Nome fantasia: {companyInfo?.nome_fantasia || "The Best Cloud"}</p>
+                    {companyInfo?.razao_social && <p>Razão social: {companyInfo.razao_social}</p>}
+                    <p>CNPJ: {companyInfo?.cnpj || "—"}</p>
+                    <p>E-mail: {companyInfo?.email || "—"}</p>
+                    {(companyInfo?.endereco || companyInfo?.cidade) && (
+                      <p>
+                        {[companyInfo?.endereco, companyInfo?.numero, companyInfo?.complemento].filter(Boolean).join(", ")}
+                        {companyInfo?.bairro ? ` — ${companyInfo.bairro}` : ""}
+                      </p>
+                    )}
+                    {(companyInfo?.cidade || companyInfo?.estado || companyInfo?.cep) && (
+                      <p>
+                        {[companyInfo?.cidade, companyInfo?.estado].filter(Boolean).join("/")}
+                        {companyInfo?.cep ? ` — CEP ${companyInfo.cep}` : ""}
+                      </p>
+                    )}
+                    {companyInfo?.phone && <p>Telefone: {companyInfo.phone}</p>}
+                    {companyInfo?.website && <p>Site: {companyInfo.website}</p>}
+                  </div>
                 </div>
                 <div>
                   <p className="font-bold text-[#1a365d] uppercase text-xs mb-1">Proposta para:</p>
