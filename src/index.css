@@ -118,3 +118,45 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Print styles for quote preview - garante impressão de todas as páginas */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #quote-preview, #quote-preview * {
+    visibility: visible !important;
+  }
+  /* Remove limites de altura/overflow do Dialog para permitir múltiplas páginas */
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content] {
+    position: static !important;
+    transform: none !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    background: white !important;
+    padding: 0 !important;
+    border: none !important;
+    inset: auto !important;
+  }
+  #quote-preview {
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  /* Evita quebra dentro de itens da proposta */
+  #quote-preview table, #quote-preview tr, #quote-preview td {
+    page-break-inside: avoid;
+  }
+  @page {
+    margin: 12mm;
+    size: A4;
+  }
+}
