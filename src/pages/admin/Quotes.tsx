@@ -1100,12 +1100,10 @@ const Quotes = () => {
               )}
 
               {/* Termos / Política */}
-              {previewQuote.policy_text && (
-                <div className="text-xs text-gray-700 leading-relaxed border-t pt-3">
-                  <p className="font-bold text-[#1a365d] uppercase text-xs mb-2">Termos e Responsabilidades</p>
-                  <p className="whitespace-pre-line">{previewQuote.policy_text}</p>
-                </div>
-              )}
+              <div className="text-xs text-gray-700 leading-relaxed border-t pt-3" style={{ pageBreakInside: "avoid", breakInside: "avoid" }}>
+                <p className="font-bold text-[#1a365d] uppercase text-xs mb-2">Termos e Responsabilidades</p>
+                <p className="whitespace-pre-line">{previewQuote.policy_text || DEFAULT_POLICY_TEXT}</p>
+              </div>
 
               {/* Signature da The Best Cloud */}
               <div className="text-center pt-8">
