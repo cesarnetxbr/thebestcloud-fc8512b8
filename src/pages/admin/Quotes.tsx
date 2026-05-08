@@ -326,6 +326,13 @@ const Quotes = () => {
           parent_quote_id: rootId,
           version: nextVersion,
           created_by: user?.id,
+          general_notes: quote.general_notes,
+          policy_text: quote.policy_text,
+          // Aceite e assinatura NÃO são duplicados (são do cliente)
+          client_acceptance_name: null,
+          client_acceptance_document: null,
+          client_acceptance_date: null,
+          client_signature_data_url: null,
         } as any)
         .select()
         .single();
