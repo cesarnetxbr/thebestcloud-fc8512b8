@@ -633,8 +633,11 @@ const Quotes = () => {
                       <TableCell>{new Date(q.created_at).toLocaleDateString("pt-BR")}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => openPreview(q)}>
+                          <Button variant="ghost" size="sm" onClick={() => openPreview(q)} title="Pré-visualizar">
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar">
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
