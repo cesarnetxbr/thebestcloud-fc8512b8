@@ -920,6 +920,39 @@ const Quotes = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Histórico de Alterações */}
+      <Dialog open={!!historyQuoteId} onOpenChange={(o) => !o && setHistoryQuoteId(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+          </DialogHeader>
+          {auditLog.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum registro de alteração ainda.</p>
+          ) : (
+            <div className="space-y-2">
+              {auditLog.map((log: any) => (
+                <div key={log.id} className="border rounded-md p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{log.action}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(log.created_at).toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Por: {log.user_email || "Sistema"}
+                  </p>
+                  {log.changes && (
+                    <pre className="text-xs bg-muted/50 rounded p-2 mt-2 overflow-x-auto">
+                      {JSON.stringify(log.changes, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
