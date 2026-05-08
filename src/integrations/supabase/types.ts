@@ -593,6 +593,75 @@ export type Database = {
           },
         ]
       }
+      company_settings: {
+        Row: {
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          cnpj: string | null
+          complemento: string | null
+          created_at: string
+          email: string | null
+          endereco: string | null
+          estado: string | null
+          id: string
+          nome_fantasia: string | null
+          numero: string | null
+          phone: string | null
+          razao_social: string | null
+          signed_by_name: string | null
+          signed_by_title: string | null
+          singleton: boolean
+          slogan: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string | null
+          complemento?: string | null
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          nome_fantasia?: string | null
+          numero?: string | null
+          phone?: string | null
+          razao_social?: string | null
+          signed_by_name?: string | null
+          signed_by_title?: string | null
+          singleton?: boolean
+          slogan?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string | null
+          complemento?: string | null
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          nome_fantasia?: string | null
+          numero?: string | null
+          phone?: string | null
+          razao_social?: string | null
+          signed_by_name?: string | null
+          signed_by_title?: string | null
+          singleton?: boolean
+          slogan?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           api_key: string
