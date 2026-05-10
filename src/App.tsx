@@ -75,6 +75,7 @@ import CRMChatSettings from "./pages/admin/crm/CRMChatSettings";
 import CRMWhatsAppConnect from "./pages/admin/crm/CRMWhatsAppConnect";
 import CRMChatbot from "./pages/admin/crm/CRMChatbot";
 import CRMMarketingDashboard from "./pages/admin/crm/CRMMarketingDashboard";
+import CRMWhatsAppMetrics from "./pages/admin/crm/CRMWhatsAppMetrics";
 import MarketingDashboard from "./pages/admin/marketing/MarketingDashboard";
 import EmailCampaigns from "./pages/admin/marketing/EmailCampaigns";
 import EmailLists from "./pages/admin/marketing/EmailLists";
