@@ -939,6 +939,7 @@ export type Database = {
           stage_id: string | null
           status: string
           title: string
+          tracking_token: string | null
           updated_at: string
           value: number | null
         }
@@ -956,6 +957,7 @@ export type Database = {
           stage_id?: string | null
           status?: string
           title: string
+          tracking_token?: string | null
           updated_at?: string
           value?: number | null
         }
@@ -973,6 +975,7 @@ export type Database = {
           stage_id?: string | null
           status?: string
           title?: string
+          tracking_token?: string | null
           updated_at?: string
           value?: number | null
         }
