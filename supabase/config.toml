@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.consultant-lead]
 verify_jwt = false
+
+[functions.quote-tracking]
+verify_jwt = false
