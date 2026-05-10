@@ -307,12 +307,15 @@ async function classifyLeadProbability(
 
 function isCloseRequest(msg: string): boolean {
   const n = normalizeText(msg);
-  return ["encerrar", "finalizar", "fechar conversa", "encerrar conversa", "finalizar atendimento", "0"].some(kw => n.includes(kw));
+  // Match exato para "0" e "encerrar"; substring apenas para frases longas inequívocas.
+  if (n === "0" || n === "encerrar" || n === "finalizar" || n === "sair") return true;
+  return ["fechar conversa", "encerrar conversa", "encerrar atendimento", "finalizar atendimento", "finalizar conversa"].some(kw => n.includes(kw));
 }
 
 function isReopenRequest(msg: string): boolean {
   const n = normalizeText(msg);
-  return ["reabrir", "voltar", "reabrir conversa", "novo atendimento"].some(kw => n.includes(kw));
+  if (n === "reabrir" || n === "voltar") return true;
+  return ["reabrir conversa", "reabrir atendimento", "novo atendimento"].some(kw => n.includes(kw));
 }
 
 // Resolve button click ID or action ID into a searchable keyword
