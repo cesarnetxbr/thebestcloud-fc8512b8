@@ -772,6 +772,31 @@ serve(async (req) => {
       });
     }
 
+    // --- Qualificação automática pós-cotação (cria lead + deal no Pipeline) ---
+    try {
+      const qualResult = await tryQualifyCotacaoLead(
+        supabase, conversationId, normalizedPhone, senderName || normalizedPhone, messageContent,
+      );
+      if (qualResult.created) {
+        const ackMsg = "✅ *Cotação recebida com sucesso!*\n\nObrigado pelas informações. Já registramos sua solicitação no nosso sistema comercial e um *consultor especialista* da The Best Cloud entrará em contato em até *2 horas úteis* com a proposta personalizada.\n\nProtocolo interno: " + (qualResult.dealId?.slice(0, 8).toUpperCase() || "—") + "\n\nEnquanto isso, se preferir falar diretamente:\n📞 (91) 98131-7645\n📧 comercial@thebestcloud.com.br";
+        const sent = await sendZapiMessage(normalizedPhone, ackMsg);
+        if (sent) {
+          await supabase.from("chat_messages").insert({
+            conversation_id: conversationId, sender_type: "agent",
+            sender_name: "🤖 Chatbot", content: ackMsg, is_read: true,
+          });
+        }
+        console.log("Cotação qualificada criou lead+deal:", qualResult);
+        return new Response(JSON.stringify({ ok: true, conversationId, action: "cotacao_qualified", ...qualResult }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        console.log("Cotação não qualificada:", qualResult.reason);
+      }
+    } catch (e) {
+      console.error("tryQualifyCotacaoLead error:", e);
+    }
+
     // --- Chatbot auto-reply ---
     const matchedRule = await matchChatbotRule(supabase, messageContent, conversationId, greetingSent);
 
