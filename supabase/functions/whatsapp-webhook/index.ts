@@ -325,6 +325,180 @@ function resolveActionId(actionId: string): string | null {
   return null;
 }
 
+// =====================================================================================
+// Qualificação automática de cotação WhatsApp → CRM (lead + deal no Pipeline)
+// Disparada quando a última msg do bot foi o menu de cotação E o cliente respondeu
+// com texto livre contendo informações qualificadoras (volume, dispositivos, serviços).
+// Não recria lead/deal se a conversa já tem lead_id/deal_id.
+// =====================================================================================
+async function tryQualifyCotacaoLead(
+  supabase: any,
+  conversationId: string,
+  phone: string,
+  senderName: string,
+  messageContent: string,
+): Promise<{ created: boolean; reason?: string; leadId?: string; dealId?: string }> {
+  // 1) Conversa ainda sem lead vinculado?
+  const { data: conv } = await supabase
+    .from("chat_conversations")
+    .select("id, lead_id, deal_id, customer_id")
+    .eq("id", conversationId).maybeSingle();
+  if (!conv) return { created: false, reason: "conversation_not_found" };
+  if (conv.lead_id && conv.deal_id) return { created: false, reason: "already_qualified" };
+
+  // 2) Última msg do bot foi o menu de cotação?
+  const { data: lastBot } = await supabase
+    .from("chat_messages").select("content")
+    .eq("conversation_id", conversationId)
+    .eq("sender_type", "agent")
+    .eq("sender_name", "🤖 Chatbot")
+    .order("created_at", { ascending: false })
+    .limit(1).maybeSingle();
+  const lastBotContent: string = lastBot?.content || "";
+  const cameFromCotacao = lastBotContent.includes("Solicitar Cotação") && lastBotContent.includes("volume de dados");
+  if (!cameFromCotacao) return { created: false, reason: "not_after_cotacao_menu" };
+
+  // 3) Heurística de pré-filtro: precisa ter dígitos OU palavras de serviço
+  const lower = messageContent.toLowerCase();
+  const hasDigits = /\d/.test(messageContent);
+  const hasServiceKw = ["backup", "antivirus", "antivírus", "ransomware", "disaster", "edr", "xdr", "mdr", "dlp", "e-mail", "email"].some(k => lower.includes(k));
+  if (messageContent.trim().length < 15 || (!hasDigits && !hasServiceKw)) {
+    return { created: false, reason: "insufficient_signal" };
+  }
+
+  // 4) Extrair dados estruturados via Lovable AI (tool calling)
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) return { created: false, reason: "no_ai_key" };
+
+  let extracted: any = null;
+  try {
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          {
+            role: "system",
+            content: "Você extrai dados de qualificação comercial de mensagens de WhatsApp para a The Best Cloud (ciberproteção, backup em nuvem, antivírus, DR). Retorne SEMPRE via tool 'extract_quote_qualification'. Se um campo não estiver claro, deixe vazio/null. Estime valor mensal em BRL apenas como referência (R$ 25/estação, R$ 80/servidor, R$ 30/TB de backup, R$ 15/estação para antivírus) — soma todos os serviços identificados.",
+          },
+          { role: "user", content: messageContent },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "extract_quote_qualification",
+            description: "Extrai dados qualificadores de cotação enviados pelo cliente",
+            parameters: {
+              type: "object",
+              properties: {
+                contact_name: { type: "string", description: "Nome da pessoa de contato, se mencionado" },
+                company: { type: "string", description: "Nome da empresa, se mencionado" },
+                email: { type: "string", description: "E-mail corporativo, se mencionado" },
+                volume_tb: { type: "number", description: "Volume de dados em TB (converta GB→TB se necessário). 0 se não mencionado" },
+                workstations: { type: "integer", description: "Quantidade de estações/notebooks. 0 se não mencionado" },
+                servers: { type: "integer", description: "Quantidade de servidores. 0 se não mencionado" },
+                services: {
+                  type: "array",
+                  items: { type: "string", enum: ["backup", "antivirus", "ransomware", "disaster_recovery", "email_security", "edr", "xdr", "mdr", "dlp", "outros"] },
+                  description: "Serviços de interesse identificados",
+                },
+                estimated_monthly_brl: { type: "number", description: "Estimativa de valor mensal em R$ baseada nas heurísticas do sistema" },
+                confidence: { type: "number", description: "Confiança da extração (0 a 1)" },
+              },
+              required: ["services", "confidence"],
+              additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "extract_quote_qualification" } },
+      }),
+    });
+    if (!aiResp.ok) {
+      console.error("AI qualification failed:", aiResp.status, await aiResp.text());
+      return { created: false, reason: "ai_error_" + aiResp.status };
+    }
+    const aiData = await aiResp.json();
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall) return { created: false, reason: "no_tool_call" };
+    extracted = JSON.parse(toolCall.function.arguments || "{}");
+  } catch (e) {
+    console.error("AI qualification exception:", e);
+    return { created: false, reason: "ai_exception" };
+  }
+
+  if (!extracted || extracted.confidence < 0.4 || !extracted.services?.length) {
+    return { created: false, reason: "low_confidence" };
+  }
+
+  // 5) Criar/reaproveitar lead
+  let leadId = conv.lead_id as string | null;
+  if (!leadId) {
+    const leadName = extracted.contact_name || senderName || `WhatsApp ${phone}`;
+    const tags = ["whatsapp", "cotacao-qualificada", ...extracted.services.map((s: string) => `serv:${s}`)];
+    const { data: newLead, error: leadErr } = await supabase
+      .from("crm_leads").insert({
+        name: leadName,
+        company: extracted.company || null,
+        email: extracted.email || null,
+        phone,
+        source: "whatsapp",
+        status: "qualificado",
+        score: Math.round((extracted.confidence || 0.5) * 100),
+        tags,
+        notes: `Qualificação automática via WhatsApp:\n• Volume: ${extracted.volume_tb || 0} TB\n• Estações: ${extracted.workstations || 0}\n• Servidores: ${extracted.servers || 0}\n• Serviços: ${extracted.services.join(", ")}\n• Mensagem original:\n"${messageContent}"`,
+      }).select("id").single();
+    if (leadErr) {
+      console.error("Lead create failed:", leadErr);
+      return { created: false, reason: "lead_insert_failed" };
+    }
+    leadId = newLead.id;
+    await supabase.from("chat_conversations").update({ lead_id: leadId }).eq("id", conversationId);
+  }
+
+  // 6) Criar deal na primeira etapa do pipeline
+  let dealId = conv.deal_id as string | null;
+  if (!dealId) {
+    const { data: firstStage } = await supabase
+      .from("crm_pipeline_stages").select("id").eq("is_active", true)
+      .order("position", { ascending: true }).limit(1).maybeSingle();
+    if (!firstStage) return { created: false, reason: "no_pipeline_stage", leadId: leadId || undefined };
+
+    const monthly = Math.max(0, Number(extracted.estimated_monthly_brl) || 0);
+    const annualValue = monthly * 12; // valor anual estimado
+    const dealTitle = `${extracted.company || senderName || "Cliente WhatsApp"} – ${extracted.services.slice(0, 3).join(" + ")}`;
+
+    const { data: newDeal, error: dealErr } = await supabase
+      .from("crm_deals").insert({
+        title: dealTitle,
+        value: annualValue,
+        lead_id: leadId,
+        stage_id: firstStage.id,
+        probability: Math.min(95, Math.round((extracted.confidence || 0.5) * 100)),
+        notes: `Origem: WhatsApp (qualificação automática)\nValor mensal estimado: R$ ${monthly.toFixed(2)}\nVolume: ${extracted.volume_tb || 0} TB | Estações: ${extracted.workstations || 0} | Servidores: ${extracted.servers || 0}\nServiços: ${extracted.services.join(", ")}`,
+        status: "aberto",
+      }).select("id").single();
+    if (dealErr) {
+      console.error("Deal create failed:", dealErr);
+      return { created: false, reason: "deal_insert_failed", leadId };
+    }
+    dealId = newDeal.id;
+    await supabase.from("chat_conversations").update({ deal_id: dealId }).eq("id", conversationId);
+
+    // Tag de alta probabilidade quando confiança >= 0.7
+    if ((extracted.confidence || 0) >= 0.7) {
+      await supabase.from("crm_deal_tags").insert({
+        deal_id: dealId, tag_name: "Alta Probabilidade", tag_color: "#16a34a",
+      });
+    }
+    await supabase.from("crm_deal_tags").insert({
+      deal_id: dealId, tag_name: "WhatsApp", tag_color: "#25D366",
+    });
+  }
+
+  return { created: true, leadId: leadId || undefined, dealId: dealId || undefined };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -596,6 +770,31 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, conversationId, action: "cotacao" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // --- Qualificação automática pós-cotação (cria lead + deal no Pipeline) ---
+    try {
+      const qualResult = await tryQualifyCotacaoLead(
+        supabase, conversationId, normalizedPhone, senderName || normalizedPhone, messageContent,
+      );
+      if (qualResult.created) {
+        const ackMsg = "✅ *Cotação recebida com sucesso!*\n\nObrigado pelas informações. Já registramos sua solicitação no nosso sistema comercial e um *consultor especialista* da The Best Cloud entrará em contato em até *2 horas úteis* com a proposta personalizada.\n\nProtocolo interno: " + (qualResult.dealId?.slice(0, 8).toUpperCase() || "—") + "\n\nEnquanto isso, se preferir falar diretamente:\n📞 (91) 98131-7645\n📧 comercial@thebestcloud.com.br";
+        const sent = await sendZapiMessage(normalizedPhone, ackMsg);
+        if (sent) {
+          await supabase.from("chat_messages").insert({
+            conversation_id: conversationId, sender_type: "agent",
+            sender_name: "🤖 Chatbot", content: ackMsg, is_read: true,
+          });
+        }
+        console.log("Cotação qualificada criou lead+deal:", qualResult);
+        return new Response(JSON.stringify({ ok: true, conversationId, action: "cotacao_qualified", ...qualResult }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        console.log("Cotação não qualificada:", qualResult.reason);
+      }
+    } catch (e) {
+      console.error("tryQualifyCotacaoLead error:", e);
     }
 
     // --- Chatbot auto-reply ---
