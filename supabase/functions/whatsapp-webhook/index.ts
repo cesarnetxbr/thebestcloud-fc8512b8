@@ -106,13 +106,17 @@ const menuDefinitions: Record<string, { id: string; label: string }[]> = {
 };
 
 // Detect which menu context the last bot message used by checking content markers
+// IMPORTANT: order matters — checks mais específicos primeiro (cotacao, category, reopen, greeting),
+// e só depois servicos. Caso contrário, a saudação que menciona "3 pilares" / "Nossos Serviços"
+// como prévia seria classificada como menu de serviços.
 function detectMenuContext(lastBotMessage: string): string | null {
   if (!lastBotMessage) return null;
+  const lower = lastBotMessage.toLowerCase();
   if (lastBotMessage.includes("Solicitar Cotação") && lastBotMessage.includes("volume de dados")) return "cotacao";
-  if (lastBotMessage.includes("3 pilares") || lastBotMessage.includes("Nossos Serviços")) return "servicos";
   if (lastBotMessage.includes("Segurança –") || lastBotMessage.includes("Proteção –") || lastBotMessage.includes("Operações –")) return "category";
   if (lastBotMessage.includes("Conversa reaberta")) return "reopen";
-  if (lastBotMessage.includes("Bem-vindo") || lastBotMessage.includes("Como posso ajud")) return "greeting";
+  if (lower.includes("bem-vindo") || lower.includes("como posso te ajud") || lower.includes("como posso ajud")) return "greeting";
+  if (lastBotMessage.includes("*Nossos Serviços") || lastBotMessage.includes("3 pilares")) return "servicos";
   if (lastBotMessage.includes("Responda com o número")) return "keyword";
   return null;
 }
@@ -303,12 +307,15 @@ async function classifyLeadProbability(
 
 function isCloseRequest(msg: string): boolean {
   const n = normalizeText(msg);
-  return ["encerrar", "finalizar", "fechar conversa", "encerrar conversa", "finalizar atendimento", "0"].some(kw => n.includes(kw));
+  // Match exato para "0" e "encerrar"; substring apenas para frases longas inequívocas.
+  if (n === "0" || n === "encerrar" || n === "finalizar" || n === "sair") return true;
+  return ["fechar conversa", "encerrar conversa", "encerrar atendimento", "finalizar atendimento", "finalizar conversa"].some(kw => n.includes(kw));
 }
 
 function isReopenRequest(msg: string): boolean {
   const n = normalizeText(msg);
-  return ["reabrir", "voltar", "reabrir conversa", "novo atendimento"].some(kw => n.includes(kw));
+  if (n === "reabrir" || n === "voltar") return true;
+  return ["reabrir conversa", "reabrir atendimento", "novo atendimento"].some(kw => n.includes(kw));
 }
 
 // Resolve button click ID or action ID into a searchable keyword
