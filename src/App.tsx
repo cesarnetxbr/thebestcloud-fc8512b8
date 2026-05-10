@@ -160,6 +160,7 @@ const App = () => (
               <Route path="crm/chat/settings" element={<CRMChatSettings />} />
               <Route path="crm/whatsapp-connect" element={<CRMWhatsAppConnect />} />
               <Route path="crm/chatbot" element={<CRMChatbot />} />
+              <Route path="crm/whatsapp-metrics" element={<CRMWhatsAppMetrics />} />
               <Route path="crm/requests" element={<CommercialRequests />} />
               <Route path="crm/quotes" element={<Quotes />} />
               <Route path="crm/marketing" element={<CRMMarketingDashboard />} />
