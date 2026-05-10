@@ -111,6 +111,7 @@ const navSections: NavSection[] = [
         { label: "WhatsApp Connect", icon: Phone, path: "/admin/crm/whatsapp-connect", module: "chat" },
         { label: "Chatbot & IA", icon: Zap, path: "/admin/crm/chatbot", module: "chat" },
         { label: "Config. Chat", icon: Settings, path: "/admin/crm/chat/settings", module: "chat" },
+        { label: "Métricas WhatsApp", icon: BarChart3, path: "/admin/crm/whatsapp-metrics", module: "chat" },
         { label: "Chamados", icon: Headphones, path: "/admin/tickets", module: "chamados" },
         { label: "Agenda Técnica", icon: CalendarDays, path: "/admin/support-schedule", module: "agenda_tecnica" },
       ],
