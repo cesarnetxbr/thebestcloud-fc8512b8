@@ -779,14 +779,27 @@ serve(async (req) => {
       );
       if (qualResult.created) {
         let trackingUrl = "";
+        let bookingUrl = "";
         if (qualResult.dealId) {
           const { data: dealRow } = await supabase
             .from("crm_deals").select("tracking_token").eq("id", qualResult.dealId).maybeSingle();
           if (dealRow?.tracking_token) {
             trackingUrl = `https://thebestcloud.app/cotacao/${dealRow.tracking_token}`;
           }
+          // Cria booking pendente para o cliente escolher horário
+          const { data: bk } = await supabase
+            .from("consultant_bookings").insert({
+              deal_id: qualResult.dealId,
+              lead_id: qualResult.leadId,
+              customer_name: senderName || normalizedPhone,
+              customer_phone: normalizedPhone,
+              status: "pendente",
+            }).select("booking_token").single();
+          if (bk?.booking_token) {
+            bookingUrl = `https://thebestcloud.app/agendar/${bk.booking_token}`;
+          }
         }
-        const ackMsg = "✅ *Cotação recebida com sucesso!*\n\nObrigado pelas informações. Já registramos sua solicitação no nosso sistema comercial e um *consultor especialista* da The Best Cloud entrará em contato em até *2 horas úteis* com a proposta personalizada.\n\nProtocolo interno: " + (qualResult.dealId?.slice(0, 8).toUpperCase() || "—") + (trackingUrl ? `\n\n🔎 *Acompanhe sua cotação em tempo real:*\n${trackingUrl}` : "") + "\n\nEnquanto isso, se preferir falar diretamente:\n📞 (91) 98131-7645\n📧 comercial@thebestcloud.com.br";
+        const ackMsg = "✅ *Cotação recebida com sucesso!*\n\nObrigado pelas informações. Já registramos sua solicitação no nosso sistema comercial e um *consultor especialista* da The Best Cloud entrará em contato em até *2 horas úteis* com a proposta personalizada.\n\nProtocolo interno: " + (qualResult.dealId?.slice(0, 8).toUpperCase() || "—") + (bookingUrl ? `\n\n📅 *Agende uma reunião com nosso especialista:*\n${bookingUrl}` : "") + (trackingUrl ? `\n\n🔎 *Acompanhe sua cotação em tempo real:*\n${trackingUrl}` : "") + "\n\nEnquanto isso, se preferir falar diretamente:\n📞 (91) 98131-7645\n📧 comercial@thebestcloud.com.br";
         const sent = await sendZapiMessage(normalizedPhone, ackMsg);
         if (sent) {
           await supabase.from("chat_messages").insert({
