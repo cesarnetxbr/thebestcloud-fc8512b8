@@ -695,6 +695,57 @@ export type Database = {
         }
         Relationships: []
       }
+      consultant_bookings: {
+        Row: {
+          booking_token: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          deal_id: string | null
+          duration_minutes: number
+          id: string
+          lead_id: string | null
+          notes: string | null
+          scheduled_at: string | null
+          specialist_user_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_token?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          deal_id?: string | null
+          duration_minutes?: number
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          scheduled_at?: string | null
+          specialist_user_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_token?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          deal_id?: string | null
+          duration_minutes?: number
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          scheduled_at?: string | null
+          specialist_user_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crm_activities: {
         Row: {
           completed_at: string | null
@@ -939,6 +990,7 @@ export type Database = {
           stage_id: string | null
           status: string
           title: string
+          tracking_token: string | null
           updated_at: string
           value: number | null
         }
@@ -956,6 +1008,7 @@ export type Database = {
           stage_id?: string | null
           status?: string
           title: string
+          tracking_token?: string | null
           updated_at?: string
           value?: number | null
         }
@@ -973,6 +1026,7 @@ export type Database = {
           stage_id?: string | null
           status?: string
           title?: string
+          tracking_token?: string | null
           updated_at?: string
           value?: number | null
         }

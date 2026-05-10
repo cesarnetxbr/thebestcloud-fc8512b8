@@ -59,6 +59,8 @@ import LgpdRequest from "./pages/LgpdRequest";
 import Lgpd from "./pages/Lgpd";
 import PublicOmbudsman from "./pages/PublicOmbudsman";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import QuoteTrackingPage from "./pages/QuoteTrackingPage";
+import BookingPage from "./pages/BookingPage";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import LgpdDashboard from "./pages/admin/lgpd/LgpdDashboard";
 import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
@@ -114,6 +116,8 @@ const App = () => (
             <Route path="/lgpd/solicitar" element={<LgpdRequest />} />
             <Route path="/ouvidoria" element={<PublicOmbudsman />} />
             <Route path="/base-conhecimento" element={<KnowledgeBase />} />
+            <Route path="/cotacao/:token" element={<QuoteTrackingPage />} />
+            <Route path="/agendar/:token" element={<BookingPage />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
