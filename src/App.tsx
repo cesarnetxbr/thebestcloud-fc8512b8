@@ -59,6 +59,7 @@ import LgpdRequest from "./pages/LgpdRequest";
 import Lgpd from "./pages/Lgpd";
 import PublicOmbudsman from "./pages/PublicOmbudsman";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import QuoteTrackingPage from "./pages/QuoteTrackingPage";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import LgpdDashboard from "./pages/admin/lgpd/LgpdDashboard";
 import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
