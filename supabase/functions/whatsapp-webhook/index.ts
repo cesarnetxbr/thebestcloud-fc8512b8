@@ -106,13 +106,17 @@ const menuDefinitions: Record<string, { id: string; label: string }[]> = {
 };
 
 // Detect which menu context the last bot message used by checking content markers
+// IMPORTANT: order matters — checks mais específicos primeiro (cotacao, category, reopen, greeting),
+// e só depois servicos. Caso contrário, a saudação que menciona "3 pilares" / "Nossos Serviços"
+// como prévia seria classificada como menu de serviços.
 function detectMenuContext(lastBotMessage: string): string | null {
   if (!lastBotMessage) return null;
+  const lower = lastBotMessage.toLowerCase();
   if (lastBotMessage.includes("Solicitar Cotação") && lastBotMessage.includes("volume de dados")) return "cotacao";
-  if (lastBotMessage.includes("3 pilares") || lastBotMessage.includes("Nossos Serviços")) return "servicos";
   if (lastBotMessage.includes("Segurança –") || lastBotMessage.includes("Proteção –") || lastBotMessage.includes("Operações –")) return "category";
   if (lastBotMessage.includes("Conversa reaberta")) return "reopen";
-  if (lastBotMessage.includes("Bem-vindo") || lastBotMessage.includes("Como posso ajud")) return "greeting";
+  if (lower.includes("bem-vindo") || lower.includes("como posso te ajud") || lower.includes("como posso ajud")) return "greeting";
+  if (lastBotMessage.includes("*Nossos Serviços") || lastBotMessage.includes("3 pilares")) return "servicos";
   if (lastBotMessage.includes("Responda com o número")) return "keyword";
   return null;
 }
