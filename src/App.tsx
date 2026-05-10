@@ -117,6 +117,7 @@ const App = () => (
             <Route path="/ouvidoria" element={<PublicOmbudsman />} />
             <Route path="/base-conhecimento" element={<KnowledgeBase />} />
             <Route path="/cotacao/:token" element={<QuoteTrackingPage />} />
+            <Route path="/agendar/:token" element={<BookingPage />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
