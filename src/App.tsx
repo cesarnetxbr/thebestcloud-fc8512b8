@@ -61,6 +61,7 @@ import PublicOmbudsman from "./pages/PublicOmbudsman";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import QuoteTrackingPage from "./pages/QuoteTrackingPage";
 import BookingPage from "./pages/BookingPage";
+import Unsubscribe from "./pages/Unsubscribe";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import LgpdDashboard from "./pages/admin/lgpd/LgpdDashboard";
 import LgpdRopa from "./pages/admin/lgpd/LgpdRopa";
@@ -118,6 +119,7 @@ const App = () => (
             <Route path="/base-conhecimento" element={<KnowledgeBase />} />
             <Route path="/cotacao/:token" element={<QuoteTrackingPage />} />
             <Route path="/agendar/:token" element={<BookingPage />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />

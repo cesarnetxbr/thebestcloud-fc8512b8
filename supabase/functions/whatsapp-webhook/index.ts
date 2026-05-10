@@ -496,7 +496,14 @@ async function tryQualifyCotacaoLead(
     });
   }
 
-  return { created: true, leadId: leadId || undefined, dealId: dealId || undefined };
+  return {
+    created: true,
+    leadId: leadId || undefined,
+    dealId: dealId || undefined,
+    customerEmail: extracted.email || undefined,
+    customerName: extracted.contact_name || undefined,
+    services: extracted.services || [],
+  };
 }
 
 serve(async (req) => {
@@ -799,7 +806,41 @@ serve(async (req) => {
             bookingUrl = `https://thebestcloud.app/agendar/${bk.booking_token}`;
           }
         }
-        const ackMsg = "✅ *Cotação recebida com sucesso!*\n\nObrigado pelas informações. Já registramos sua solicitação no nosso sistema comercial e um *consultor especialista* da The Best Cloud entrará em contato em até *2 horas úteis* com a proposta personalizada.\n\nProtocolo interno: " + (qualResult.dealId?.slice(0, 8).toUpperCase() || "—") + (bookingUrl ? `\n\n📅 *Agende uma reunião com nosso especialista:*\n${bookingUrl}` : "") + (trackingUrl ? `\n\n🔎 *Acompanhe sua cotação em tempo real:*\n${trackingUrl}` : "") + "\n\nEnquanto isso, se preferir falar diretamente:\n📞 (91) 98131-7645\n📧 comercial@thebestcloud.com.br";
+
+        // Geração de PDF + envio de e-mail (não bloqueia resposta WhatsApp)
+        if (qualResult.customerEmail && qualResult.dealId) {
+          (async () => {
+            try {
+              const pdfRes = await supabase.functions.invoke("generate-proposal-pdf", {
+                body: {
+                  dealId: qualResult.dealId,
+                  customerName: qualResult.customerName || senderName,
+                  customerEmail: qualResult.customerEmail,
+                  service: (qualResult.services || []).join(", "),
+                },
+              });
+              const proposalUrl = (pdfRes.data as any)?.url;
+              await supabase.functions.invoke("send-transactional-email", {
+                body: {
+                  templateName: "proposal-ready",
+                  recipientEmail: qualResult.customerEmail,
+                  idempotencyKey: `proposal-${qualResult.dealId}`,
+                  templateData: {
+                    customerName: qualResult.customerName || senderName,
+                    dealTitle: (qualResult.services || []).join(" + "),
+                    proposalUrl,
+                    trackingUrl,
+                    bookingUrl,
+                  },
+                },
+              });
+            } catch (e) {
+              console.error("proposal email pipeline failed:", e);
+            }
+          })();
+        }
+
+        const ackMsg = "✅ *Cotação recebida com sucesso!*\n\nObrigado pelas informações. Já registramos sua solicitação no nosso sistema comercial e um *consultor especialista* da The Best Cloud entrará em contato em até *2 horas úteis* com a proposta personalizada.\n\nProtocolo interno: " + (qualResult.dealId?.slice(0, 8).toUpperCase() || "—") + (bookingUrl ? `\n\n📅 *Agende uma reunião com nosso especialista:*\n${bookingUrl}` : "") + (trackingUrl ? `\n\n🔎 *Acompanhe sua cotação em tempo real:*\n${trackingUrl}` : "") + (qualResult.customerEmail ? `\n\n📧 Enviaremos a proposta em PDF para: ${qualResult.customerEmail}` : "") + "\n\nEnquanto isso, se preferir falar diretamente:\n📞 (91) 98131-7645\n📧 comercial@thebestcloud.com.br";
         const sent = await sendZapiMessage(normalizedPhone, ackMsg);
         if (sent) {
           await supabase.from("chat_messages").insert({
