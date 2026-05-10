@@ -115,6 +115,7 @@ const App = () => (
             <Route path="/lgpd/solicitar" element={<LgpdRequest />} />
             <Route path="/ouvidoria" element={<PublicOmbudsman />} />
             <Route path="/base-conhecimento" element={<KnowledgeBase />} />
+            <Route path="/cotacao/:token" element={<QuoteTrackingPage />} />
 
             {/* Auth pages - Admin */}
             <Route path="/admin/login" element={<Login />} />
