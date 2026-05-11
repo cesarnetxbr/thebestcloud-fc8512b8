@@ -87,17 +87,14 @@ const PublicOmbudsman = () => {
     setSearching(true);
     setFoundReport(null);
     const { data, error } = await supabase
-      .from("ombudsman_reports")
-      .select("*")
-      .ilike("protocol_number", `%${searchProtocol.trim()}%`)
-      .limit(1)
-      .maybeSingle();
+      .rpc("lookup_ombudsman_report", { _protocol: searchProtocol.trim() });
     setSearching(false);
-    if (error || !data) {
+    const report = Array.isArray(data) ? data[0] : data;
+    if (error || !report) {
       toast.error("Protocolo não encontrado");
       return;
     }
-    setFoundReport(data);
+    setFoundReport(report);
   };
 
   const handleTypeSelect = (type: string) => {
