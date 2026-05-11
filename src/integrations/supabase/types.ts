@@ -3270,6 +3270,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_ombudsman_report: {
+        Args: { _protocol: string }
+        Returns: {
+          admin_response: string
+          created_at: string
+          description: string
+          id: string
+          protocol_number: string
+          status: string
+          subject: string
+          type: string
+          updated_at: string
+        }[]
+      }
       merge_chat_conversations: {
         Args: { _drop_id: string; _keep_id: string }
         Returns: undefined
