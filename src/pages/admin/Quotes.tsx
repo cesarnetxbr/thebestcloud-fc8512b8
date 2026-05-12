@@ -367,6 +367,14 @@ const Quotes = () => {
           client_acceptance_document: null,
           client_acceptance_date: null,
           client_signature_data_url: null,
+          payment_method: quote.payment_method || 'faturado',
+          discount_type: quote.discount_type,
+          discount_value: quote.discount_value || 0,
+          installments_plan: quote.installments_plan,
+          installments: quote.installments,
+          final_value: quote.final_value,
+          payment_status: 'aguardando',
+          payment_link: quote.payment_link,
         } as any)
         .select()
         .single();
@@ -434,6 +442,14 @@ const Quotes = () => {
     setClientAcceptanceDocument("");
     setClientAcceptanceDate("");
     setClientSignatureDataUrl("");
+    setPaymentMethod("faturado");
+    setDiscountType("percent");
+    setDiscountValue(0);
+    setInstallmentsPlan(null);
+    setInstallments([]);
+    setFinalValue(0);
+    setPaymentStatus("aguardando");
+    setPaymentLink("");
   };
 
   const openEdit = async (quote: any) => {
@@ -465,6 +481,14 @@ const Quotes = () => {
     setClientAcceptanceDocument(quote.client_acceptance_document || "");
     setClientAcceptanceDate(quote.client_acceptance_date || "");
     setClientSignatureDataUrl(quote.client_signature_data_url || "");
+    setPaymentMethod((quote.payment_method as PaymentMethod) || "faturado");
+    setDiscountType((quote.discount_type as DiscountType) || "percent");
+    setDiscountValue(Number(quote.discount_value) || 0);
+    setInstallmentsPlan((quote.installments_plan as InstallmentsPlan) || null);
+    setInstallments(Array.isArray(quote.installments) ? quote.installments : []);
+    setFinalValue(Number(quote.final_value) || Number(quote.total_value) || 0);
+    setPaymentStatus((quote.payment_status as PaymentStatus) || "aguardando");
+    setPaymentLink(quote.payment_link || "");
     setItems(
       qItems && qItems.length > 0
         ? qItems.map((it: any, idx: number) => ({
