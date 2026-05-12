@@ -15,6 +15,14 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil, Copy, History, ArrowUp, ArrowDown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import PaymentConditionsCard, {
+  type PaymentMethod,
+  type DiscountType,
+  type InstallmentsPlan,
+  type PaymentStatus,
+  type Installment,
+  formatBRL,
+} from "@/components/admin/quotes/PaymentConditionsCard";
 
 const QUOTE_CATEGORIES = [
   { value: "seguranca", label: "Segurança" },
