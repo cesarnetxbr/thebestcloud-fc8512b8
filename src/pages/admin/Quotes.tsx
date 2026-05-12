@@ -818,7 +818,27 @@ const Quotes = () => {
           </CardContent>
         </Card>
 
-        {/* Observações Gerais e Política */}
+        {/* Condições de Pagamento */}
+        <PaymentConditionsCard
+          totalValue={items.reduce((s, i) => s + (i.total_price || 0), 0)}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          discountType={discountType}
+          setDiscountType={setDiscountType}
+          discountValue={discountValue}
+          setDiscountValue={setDiscountValue}
+          installmentsPlan={installmentsPlan}
+          setInstallmentsPlan={setInstallmentsPlan}
+          installments={installments}
+          setInstallments={setInstallments}
+          finalValue={finalValue}
+          setFinalValue={setFinalValue}
+          paymentStatus={paymentStatus}
+          setPaymentStatus={setPaymentStatus}
+          paymentLink={paymentLink}
+          setPaymentLink={setPaymentLink}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Observações Gerais e Termos</CardTitle>
