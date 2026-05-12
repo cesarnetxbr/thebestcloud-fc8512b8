@@ -15,6 +15,14 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil, Copy, History, ArrowUp, ArrowDown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import PaymentConditionsCard, {
+  type PaymentMethod,
+  type DiscountType,
+  type InstallmentsPlan,
+  type PaymentStatus,
+  type Installment,
+  formatBRL,
+} from "@/components/admin/quotes/PaymentConditionsCard";
 
 const QUOTE_CATEGORIES = [
   { value: "seguranca", label: "Segurança" },
@@ -91,6 +99,16 @@ const Quotes = () => {
   const [clientAcceptanceDocument, setClientAcceptanceDocument] = useState("");
   const [clientAcceptanceDate, setClientAcceptanceDate] = useState<string>("");
   const [clientSignatureDataUrl, setClientSignatureDataUrl] = useState<string>("");
+
+  // Condições de pagamento
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("faturado");
+  const [discountType, setDiscountType] = useState<DiscountType | null>("percent");
+  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [installmentsPlan, setInstallmentsPlan] = useState<InstallmentsPlan | null>(null);
+  const [installments, setInstallments] = useState<Installment[]>([]);
+  const [finalValue, setFinalValue] = useState<number>(0);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("aguardando");
+  const [paymentLink, setPaymentLink] = useState<string>("");
 
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ["quotes"],
@@ -174,6 +192,14 @@ const Quotes = () => {
           client_acceptance_document: clientAcceptanceDocument,
           client_acceptance_date: clientAcceptanceDate || null,
           client_signature_data_url: clientSignatureDataUrl,
+          payment_method: paymentMethod,
+          discount_type: paymentMethod === "a_vista" ? discountType : null,
+          discount_value: paymentMethod === "a_vista" ? discountValue : 0,
+          installments_plan: paymentMethod === "faturado" ? installmentsPlan : null,
+          installments: paymentMethod === "faturado" ? installments : null,
+          final_value: finalValue,
+          payment_status: paymentStatus,
+          payment_link: paymentLink || null,
         } as any)
         .select()
         .single();
@@ -232,6 +258,14 @@ const Quotes = () => {
           client_acceptance_document: clientAcceptanceDocument,
           client_acceptance_date: clientAcceptanceDate || null,
           client_signature_data_url: clientSignatureDataUrl,
+          payment_method: paymentMethod,
+          discount_type: paymentMethod === "a_vista" ? discountType : null,
+          discount_value: paymentMethod === "a_vista" ? discountValue : 0,
+          installments_plan: paymentMethod === "faturado" ? installmentsPlan : null,
+          installments: paymentMethod === "faturado" ? installments : null,
+          final_value: finalValue,
+          payment_status: paymentStatus,
+          payment_link: paymentLink || null,
         } as any)
         .eq("id", editingId);
       if (error) throw error;
@@ -333,6 +367,14 @@ const Quotes = () => {
           client_acceptance_document: null,
           client_acceptance_date: null,
           client_signature_data_url: null,
+          payment_method: quote.payment_method || 'faturado',
+          discount_type: quote.discount_type,
+          discount_value: quote.discount_value || 0,
+          installments_plan: quote.installments_plan,
+          installments: quote.installments,
+          final_value: quote.final_value,
+          payment_status: 'aguardando',
+          payment_link: quote.payment_link,
         } as any)
         .select()
         .single();
@@ -400,6 +442,14 @@ const Quotes = () => {
     setClientAcceptanceDocument("");
     setClientAcceptanceDate("");
     setClientSignatureDataUrl("");
+    setPaymentMethod("faturado");
+    setDiscountType("percent");
+    setDiscountValue(0);
+    setInstallmentsPlan(null);
+    setInstallments([]);
+    setFinalValue(0);
+    setPaymentStatus("aguardando");
+    setPaymentLink("");
   };
 
   const openEdit = async (quote: any) => {
@@ -431,6 +481,14 @@ const Quotes = () => {
     setClientAcceptanceDocument(quote.client_acceptance_document || "");
     setClientAcceptanceDate(quote.client_acceptance_date || "");
     setClientSignatureDataUrl(quote.client_signature_data_url || "");
+    setPaymentMethod((quote.payment_method as PaymentMethod) || "faturado");
+    setDiscountType((quote.discount_type as DiscountType) || "percent");
+    setDiscountValue(Number(quote.discount_value) || 0);
+    setInstallmentsPlan((quote.installments_plan as InstallmentsPlan) || null);
+    setInstallments(Array.isArray(quote.installments) ? quote.installments : []);
+    setFinalValue(Number(quote.final_value) || Number(quote.total_value) || 0);
+    setPaymentStatus((quote.payment_status as PaymentStatus) || "aguardando");
+    setPaymentLink(quote.payment_link || "");
     setItems(
       qItems && qItems.length > 0
         ? qItems.map((it: any, idx: number) => ({
@@ -760,7 +818,27 @@ const Quotes = () => {
           </CardContent>
         </Card>
 
-        {/* Observações Gerais e Política */}
+        {/* Condições de Pagamento */}
+        <PaymentConditionsCard
+          totalValue={items.reduce((s, i) => s + (i.total_price || 0), 0)}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          discountType={discountType}
+          setDiscountType={setDiscountType}
+          discountValue={discountValue}
+          setDiscountValue={setDiscountValue}
+          installmentsPlan={installmentsPlan}
+          setInstallmentsPlan={setInstallmentsPlan}
+          installments={installments}
+          setInstallments={setInstallments}
+          finalValue={finalValue}
+          setFinalValue={setFinalValue}
+          paymentStatus={paymentStatus}
+          setPaymentStatus={setPaymentStatus}
+          paymentLink={paymentLink}
+          setPaymentLink={setPaymentLink}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Observações Gerais e Termos</CardTitle>
@@ -1074,17 +1152,81 @@ const Quotes = () => {
                 </div>
               )}
 
-              {/* Terms */}
-              <div className="grid grid-cols-2 gap-6 text-sm">
-                <div>
-                  <p className="font-bold text-[#1a365d]">Forma de pagamento</p>
-                  <p>{previewQuote.payment_terms}</p>
+              {/* Condições Comerciais */}
+              {(previewQuote.payment_method || previewQuote.payment_terms) && (
+                <div className="border-2 border-[#1a365d] rounded p-4 text-sm space-y-3">
+                  <p className="font-bold text-[#1a365d] uppercase text-xs">Condições Comerciais</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Forma de pagamento</p>
+                      <p className="font-medium">
+                        {previewQuote.payment_method === "a_vista" ? "À Vista" :
+                         previewQuote.payment_method === "faturado" ? "Faturado" :
+                         (previewQuote.payment_terms || "—")}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Validade da proposta</p>
+                      <p className="font-medium">{previewQuote.validity_days} dias</p>
+                    </div>
+                  </div>
+
+                  {previewQuote.payment_method === "a_vista" && Number(previewQuote.discount_value) > 0 && (
+                    <div className="grid grid-cols-3 gap-3 pt-2">
+                      <div>
+                        <p className="text-xs text-gray-500">Valor original</p>
+                        <p className="font-semibold">{formatCurrency(Number(previewQuote.total_value) || 0)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Desconto</p>
+                        <p className="font-semibold text-red-600">
+                          {previewQuote.discount_type === "percent"
+                            ? `${previewQuote.discount_value}%`
+                            : formatCurrency(Number(previewQuote.discount_value))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Valor final negociado</p>
+                        <p className="font-bold text-green-700">{formatCurrency(Number(previewQuote.final_value) || 0)}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {previewQuote.payment_method === "faturado" && Array.isArray(previewQuote.installments) && previewQuote.installments.length > 0 && (
+                    <div className="pt-2">
+                      <p className="text-xs text-gray-500 mb-1">Parcelamento</p>
+                      <table className="w-full text-xs border">
+                        <thead className="bg-[#1a365d] text-white">
+                          <tr>
+                            <th className="p-1 text-left border">Parcela</th>
+                            <th className="p-1 text-left border">Vencimento</th>
+                            <th className="p-1 text-right border">Valor</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {previewQuote.installments.map((inst: any, i: number) => (
+                            <tr key={i}>
+                              <td className="p-1 border">{inst.n}/{previewQuote.installments.length}</td>
+                              <td className="p-1 border">{inst.due_date ? new Date(inst.due_date).toLocaleDateString("pt-BR") : "—"}</td>
+                              <td className="p-1 border text-right">{formatCurrency(Number(inst.amount) || 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="font-bold bg-gray-100">
+                            <td colSpan={2} className="p-1 border text-right">Total</td>
+                            <td className="p-1 border text-right">{formatCurrency(Number(previewQuote.final_value) || 0)}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  )}
+
+                  {previewQuote.payment_terms && (
+                    <p className="text-xs text-gray-600 pt-1 border-t">{previewQuote.payment_terms}</p>
+                  )}
                 </div>
-                <div>
-                  <p className="font-bold text-[#1a365d]">Validade da proposta</p>
-                  <p>{previewQuote.validity_days} dias</p>
-                </div>
-              </div>
+              )}
 
               <p className="text-xs text-gray-500 italic">
                 *Os valores contidos nesta proposta comercial serão reajustados anualmente pelo IPCA a partir da data de
