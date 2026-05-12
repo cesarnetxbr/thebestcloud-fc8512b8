@@ -200,6 +200,9 @@ const Quotes = () => {
           final_value: finalValue,
           payment_status: paymentStatus,
           payment_link: paymentLink || null,
+        } as any)
+        .select()
+        .single();
       if (error) throw error;
 
       const validItems = items.filter((i) => i.service_name.trim());
