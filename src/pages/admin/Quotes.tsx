@@ -507,8 +507,11 @@ const Quotes = () => {
             markup_info: it.markup_info || "",
           }))
         : [emptyItem()]
-    );
-    setShowForm(true);
+      );
+      setShowForm(true);
+    } finally {
+      setLoadingEditId(null);
+    }
   };
 
   const handleCustomerSelect = (id: string) => {
