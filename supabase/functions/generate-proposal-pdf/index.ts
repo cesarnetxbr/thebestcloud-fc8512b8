@@ -108,6 +108,30 @@ Deno.serve(async (req) => {
     });
     y -= 60;
 
+    // Condições Comerciais (vindas da quote, se existirem)
+    if (quote) {
+      draw("Condições Comerciais", { size: 14, bold: true, color: navy });
+      const method = quote.payment_method === "a_vista" ? "À Vista" : quote.payment_method === "faturado" ? "Faturado" : (quote.payment_terms || "—");
+      draw(`Forma de pagamento: ${method}`);
+      if (quote.payment_method === "a_vista" && Number(quote.discount_value) > 0) {
+        const desc = quote.discount_type === "percent"
+          ? `${quote.discount_value}%`
+          : `R$ ${Number(quote.discount_value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+        draw(`Desconto à vista: ${desc}`);
+        draw(`Valor original: R$ ${Number(quote.total_value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`);
+        draw(`Valor final negociado: R$ ${Number(quote.final_value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, { color: orange, bold: true });
+      }
+      if (quote.payment_method === "faturado" && Array.isArray(quote.installments) && quote.installments.length > 0) {
+        draw(`Parcelamento: ${quote.installments.length}x`);
+        for (const inst of quote.installments) {
+          const dt = inst.due_date ? new Date(inst.due_date).toLocaleDateString("pt-BR") : "—";
+          const amt = `R$ ${Number(inst.amount || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+          draw(`  Parcela ${inst.n}/${quote.installments.length} — Venc.: ${dt} — ${amt}`);
+        }
+      }
+      y -= 10;
+    }
+
     draw("Próximos passos", { size: 14, bold: true, color: navy });
     ["1. Validação técnica do escopo com nosso time", "2. Reunião de fechamento comercial", "3. Ativação e onboarding em até 48h"].forEach((t) => draw(t));
 
