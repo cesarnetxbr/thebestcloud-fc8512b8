@@ -454,15 +454,18 @@ const Quotes = () => {
   };
 
   const openEdit = async (quote: any) => {
-    const { data: qItems, error } = await supabase
-      .from("quote_items")
-      .select("*")
-      .eq("quote_id", quote.id)
-      .order("item_number");
-    if (error) {
-      toast.error("Erro ao carregar itens do orçamento");
-      return;
-    }
+    if (loadingEditId) return; // evita cliques duplicados que causam travamento aparente
+    setLoadingEditId(quote.id);
+    try {
+      const { data: qItems, error } = await supabase
+        .from("quote_items")
+        .select("*")
+        .eq("quote_id", quote.id)
+        .order("item_number");
+      if (error) {
+        toast.error("Erro ao carregar itens do orçamento");
+        return;
+      }
     setEditingId(quote.id);
     setCustomerId(quote.customer_id || null);
     setCustomerName(quote.customer_name || "");
