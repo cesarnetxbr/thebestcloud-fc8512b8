@@ -100,6 +100,16 @@ const Quotes = () => {
   const [clientAcceptanceDate, setClientAcceptanceDate] = useState<string>("");
   const [clientSignatureDataUrl, setClientSignatureDataUrl] = useState<string>("");
 
+  // Condições de pagamento
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("faturado");
+  const [discountType, setDiscountType] = useState<DiscountType | null>("percent");
+  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [installmentsPlan, setInstallmentsPlan] = useState<InstallmentsPlan | null>(null);
+  const [installments, setInstallments] = useState<Installment[]>([]);
+  const [finalValue, setFinalValue] = useState<number>(0);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("aguardando");
+  const [paymentLink, setPaymentLink] = useState<string>("");
+
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ["quotes"],
     queryFn: async () => {
