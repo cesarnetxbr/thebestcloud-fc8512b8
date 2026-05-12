@@ -1152,17 +1152,81 @@ const Quotes = () => {
                 </div>
               )}
 
-              {/* Terms */}
-              <div className="grid grid-cols-2 gap-6 text-sm">
-                <div>
-                  <p className="font-bold text-[#1a365d]">Forma de pagamento</p>
-                  <p>{previewQuote.payment_terms}</p>
+              {/* Condições Comerciais */}
+              {(previewQuote.payment_method || previewQuote.payment_terms) && (
+                <div className="border-2 border-[#1a365d] rounded p-4 text-sm space-y-3">
+                  <p className="font-bold text-[#1a365d] uppercase text-xs">Condições Comerciais</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Forma de pagamento</p>
+                      <p className="font-medium">
+                        {previewQuote.payment_method === "a_vista" ? "À Vista" :
+                         previewQuote.payment_method === "faturado" ? "Faturado" :
+                         (previewQuote.payment_terms || "—")}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Validade da proposta</p>
+                      <p className="font-medium">{previewQuote.validity_days} dias</p>
+                    </div>
+                  </div>
+
+                  {previewQuote.payment_method === "a_vista" && Number(previewQuote.discount_value) > 0 && (
+                    <div className="grid grid-cols-3 gap-3 pt-2">
+                      <div>
+                        <p className="text-xs text-gray-500">Valor original</p>
+                        <p className="font-semibold">{formatCurrency(Number(previewQuote.total_value) || 0)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Desconto</p>
+                        <p className="font-semibold text-red-600">
+                          {previewQuote.discount_type === "percent"
+                            ? `${previewQuote.discount_value}%`
+                            : formatCurrency(Number(previewQuote.discount_value))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Valor final negociado</p>
+                        <p className="font-bold text-green-700">{formatCurrency(Number(previewQuote.final_value) || 0)}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {previewQuote.payment_method === "faturado" && Array.isArray(previewQuote.installments) && previewQuote.installments.length > 0 && (
+                    <div className="pt-2">
+                      <p className="text-xs text-gray-500 mb-1">Parcelamento</p>
+                      <table className="w-full text-xs border">
+                        <thead className="bg-[#1a365d] text-white">
+                          <tr>
+                            <th className="p-1 text-left border">Parcela</th>
+                            <th className="p-1 text-left border">Vencimento</th>
+                            <th className="p-1 text-right border">Valor</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {previewQuote.installments.map((inst: any, i: number) => (
+                            <tr key={i}>
+                              <td className="p-1 border">{inst.n}/{previewQuote.installments.length}</td>
+                              <td className="p-1 border">{inst.due_date ? new Date(inst.due_date).toLocaleDateString("pt-BR") : "—"}</td>
+                              <td className="p-1 border text-right">{formatCurrency(Number(inst.amount) || 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="font-bold bg-gray-100">
+                            <td colSpan={2} className="p-1 border text-right">Total</td>
+                            <td className="p-1 border text-right">{formatCurrency(Number(previewQuote.final_value) || 0)}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  )}
+
+                  {previewQuote.payment_terms && (
+                    <p className="text-xs text-gray-600 pt-1 border-t">{previewQuote.payment_terms}</p>
+                  )}
                 </div>
-                <div>
-                  <p className="font-bold text-[#1a365d]">Validade da proposta</p>
-                  <p>{previewQuote.validity_days} dias</p>
-                </div>
-              </div>
+              )}
 
               <p className="text-xs text-gray-500 italic">
                 *Os valores contidos nesta proposta comercial serão reajustados anualmente pelo IPCA a partir da data de
