@@ -2301,11 +2301,19 @@ export type Database = {
           created_by: string | null
           customer_id: string | null
           customer_name: string
+          discount_type: string | null
+          discount_value: number | null
+          final_value: number | null
           general_notes: string | null
           id: string
+          installments: Json | null
+          installments_plan: string | null
           introduction_text: string | null
           notes: string | null
           parent_quote_id: string | null
+          payment_link: string | null
+          payment_method: string | null
+          payment_status: string | null
           payment_terms: string | null
           policy_text: string | null
           quote_number: string
@@ -2330,11 +2338,19 @@ export type Database = {
           created_by?: string | null
           customer_id?: string | null
           customer_name: string
+          discount_type?: string | null
+          discount_value?: number | null
+          final_value?: number | null
           general_notes?: string | null
           id?: string
+          installments?: Json | null
+          installments_plan?: string | null
           introduction_text?: string | null
           notes?: string | null
           parent_quote_id?: string | null
+          payment_link?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
           payment_terms?: string | null
           policy_text?: string | null
           quote_number: string
@@ -2359,11 +2375,19 @@ export type Database = {
           created_by?: string | null
           customer_id?: string | null
           customer_name?: string
+          discount_type?: string | null
+          discount_value?: number | null
+          final_value?: number | null
           general_notes?: string | null
           id?: string
+          installments?: Json | null
+          installments_plan?: string | null
           introduction_text?: string | null
           notes?: string | null
           parent_quote_id?: string | null
+          payment_link?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
           payment_terms?: string | null
           policy_text?: string | null
           quote_number?: string
