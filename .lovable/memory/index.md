@@ -25,6 +25,7 @@ Tech: Supabase Edge Functions with Service Role Key for external APIs. Automated
 - [Support Schedule](mem://features/admin/support-schedule) — Operators publish slots; trial form auto-reserves them
 - [LGPD Compliance](mem://features/lgpd-compliance) — Privacy module and DPO info
 - [Quotes Module](mem://features/admin/quotes-module) — Commercial proposals generation
+- [Quote Payment Conditions](mem://features/admin/quote-payment-conditions) — Forma de pagamento (à vista com desconto / faturado parcelado), parcelas, status, link e PDF
 - [Knowledge Base](mem://features/knowledge-base) — Technical articles and AI search
 - [Tenant Billing Details](mem://features/admin/tenant-billing-details) — Real-time consumption view and SKU mapping
 - [Tenant Trial Tracking](mem://features/admin/tenant-trial-tracking) — 30-day free trial monitoring
