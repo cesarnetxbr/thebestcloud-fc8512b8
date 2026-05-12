@@ -70,6 +70,7 @@ const Quotes = () => {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loadingEditId, setLoadingEditId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewQuote, setPreviewQuote] = useState<any>(null);
   const [search, setSearch] = useState("");
@@ -453,15 +454,18 @@ const Quotes = () => {
   };
 
   const openEdit = async (quote: any) => {
-    const { data: qItems, error } = await supabase
-      .from("quote_items")
-      .select("*")
-      .eq("quote_id", quote.id)
-      .order("item_number");
-    if (error) {
-      toast.error("Erro ao carregar itens do orçamento");
-      return;
-    }
+    if (loadingEditId) return; // evita cliques duplicados que causam travamento aparente
+    setLoadingEditId(quote.id);
+    try {
+      const { data: qItems, error } = await supabase
+        .from("quote_items")
+        .select("*")
+        .eq("quote_id", quote.id)
+        .order("item_number");
+      if (error) {
+        toast.error("Erro ao carregar itens do orçamento");
+        return;
+      }
     setEditingId(quote.id);
     setCustomerId(quote.customer_id || null);
     setCustomerName(quote.customer_name || "");
@@ -503,8 +507,11 @@ const Quotes = () => {
             markup_info: it.markup_info || "",
           }))
         : [emptyItem()]
-    );
-    setShowForm(true);
+      );
+      setShowForm(true);
+    } finally {
+      setLoadingEditId(null);
+    }
   };
 
   const handleCustomerSelect = (id: string) => {
@@ -1005,8 +1012,10 @@ const Quotes = () => {
                           <Button variant="ghost" size="sm" onClick={() => openPreview(q)} title="Pré-visualizar">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar">
-                            <Pencil className="h-4 w-4" />
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar" disabled={loadingEditId === q.id}>
+                            {loadingEditId === q.id
+                              ? <span className="h-4 w-4 inline-block animate-spin border-2 border-current border-t-transparent rounded-full" />
+                              : <Pencil className="h-4 w-4" />}
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => duplicateMutation.mutate(q)} title="Duplicar (nova versão)" disabled={duplicateMutation.isPending}>
                             <Copy className="h-4 w-4" />

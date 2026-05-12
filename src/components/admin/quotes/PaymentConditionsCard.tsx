@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -88,15 +88,23 @@ export default function PaymentConditionsCard(props: Props) {
   );
   const computedFinal = Math.max(0, totalValue - discountAmount);
 
-  // Sincroniza final_value automaticamente
+  // Sincroniza final_value automaticamente (apenas quando muda)
   useEffect(() => {
-    setFinalValue(computedFinal);
-  }, [computedFinal, setFinalValue]);
+    if (Math.abs((finalValue || 0) - computedFinal) > 0.001) {
+      setFinalValue(computedFinal);
+    }
+  }, [computedFinal, finalValue, setFinalValue]);
 
-  // Recalcula parcelas ao trocar plano (exceto custom)
+  // Recalcula parcelas ao trocar plano (exceto custom).
+  // Preserva as parcelas já carregadas do banco no primeiro render.
+  const skipFirstPlanEffect = useRef(installments.length > 0);
   useEffect(() => {
     if (paymentMethod !== "faturado") return;
     if (!installmentsPlan || installmentsPlan === "custom") return;
+    if (skipFirstPlanEffect.current) {
+      skipFirstPlanEffect.current = false;
+      return;
+    }
     setInstallments(buildInstallments(computedFinal, installmentsPlan));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [installmentsPlan, computedFinal, paymentMethod]);
