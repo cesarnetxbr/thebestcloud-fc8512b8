@@ -1012,8 +1012,10 @@ const Quotes = () => {
                           <Button variant="ghost" size="sm" onClick={() => openPreview(q)} title="Pré-visualizar">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar">
-                            <Pencil className="h-4 w-4" />
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(q)} title="Editar" disabled={loadingEditId === q.id}>
+                            {loadingEditId === q.id
+                              ? <span className="h-4 w-4 inline-block animate-spin border-2 border-current border-t-transparent rounded-full" />
+                              : <Pencil className="h-4 w-4" />}
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => duplicateMutation.mutate(q)} title="Duplicar (nova versão)" disabled={duplicateMutation.isPending}>
                             <Copy className="h-4 w-4" />
