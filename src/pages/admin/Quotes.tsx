@@ -192,9 +192,14 @@ const Quotes = () => {
           client_acceptance_document: clientAcceptanceDocument,
           client_acceptance_date: clientAcceptanceDate || null,
           client_signature_data_url: clientSignatureDataUrl,
-        } as any)
-        .select()
-        .single();
+          payment_method: paymentMethod,
+          discount_type: paymentMethod === "a_vista" ? discountType : null,
+          discount_value: paymentMethod === "a_vista" ? discountValue : 0,
+          installments_plan: paymentMethod === "faturado" ? installmentsPlan : null,
+          installments: paymentMethod === "faturado" ? installments : null,
+          final_value: finalValue,
+          payment_status: paymentStatus,
+          payment_link: paymentLink || null,
       if (error) throw error;
 
       const validItems = items.filter((i) => i.service_name.trim());
@@ -250,6 +255,14 @@ const Quotes = () => {
           client_acceptance_document: clientAcceptanceDocument,
           client_acceptance_date: clientAcceptanceDate || null,
           client_signature_data_url: clientSignatureDataUrl,
+          payment_method: paymentMethod,
+          discount_type: paymentMethod === "a_vista" ? discountType : null,
+          discount_value: paymentMethod === "a_vista" ? discountValue : 0,
+          installments_plan: paymentMethod === "faturado" ? installmentsPlan : null,
+          installments: paymentMethod === "faturado" ? installments : null,
+          final_value: finalValue,
+          payment_status: paymentStatus,
+          payment_link: paymentLink || null,
         } as any)
         .eq("id", editingId);
       if (error) throw error;
