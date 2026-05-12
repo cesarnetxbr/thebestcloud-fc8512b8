@@ -34,12 +34,23 @@ Deno.serve(async (req) => {
     // Fetch deal context
     const { data: deal } = await supabase
       .from("crm_deals")
-      .select("id, title, value, probability, stage, expected_close_at, lead_id")
+      .select("id, title, value, probability, stage, expected_close_at, lead_id, quote_id")
       .eq("id", dealId)
       .maybeSingle();
 
+    // If deal has a linked quote, fetch its commercial conditions
+    let quote: any = null;
+    if (deal?.quote_id) {
+      const { data: q } = await supabase
+        .from("quotes")
+        .select("payment_method, discount_type, discount_value, installments_plan, installments, final_value, payment_status, payment_terms, total_value")
+        .eq("id", deal.quote_id)
+        .maybeSingle();
+      quote = q;
+    }
+
     const title = deal?.title ?? "Proposta Comercial";
-    const value = Number(deal?.value ?? 0);
+    const value = Number(quote?.final_value ?? deal?.value ?? 0);
 
     // Build PDF
     const pdf = await PDFDocument.create();
