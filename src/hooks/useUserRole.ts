@@ -8,6 +8,8 @@ export const useUserRole = () => {
   const { user, loading: isAuthLoading } = useAuth();
   const [role, setRole] = useState<AppRole | null>(null);
   const [isRoleLoading, setIsRoleLoading] = useState(true);
+  const [roleError, setRoleError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let isActive = true;
@@ -21,6 +23,7 @@ export const useUserRole = () => {
 
     if (!user) {
       setRole(null);
+      setRoleError(null);
       setIsRoleLoading(false);
       return () => {
         isActive = false;
@@ -29,6 +32,7 @@ export const useUserRole = () => {
 
     const fetchRole = async () => {
       setIsRoleLoading(true);
+      setRoleError(null);
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
@@ -40,8 +44,10 @@ export const useUserRole = () => {
       if (error) {
         console.error("Error fetching user role:", error);
         setRole(null);
+        setRoleError(error.message || "Falha ao carregar perfil de acesso");
       } else {
         setRole(data?.role ?? null);
+        setRoleError(null);
       }
 
       setIsRoleLoading(false);
@@ -52,7 +58,12 @@ export const useUserRole = () => {
     return () => {
       isActive = false;
     };
-  }, [user, isAuthLoading]);
+  }, [user, isAuthLoading, retryKey]);
 
-  return { role, isRoleLoading };
+  return {
+    role,
+    isRoleLoading,
+    roleError,
+    retryRole: () => setRetryKey((current) => current + 1),
+  };
 };
