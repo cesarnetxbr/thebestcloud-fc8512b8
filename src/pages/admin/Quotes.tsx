@@ -41,6 +41,9 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondar
 };
 
 const STATUS_OPTIONS = ["rascunho", "enviado", "aceito", "assinado"];
+const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ["aguardando", "pago", "faturado", "parcial"];
+const INSTALLMENTS_PLAN_OPTIONS: InstallmentsPlan[] = ["30", "60", "90", "30_60", "30_60_90", "custom"];
+const DISCOUNT_TYPE_OPTIONS: DiscountType[] = ["percent", "value"];
 
 interface QuoteItem {
   id?: string;
@@ -485,13 +488,13 @@ const Quotes = () => {
     setClientAcceptanceDocument(quote.client_acceptance_document || "");
     setClientAcceptanceDate(quote.client_acceptance_date || "");
     setClientSignatureDataUrl(quote.client_signature_data_url || "");
-    setPaymentMethod((quote.payment_method as PaymentMethod) || "faturado");
-    setDiscountType((quote.discount_type as DiscountType) || "percent");
+    setPaymentMethod(quote.payment_method === "a_vista" ? "a_vista" : "faturado");
+    setDiscountType(DISCOUNT_TYPE_OPTIONS.includes(quote.discount_type as DiscountType) ? (quote.discount_type as DiscountType) : "percent");
     setDiscountValue(Number(quote.discount_value) || 0);
-    setInstallmentsPlan((quote.installments_plan as InstallmentsPlan) || null);
+    setInstallmentsPlan(INSTALLMENTS_PLAN_OPTIONS.includes(quote.installments_plan as InstallmentsPlan) ? (quote.installments_plan as InstallmentsPlan) : null);
     setInstallments(Array.isArray(quote.installments) ? quote.installments : []);
     setFinalValue(Number(quote.final_value) || Number(quote.total_value) || 0);
-    setPaymentStatus((quote.payment_status as PaymentStatus) || "aguardando");
+    setPaymentStatus(PAYMENT_STATUS_OPTIONS.includes(quote.payment_status as PaymentStatus) ? (quote.payment_status as PaymentStatus) : "aguardando");
     setPaymentLink(quote.payment_link || "");
     setItems(
       qItems && qItems.length > 0
