@@ -14,6 +14,8 @@ export type DiscountType = "percent" | "value";
 export type InstallmentsPlan = "30" | "60" | "90" | "30_60" | "30_60_90" | "custom";
 export type PaymentStatus = "aguardando" | "pago" | "faturado" | "parcial";
 
+const INSTALLMENTS_PLAN_NONE = "__none__";
+
 export interface Installment {
   n: number;
   due_date: string; // YYYY-MM-DD
@@ -204,11 +206,12 @@ export default function PaymentConditionsCard(props: Props) {
             <div>
               <Label>Plano de parcelamento</Label>
               <Select
-                value={installmentsPlan ?? ""}
-                onValueChange={(v) => setInstallmentsPlan(v as InstallmentsPlan)}
+                value={installmentsPlan ?? INSTALLMENTS_PLAN_NONE}
+                onValueChange={(v) => setInstallmentsPlan(v === INSTALLMENTS_PLAN_NONE ? null : (v as InstallmentsPlan))}
               >
                 <SelectTrigger><SelectValue placeholder="Selecione um plano" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={INSTALLMENTS_PLAN_NONE}>Selecione um plano</SelectItem>
                   <SelectItem value="30">30 dias</SelectItem>
                   <SelectItem value="60">60 dias</SelectItem>
                   <SelectItem value="90">90 dias</SelectItem>
