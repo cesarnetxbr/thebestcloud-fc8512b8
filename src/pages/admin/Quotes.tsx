@@ -603,6 +603,7 @@ const Quotes = () => {
 
   if (showForm) {
     return (
+      <ErrorBoundary onReset={resetForm} fallbackTitle="Erro ao carregar o formulário do orçamento">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-foreground">{editingId ? "Editar Orçamento" : "Novo Orçamento"}</h2>
