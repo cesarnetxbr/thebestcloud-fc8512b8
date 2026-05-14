@@ -933,6 +933,7 @@ const Quotes = () => {
           </Button>
         </div>
       </div>
+      </ErrorBoundary>
     );
   }
 
