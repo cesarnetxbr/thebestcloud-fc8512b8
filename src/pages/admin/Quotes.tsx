@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Plus, Eye, Trash2, FileText, Download, Search, X, Pencil, Copy, History, ArrowUp, ArrowDown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import PaymentConditionsCard, {
   type PaymentMethod,
   type DiscountType,
@@ -602,6 +603,7 @@ const Quotes = () => {
 
   if (showForm) {
     return (
+      <ErrorBoundary onReset={resetForm} fallbackTitle="Erro ao carregar o formulário do orçamento">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-foreground">{editingId ? "Editar Orçamento" : "Novo Orçamento"}</h2>
@@ -931,6 +933,7 @@ const Quotes = () => {
           </Button>
         </div>
       </div>
+      </ErrorBoundary>
     );
   }
 
