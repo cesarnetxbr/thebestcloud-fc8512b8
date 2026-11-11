@@ -1,0 +1,1 @@
+UPDATE public.acronis_sku_mapping SET sku_code='SRHAMSENS', description='Remote Management and Monitoring (RMM) - Endpoint' WHERE acronis_name IN ('pg_pack_adv_management','pw_pack_adv_management');
