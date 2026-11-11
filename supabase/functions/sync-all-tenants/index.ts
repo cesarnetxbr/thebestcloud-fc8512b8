@@ -144,8 +144,24 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Após sincronizar clientes, busca também o uso/cobrança na Acronis
+    let usage: unknown = null;
+    try {
+      const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/sync-tenant-usage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: "{}",
+      });
+      usage = await r.json().catch(() => ({ status: r.status }));
+    } catch (e) {
+      usage = { error: (e as Error).message };
+    }
+
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ success: true, results, usage }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
