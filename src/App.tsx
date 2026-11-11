@@ -31,6 +31,7 @@ import SaleTables from "./pages/admin/SaleTables";
 import Settings from "./pages/admin/Settings";
 import Connections from "./pages/admin/Connections";
 import Tenants from "./pages/admin/Tenants";
+import AcronisBilling from "./pages/admin/AcronisBilling";
 import TrialClientsPage from "./pages/admin/TrialClients";
 import AuditLogs from "./pages/admin/AuditLogs";
 import Tickets from "./pages/admin/Tickets";
@@ -151,6 +152,7 @@ const App = () => (
               <Route path="sale-tables" element={<SaleTables />} />
               <Route path="connections" element={<Connections />} />
               <Route path="tenants" element={<Tenants />} />
+              <Route path="acronis-billing" element={<AcronisBilling />} />
               <Route path="trial-clients" element={<TrialClientsPage />} />
               <Route path="settings" element={<Settings />} />
               <Route path="audit-logs" element={<AuditLogs />} />

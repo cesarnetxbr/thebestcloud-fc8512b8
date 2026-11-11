@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import {
+  useState, useEffect, useCallback } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import {
   LayoutDashboard,
+  Receipt,
   Users,
   Package,
   FileText,
@@ -195,6 +197,7 @@ const navSections: NavSection[] = [
         { label: "Tabela de venda", icon: ShoppingCart, path: "/admin/sale-tables", module: "tabelas_venda" },
         { label: "Conexões", icon: Link2, path: "/admin/connections", module: "conexoes" },
         { label: "Tenants", icon: Globe, path: "/admin/tenants", module: "tenants" },
+        { label: "Cobrança Acronis", icon: Receipt, path: "/admin/acronis-billing", indent: true, module: "faturamento" },
         { label: "Faturamento", icon: FileText, path: "/admin/invoices/dashboard", module: "faturamento" },
         { label: "Custo", icon: TrendingDown, path: "/admin/invoices/custo", indent: true, module: "faturamento" },
         { label: "Venda", icon: TrendingUp, path: "/admin/invoices/venda", indent: true, module: "faturamento" },
