@@ -1,5 +1,5 @@
 import {
-  Receipt, useState, useEffect, useCallback } from "react";
+  useState, useEffect, useCallback } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import {
   LayoutDashboard,
+  Receipt,
   Users,
   Package,
   FileText,
