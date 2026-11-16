@@ -3288,6 +3288,13 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_reserved_slot_hours: {
+        Args: never
+        Returns: {
+          reserved_hour: string
+          slot_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3295,6 +3302,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
       lookup_ombudsman_report: {
         Args: { _protocol: string }
         Returns: {
