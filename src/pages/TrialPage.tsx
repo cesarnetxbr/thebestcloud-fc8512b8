@@ -75,9 +75,7 @@ const TrialPage = () => {
   const { data: reservations = [] } = useQuery({
     queryKey: ["slot-reservations"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("support_slot_reservations")
-        .select("slot_id, reserved_hour");
+      const { data, error } = await supabase.rpc("get_reserved_slot_hours");
       if (error) throw error;
       return data || [];
     },
