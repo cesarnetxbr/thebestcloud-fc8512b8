@@ -15,6 +15,13 @@
       "when": 1794405520444,
       "tag": "0001_cleanup_old_rmm_row",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794851679630,
+      "tag": "0002_tighten_staff_rls",
+      "breakpoints": true
     }
   ]
 }
